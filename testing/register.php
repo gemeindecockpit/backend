@@ -41,7 +41,7 @@
 </div>
 <?php
 //this section will be executed apon receiving a post request from the submit form
-$filename = __DIR__ . '/testing/db_connect.php';
+$filename = __DIR__ . '/db_connect.php';
 
 if (file_exists($filename)) {
     echo "Die Datei $filename existiert";
