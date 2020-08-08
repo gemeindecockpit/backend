@@ -41,6 +41,8 @@
 </div>
 <?php
 //this section will be executed apon receiving a post request from the submit form
+required(__DIR__ . '/db_connect.php');
+
 $filename = __DIR__ . '/db_connect.php';
 
 if (file_exists($filename)) {
@@ -48,10 +50,9 @@ if (file_exists($filename)) {
 } else {
     echo "Die Datei $filename existiert nicht";
 }
-required(__DIR__ . '/db_connect.php');
 session_start();
 if(isset($_SESSION['user_id'])) {
-	header("Location: testing/index.php");
+	header("Location: index.php");
 }
 $error = false;
 if (isset($_POST['signup'])) {
