@@ -41,6 +41,13 @@
 </div>
 <?php
 //this section will be executed apon receiving a post request from the submit form
+$filename = 'testing/db_connect.php';
+
+if (file_exists($filename)) {
+    echo "Die Datei $filename existiert";
+} else {
+    echo "Die Datei $filename existiert nicht";
+}
 required("testing/db_connect.php");
 session_start();
 if(isset($_SESSION['user_id'])) {
