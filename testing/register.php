@@ -48,7 +48,7 @@ if (file_exists($filename)) {
 } else {
     echo "Die Datei $filename existiert nicht";
 }
-required("testing/db_connect.php");
+required(__DIR__ . '/db_connect.php');
 session_start();
 if(isset($_SESSION['user_id'])) {
 	header("Location: testing/index.php");
