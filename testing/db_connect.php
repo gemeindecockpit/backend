@@ -2,7 +2,7 @@
 /* Database connection start */
 $servername = "localhost";
 $username = "alx";
-$password = "empowering";
+$password = "testing";
 $dbname = "wevsvirus";
 $conn = mysqli_connect($servername, $username, $password, $dbname);
 if (mysqli_connect_errno()) {
