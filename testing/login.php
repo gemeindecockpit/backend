@@ -28,7 +28,7 @@
 </div>
 <?php
 session_start();
-require(__DIR__ . "db_connect.php");
+require("db_connect.php");
 if(isset($_SESSION['user_id'])!="") {
 	header("Location: index.php");
 }
