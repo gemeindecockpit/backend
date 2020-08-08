@@ -39,8 +39,13 @@ if (file_exists($filename)) {
 }
 if(isset($_SESSION['user_id'])!="") {
 	header("Location: index.php");
+	echo "is logged in";
+} else {
+	echo "is not logged in";
 }
+
 if (isset($_POST['login'])) {
+	echo "login post received";
 	$email = mysqli_real_escape_string($conn, $_POST['email']);
 	$password = mysqli_real_escape_string($conn, $_POST['password']);
 	$result = mysqli_query($conn, "SELECT * FROM users WHERE email = '" . $email. "' and pass = '" . md5($password). "'");
