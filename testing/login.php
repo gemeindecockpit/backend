@@ -38,7 +38,7 @@ if (file_exists($filename)) {
     echo "Die Datei $filename existiert nicht";
 }
 if(isset($_SESSION['user_id'])!="") {
-	header("Location: index.php");
+	header("Location: litwinow.xyz");
 	echo "is logged in";
 } else {
 	echo "is not logged in";
@@ -52,9 +52,10 @@ if (isset($_POST['login'])) {
 	if ($row = mysqli_fetch_array($result)) {
 		$_SESSION['user_id'] = $row['uid'];
 		$_SESSION['user_name'] = $row['user'];
-		header("Location: index.php");
+		header("Location: litwinow.xyz");
 	} else {
 		$error_message = "Incorrect Email or Password!!!";
+		echo "\n" . $error_message;
 	}
 }
 ?>
