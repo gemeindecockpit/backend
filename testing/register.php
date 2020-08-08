@@ -41,7 +41,7 @@
 </div>
 <?php
 //this section will be executed apon receiving a post request from the submit form
-required(__DIR__ . '/db_connect.php');
+require(__DIR__ . '/db_connect.php');
 
 $filename = __DIR__ . '/db_connect.php';
 
