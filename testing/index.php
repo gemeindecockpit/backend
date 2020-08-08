@@ -9,6 +9,7 @@
 			<li>not logged in</li>
 			<li><a href="login.php">Login</a></li>
 			<li><a href="register.php">Sign Up</a></li>
+			<li><?php echo $_SESSION['user_name']; ?></li>
 			<?php } ?>
 		</ul>
 	</div>	
