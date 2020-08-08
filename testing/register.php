@@ -41,7 +41,7 @@
 </div>
 <?php
 //this section will be executed apon receiving a post request from the submit form
-required("db_connect.php");
+required("testing/db_connect.php");
 session_start();
 if(isset($_SESSION['user_id'])) {
 	header("Location: testing/index.php");
