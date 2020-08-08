@@ -28,7 +28,15 @@
 </div>
 <?php
 session_start();
-require("db_connect.php");
+require(__DIR__ . '/db_connect.php');
+
+$filename = __DIR__ . '/db_connect.php';
+
+if (file_exists($filename)) {
+    echo "Die Datei $filename existiert";
+} else {
+    echo "Die Datei $filename existiert nicht";
+}
 if(isset($_SESSION['user_id'])!="") {
 	header("Location: index.php");
 }
