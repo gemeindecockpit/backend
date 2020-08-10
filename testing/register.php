@@ -55,6 +55,7 @@ if(isset($_SESSION['user_id'])) {
 	header("Location: index.php");
 }
 $error = false;
+echo "\nThe salt is : " . SALT;
 if (isset($_POST['signup'])) {
 	//mysqli_real_escape_string: Escapes special characters in a string for use in an SQL statement, taking into account the current charset of the connection
 	//so all the fields submited by the form are taken care of to not be abused to execute unintentional sql queries
@@ -80,7 +81,7 @@ if (isset($_POST['signup'])) {
 		$cpassword_error = "Password and Confirm Password doesn't match";
 	}
 	if (!$error) {
-		if(mysqli_query($conn, "INSERT INTO users(user, email, pass) VALUES('" . $name . "', '" . $email . "', '" . md5($password) . "')")) {
+		if(mysqli_query($conn, "INSERT INTO users(user, email, pass) VALUES('" . $name . "', '" . $email . "', '" . hash('sha256', $password . SALT) . "')")) {
 			$success_message = "Successfully Registered! <a href='testing/login.php'>Click here to Login</a>";
 		} else {
 			$error_message = "Error in registering...Please try again later!";

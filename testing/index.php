@@ -10,8 +10,8 @@
 			<li>not logged in</li>
 			<li><a href="login.php">Login</a></li>
 			<li><a href="register.php">Sign Up</a></li>
-			<li><?php echo $_SESSION['user_id']; ?></li>
 			<?php } ?>
 		</ul>
 	</div>	
 </div>	
+
