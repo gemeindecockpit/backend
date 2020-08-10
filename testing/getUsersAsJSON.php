@@ -10,6 +10,7 @@ if(isset($_SESSION['user_id'])) {
 	while($r = mysqli_fetch_assoc($sth)) {
 		$rows[] = $r;
 	}
+	$myJson = json_encode($rows);
 	echo json_encode($rows);
 } else {
 	printf("Sorry you are not logged in.");

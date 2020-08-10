@@ -16,6 +16,8 @@ function data_uri($file, $mime)
 			<li> you can only see this picture if you are logged in.</li>
 			<img src="<?php echo data_uri('/home/alx/testfiles/shrek.png','image/png'); ?>" </img>
 			<li><a href="logout.php">Log Out</a></li>
+			<li><a href="getUsersAsJSON.php">Display all users</a></li>
+			<li><a href="reset_password.php">Reset Password</a></li>
 			<?php } else { ?>
 			<li>not logged in</li>
 			<li><a href="login.php">Login</a></li>
