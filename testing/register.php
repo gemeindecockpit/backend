@@ -44,18 +44,19 @@
 require(__DIR__ . '/db_connect.php');
 
 $filename = __DIR__ . '/db_connect.php';
-
+/*
 if (file_exists($filename)) {
     echo "Die Datei $filename existiert";
 } else {
     echo "Die Datei $filename existiert nicht";
 }
+*/
 session_start();
 if(isset($_SESSION['user_id'])) {
 	header("Location: index.php");
 }
 $error = false;
-echo "\nThe salt is : " . SALT;
+
 if (isset($_POST['signup'])) {
 	//mysqli_real_escape_string: Escapes special characters in a string for use in an SQL statement, taking into account the current charset of the connection
 	//so all the fields submited by the form are taken care of to not be abused to execute unintentional sql queries
