@@ -82,9 +82,11 @@ if (isset($_POST['signup'])) {
 	}
 	if (!$error) {
 		if(mysqli_query($conn, "INSERT INTO users(user, email, pass) VALUES('" . $name . "', '" . $email . "', '" . hash('sha256', $password . SALT) . "')")) {
-			$success_message = "Successfully Registered! <a href='testing/login.php'>Click here to Login</a>";
+			$success_message = "\nSuccessfully Registered! <a href='testing/login.php'>Click here to Login</a>";
+			echo $success_message;
 		} else {
 			$error_message = "Error in registering...Please try again later!";
+			echo $error_message;
 		}
 	}
 }
