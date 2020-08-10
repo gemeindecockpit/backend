@@ -48,7 +48,6 @@ if (isset($_POST['login'])) {
 	echo "login post received";
 	$email = mysqli_real_escape_string($conn, $_POST['email']);
 	$password = mysqli_real_escape_string($conn, $_POST['password']);
-	echo "\npw is : " . hash('sha256', $password);
 	$result = mysqli_query($conn, "SELECT * FROM users WHERE email = '" . $email. "' and pass = '" . hash('sha256', $password . SALT). "'");
 	if ($row = mysqli_fetch_array($result)) {
 		$_SESSION['user_id'] = $row['uid'];

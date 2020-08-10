@@ -1,12 +1,11 @@
 <?php session_start(); 
-//creates a Data URI scheme that can be used to display files in html.
+//creates a Data URI scheme that can be used to display files in html by reading them from the local storage and encoding them as base64
 function data_uri($file, $mime) 
 {  
   $contents = file_get_contents($file);
   $base64   = base64_encode($contents); 
   return ('data:' . $mime . ';base64,' . $base64);
 }
-?>
 ?>
 <div class="container">
 	<h2>Testing the login and register script</h2>		
