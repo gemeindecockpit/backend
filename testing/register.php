@@ -80,6 +80,7 @@ if (isset($_POST['signup'])) {
 		$error = true;
 		$cpassword_error = "Password and Confirm Password doesn't match";
 	}
+	echo "error status: " . $error;
 	if (!$error) {
 		if(mysqli_query($conn, "INSERT INTO users(user, email, pass) VALUES('" . $name . "', '" . $email . "', '" . hash('sha256', $password . SALT) . "')")) {
 			$success_message = "\nSuccessfully Registered! <a href='testing/login.php'>Click here to Login</a>";
