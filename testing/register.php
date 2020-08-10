@@ -67,18 +67,22 @@ if (isset($_POST['signup'])) {
 	if (!preg_match("/^[a-zA-Z ]+$/",$name)) {
 		$error = true;
 		$uname_error = "Name must contain only alphabets and space";
+		echo "\n" . $uname_error;
 	}
 	if(!filter_var($email,FILTER_VALIDATE_EMAIL)) {
 		$error = true;
 		$email_error = "Please Enter Valid Email ID";
+		echo "\n" . $email_error;
 	}
 	if(strlen($password) < 6) {
 		$error = true;
 		$password_error = "Password must be minimum of 6 characters";
+		echo "\n" . $password_error;
 	}
 	if($password != $cpassword) {
 		$error = true;
 		$cpassword_error = "Password and Confirm Password doesn't match";
+		echo "\n" . $cpassword_error;
 	}
 	echo "error status: " . $error;
 	if (!$error) {
