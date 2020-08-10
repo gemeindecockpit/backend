@@ -45,24 +45,13 @@ if(isset($_SESSION['user_id'])) {
 	}
 	if (!$error) {
 		if(mysqli_query($conn, "UPDATE users SET pass = '" . hash('sha256', $password . SALT) .  "' WHERE uid = " . $_SESSION['user_id'])) {
-			$success_message = "\nSuccessfully Registered! <a href='testing/login.php'>Click here to Login</a>";
+			$success_message = "\nSuccessfully changed password! <a href='index.php'>Click here to go back to the main page</a>";
 			echo '<br>' . $success_message;
 		} else {
 			$error_message = "Error in registering...Please try again later!";
 			echo '<br>' . $error_message;
 		}
 	}
-	//mysqli_fetch_assoc — Fetch a result row as an associative array
-	$sth = mysqli_query($conn, "SELECT * FROM users");
-	
-	$rows = array();
-	while($r = mysqli_fetch_assoc($sth)) {
-		$rows[] = $r;
-	}
-	$myJson = json_encode($rows);
-	echo json_encode($rows);
-	
-
 } else {
 	printf("Sorry you are not logged in.");
 }
