@@ -4,6 +4,7 @@ require(__DIR__ . '/db_connect.php');
 if(isset($_SESSION['user_id'])) {
 	foreach ( $conn->query('SELECT * FROM users') as $row ) {
 		print_r($row);//echo "{$row['field']}";
+		echo '<br>';
 	}
 	//mysqli_fetch_assoc — Fetch a result row as an associative array
 	$sth = mysqli_query($conn, "SELECT * FROM users");
