@@ -51,7 +51,7 @@ class DataOperations {
 	public function insertNewUser($username, $userpassword, $email, $realname, $salt){
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 		
-		$stmt = $db->prepare('INSERT INTO user (username, userpassword) VALUES (?, ?, ?, ?, ?)');
+		$stmt = $db->prepare('INSERT INTO user (username, userpassword, email, realname, salt) VALUES (?, ?, ?, ?, ?)');
 		$errors = $db->error_list;
 		echo gettype($errors) . ' has following errors: ' . sizeof($errors);
 		foreach($errors as $temp){
