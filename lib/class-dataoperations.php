@@ -32,8 +32,9 @@ class DataOperations {
 		$stmt = $db->prepare('SELECT * FROM user WHERE username = ?');
 		$stmt->bind_param('s', $user); // 's' specifies the variable type => 'string'
 		$stmt->execute();
+		$result = $stmt->get_result();
 		$db->close();
-		return $stmt->get_result();
+		return $result;
 	}
 	
 	//returns the number of occurrences of users with the username $user as a resultset
@@ -42,8 +43,9 @@ class DataOperations {
 		$stmt = $db->prepare('SELECT COUNT(*) as counter FROM user WHERE username = ?');
 		$stmt->bind_param('s', $user); // 's' specifies the variable type => 'string'
 		$stmt->execute();
+		$result = $stmt->get_result();
 		$db->close();
-		return $stmt->get_result();
+		return $result;
 	}
 	//returns the error code of the insert querry. 0 if there was no error
 	public function insertNewUser($username, $userpassword){
@@ -52,8 +54,9 @@ class DataOperations {
 		$stmt->bind_param(':name', $username);
 		$stmt->bind_param(':pass', $userpassword);
 		$stmt->execute();
+		$error = $stmt->errno;
 		$db->close();
-		return $stmt->errno;
+		return $error;
 	}
 
 
