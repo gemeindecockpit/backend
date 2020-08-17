@@ -59,6 +59,7 @@ class UserData {
     public function register($name, $pass)
     {
 		$dataOp = new DataOperations();
+		echo '<br> type: ' . getType($dataOp->getUserCount($name));
 		$result = $dataOp->getUserCount($name);
   		$row = $result->fetch_assoc();
 
