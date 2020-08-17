@@ -50,21 +50,15 @@ class DataOperations {
 	//returns the error code of the insert querry. 0 if there was no error
 	public function insertNewUser($username, $userpassword, $email, $realname, $salt){
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-		if (mysqli_connect_errno()) {
-			echo "Connect failed: %s\n" . mysqli_connect_error();
-			exit();
-		}
-		$stmt = $db->prepare('INSERT INTO user (username, userpassword) VALUES (:name, :pass, :email, :realname, :salt)');
+		
+		$stmt = $db->prepare('INSERT INTO user (username, userpassword) VALUES (?, ?, ?, ?, ?)');
 		$errors = $db->error_list;
 		echo gettype($errors) . ' has following errors: ' . sizeof($errors);
 		foreach($errors as $temp){
 			echo '<br>'.$temp;
 		}
-		$stmt->bind_param(':name', $username);
-		$stmt->bind_param(':pass', $userpassword);
-		$stmt->bind_param(':email', $email);
-		$stmt->bind_param(':realname', $realname);
-		$stmt->bind_param(':salt', $salt);
+		$stmt->bind_param('sssss', $username, $userpassword, $email, $realname, $salt);
+
 		$stmt->execute();
 		$error = $stmt->errno;
 		$db->close();
