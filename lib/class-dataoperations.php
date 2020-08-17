@@ -26,6 +26,15 @@ class DataOperations {
 
         return;
     }
+	//returns a resultset containing the userdata for $user
+	public static function get_user($user) {
+		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$stmt = $db->prepare('SELECT * FROM user WHERE username = ?');
+		$stmt->bind_param('s', $user); // 's' specifies the variable type => 'string'
+		$stmt->execute();
+		$db->close();
+		return $stmt->get_result();
+	}
 
 
 }

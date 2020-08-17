@@ -34,15 +34,13 @@ class UserData {
     }
 
 
-	public function login()
+	public function login($username, $password)
     {
-    	$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-        $query = 'SELECT * FROM user WHERE username= "'.$_POST['name'].'"';
-  		$result = $db->query($query);
+		
+  		$result = DataOperations::get_user($username);
   		$row = $result->fetch_assoc();
-  		$db->close();
 
-  		$password = hash('sha512', $_POST['pass'].$this->salt);
+  		$password = hash('sha512', $password . $this->salt);
 
 		if($password == $row['userpassword'])
 		{

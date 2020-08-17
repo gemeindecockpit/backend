@@ -18,12 +18,18 @@ $my_method = $_SERVER['REQUEST_METHOD'];
 
 session_start();
 
+
+
 $uri_info = new URISplit();
 $user = new UserData();
 $data_operation = new DataOperations();
 $data_out = new DataOutput();
 
-
+# destroy session after logout
+if($uri_info->path_vars[0] == 'login') 
+{
+	session_destroy();
+}
 
 # destroy session after logout
 if($uri_info->path_vars[0] == 'logout') 
