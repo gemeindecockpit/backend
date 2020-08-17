@@ -82,6 +82,20 @@ class UserData {
     }
 
 
+    public function change_password()
+    {
+        $userid = $_SESSION['userid'];
+        $password = hash('sha512', $_POST['pass'].$this->salt);
+
+        $db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+        $query = 'UPDATE user SET userpassword = "'.$password.'" WHERE id = "'.$userid.'"';
+        $db->query($query);
+        $db->close();
+
+        return;
+    }
+
+
     public function get_by_id($id)
     {
         #returns userdata by an given userid
@@ -95,7 +109,7 @@ class UserData {
     	return $user_data;
     }
 
-}
+} 
 
 
 ?>
