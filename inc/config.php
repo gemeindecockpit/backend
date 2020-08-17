@@ -8,10 +8,10 @@
 define('DEBUG_MODE', false);
 
 # Access to MySQL Database
-define('DB_HOST', 'localhost');
+define('DB_HOST', '93.177.67.255');
 define('DB_NAME', 'gemeindecockpit');
-define('DB_USER', 'user');
-define('DB_USER_PASSWORD', 'password');
+define('DB_USER', 'alx');
+define('DB_USER_PASSWORD', 'testing');
 
 # SALT value
 define('SALT', 'wevsvirus');
