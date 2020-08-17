@@ -51,6 +51,10 @@ class DataOperations {
 	public function insertNewUser($username, $userpassword){
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 		$stmt = $db->prepare('INSERT INTO user (username, userpassword) VALUES (:name, :pass)');
+		$errors = $db->error_list;
+		foreach($errors as $temp){
+			echo '<br>'.$temp;
+		}
 		$stmt->bind_param(':name', $username);
 		$stmt->bind_param(':pass', $userpassword);
 		$stmt->execute();
