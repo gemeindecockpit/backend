@@ -82,9 +82,11 @@ else
 	{
 		if($_POST['submit'] == "login")
 		{
-			if($user->login())
+			if($user->login()){
 				
-			else
+			} else{
+				
+			}
 				
 		}
 		else
