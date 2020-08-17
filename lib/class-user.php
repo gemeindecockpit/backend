@@ -61,7 +61,9 @@ class UserData {
 		$dataOp = new DataOperations();
 		$result = $dataOp->getUserCount($name);
   		$row = $result->fetch_assoc();
-		echo '<br>' . $row;
+		foreach($row as $temp){
+			echo '<br>'.$temp;
+		}
 
   		if($row['counter'] == 0)
   		{
