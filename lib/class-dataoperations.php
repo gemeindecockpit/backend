@@ -48,19 +48,11 @@ class DataOperations {
 		return $result;
 	}
 	//returns the error code of the insert querry. 0 if there was no error
+	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
 	public function insertNewUser($username, $userpassword, $email, $realname, $salt){
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-		echo '<br>'.$username;
-		echo '<br>'.$userpassword;
-		echo '<br>'.$email;
-		echo '<br>'.$realname;
-		echo '<br>'.$salt;
 		$stmt = $db->prepare('INSERT INTO user (username, userpassword, email, realname, salt) VALUES (?, ?, ?, ?, ?)');
-		$errors = $db->error_list;
-		echo gettype($errors) . ' has following errors: ' . sizeof($errors);
-		foreach($errors as $temp){
-			echo '<br>'.$temp;
-		}
+		//$errors = $db->error_list;
 		$stmt->bind_param('sssss', $username, $userpassword, $email, $realname, $salt);
 
 		$stmt->execute();

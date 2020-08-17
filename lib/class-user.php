@@ -56,6 +56,7 @@ class UserData {
 
 	//registers a new user, returns true if the user was generated succesfully
 	//user with the same username are not possible
+	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
     public function register($name, $pass, $email, $realname, $salt)
     {
 		$dataOp = new DataOperations();

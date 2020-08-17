@@ -28,7 +28,9 @@ class URISplit {
     public function path()
     {
         $path_string = explode('?', $this->uri);
-        $this->path_vars = explode('/', substr($path_string[0], 1));
+		if(isset($path_string[0])){
+			$this->path_vars = explode('/', substr($path_string[0], 1));
+		}
 
         return;
     }
@@ -37,15 +39,15 @@ class URISplit {
     public function query()
     {
         $query_string = explode('?', $this->uri);
+		if(sizeof($query_string) > 1){
+			$vars = urldecode($query_string[1]);
 
-        $vars = urldecode($query_string[1]);
-
-        foreach (explode('&', $vars) as $var) 
-            {
-                $t = explode('=', $var);
-                $this->query_vars[$t[0]] = $t[1];
-            }
-
+			foreach (explode('&', $vars) as $var) 
+				{
+					$t = explode('=', $var);
+					$this->query_vars[$t[0]] = $t[1];
+				}
+		}
         return;
     }
 
