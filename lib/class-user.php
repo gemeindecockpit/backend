@@ -68,7 +68,7 @@ class UserData {
   		if($row['counter'] == 0)
   		{
   			$password = hash('sha512', $pass . $this->salt);
-			echo '<br> yes is i her'
+			echo '<br> yes is i her';
   			$dataOp->insertNewUser($name, $password, $email, $realname, $salt );
 
     		return true;
