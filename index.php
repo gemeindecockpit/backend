@@ -1,27 +1,3 @@
-<?php
-
-#-- config --
-require_once("inc/config.php");
-
-#-- classes --
-require_once("lib/class-urisplit.php");
-require_once("lib/class-user.php");
-require_once("lib/class-dataoutput.php");
-require_once("lib/class-dataoperations.php");
-
-
-#Informations about servers and methods
-$my_hostname = $_SERVER['HTTP_HOST'];
-$my_uri = $_SERVER['REQUEST_URI'];
-$my_method = $_SERVER['REQUEST_METHOD'];
-
-
-session_start();
-if (isset($_SESSION['userid'])){
-	echo '<br><span> your are logged in</span>';
-} else {
-	echo '<br><span> your are not logged in</span>';
-	echo '
 	<div class="container">	
 	<div class="row">
 		<div class="col-md-4 col-md-offset-4 well">
@@ -50,7 +26,29 @@ if (isset($_SESSION['userid'])){
 		</div>
 	</div>	
 </div>
-';
+<?php
+
+#-- config --
+require_once("inc/config.php");
+
+#-- classes --
+require_once("lib/class-urisplit.php");
+require_once("lib/class-user.php");
+require_once("lib/class-dataoutput.php");
+require_once("lib/class-dataoperations.php");
+
+
+#Informations about servers and methods
+$my_hostname = $_SERVER['HTTP_HOST'];
+$my_uri = $_SERVER['REQUEST_URI'];
+$my_method = $_SERVER['REQUEST_METHOD'];
+
+
+session_start();
+if (isset($_SESSION['userid'])){
+	echo '<br><span> your are logged in</span>';
+} else {
+	echo '<br><span> your are not logged in</span>';
 }
 
 
