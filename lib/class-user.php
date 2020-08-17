@@ -66,7 +66,7 @@ class UserData {
   		{
   			$password = hash('sha512', $pass . $this->salt);
 
-  			DataOperations::insertNewUser($name, $password )
+  			DataOperations::insertNewUser($name, $password );
 
     		return true;
   		}
