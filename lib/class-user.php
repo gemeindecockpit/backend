@@ -56,7 +56,7 @@ class UserData {
 
 	//registers a new user, returns true if the user was generated succesfully
 	//user with the same username are not possible
-    public function register($name, $pass)
+    public function register($name, $pass, $email, $realname, $salt)
     {
 		$dataOp = new DataOperations();
 		echo '<br> type: ' . getType($dataOp->getUserCount($name));
@@ -68,7 +68,7 @@ class UserData {
   		{
   			$password = hash('sha512', $pass . $this->salt);
 
-  			$dataOp->insertNewUser($name, $password );
+  			$dataOp->insertNewUser($name, $password, $email, $realname, $salt );
 
     		return true;
   		}

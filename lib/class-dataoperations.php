@@ -48,16 +48,20 @@ class DataOperations {
 		return $result;
 	}
 	//returns the error code of the insert querry. 0 if there was no error
-	public function insertNewUser($username, $userpassword){
+	public function insertNewUser($username, $userpassword, $email, $realname, $salt){
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-		$stmt = $db->prepare('INSERT INTO user (username, userpassword) VALUES (:name, :pass)');
+		$stmt = $db->prepare('INSERT INTO user (username, userpassword) VALUES (:name, :pass, :email, :realname, :salt)');
 		$errors = $db->error_list;
+		echo $stmt->debug
 		echo gettype($errors) . ' has following errors: ' . sizeof($errors);
 		foreach($errors as $temp){
 			echo '<br>'.$temp;
 		}
 		$stmt->bind_param(':name', $username);
 		$stmt->bind_param(':pass', $userpassword);
+		$stmt->bind_param(':email', $email);
+		$stmt->bind_param(':realname', $realname);
+		$stmt->bind_param(':salt', $salt);
 		$stmt->execute();
 		$error = $stmt->errno;
 		$db->close();
