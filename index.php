@@ -82,6 +82,10 @@ else
 		}
 		else
 		{
+				$result = $data_operation->get_user('test');
+				if ($row = mysqli_fetch_array($result)) {
+					echo $row['email'];
+				}
 			//Debug: create a user to test the login and register function
 			echo '<br><span> your are logged in but a User with the username : testus and the pw: testtest has been created for you</span>' . $user->register('testus', 'testtest', 'test@email.com', 'realname', 'wiesoisthiereinsaltinderdatenbanklmao');	
 		}
