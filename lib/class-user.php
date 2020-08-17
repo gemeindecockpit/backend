@@ -42,9 +42,9 @@ class UserData {
   		$row = $result->fetch_assoc();
   		$db->close();
 
-  		$pass = hash('sha512', $_POST['pass'].$this->salt);
+  		$password = hash('sha512', $_POST['pass'].$this->salt);
 
-		if($pass == $row['userpassword'])
+		if($password == $row['userpassword'])
 		{
 			$_SESSION['userid'] = $row['id'];
 			$_SESSION['username'] = $row['username'];
@@ -67,7 +67,7 @@ class UserData {
 
   		if($row['counter'] == 0 && !empty($_POST['pass']))
   		{
-  			$pass = hash('sha512', $_POST['pass'].$this->salt);
+  			$password = hash('sha512', $_POST['pass'].$this->salt);
 
   			$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
         	$query = 'INSERT INTO user (username, userpassword) VALUES ("'.$_POST['name'].'","'.$pass.'")';
