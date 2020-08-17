@@ -36,8 +36,8 @@ class UserData {
 
 	public function login($username, $password)
     {
-		
-  		$result = DataOperations::get_user($username);
+		$dataOp = new DataOperations();
+  		$result = $dataOp->get_user($username);
   		$row = $result->fetch_assoc();
 
   		$password = hash('sha512', $password . $this->salt);
@@ -58,7 +58,8 @@ class UserData {
 	//user with the same username are not possible
     public function register($name, $pass)
     {
-		$result = DataOperations::getUserCount($name);
+		$dataOp = new DataOperations();
+		$result = dataOp->getUserCount($name);
   		$row = $result->fetch_assoc();
 
 
@@ -66,7 +67,7 @@ class UserData {
   		{
   			$password = hash('sha512', $pass . $this->salt);
 
-  			DataOperations::insertNewUser($name, $password );
+  			$dataOp->insertNewUser($name, $password );
 
     		return true;
   		}
