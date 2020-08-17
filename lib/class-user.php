@@ -40,7 +40,7 @@ class UserData {
   		$result = $dataOp->get_user($username);
   		$row = $result->fetch_assoc();
 
-  		$password = hash('sha512', $password . $this->salt);
+  		$password = hash('sha256', $password . $this->salt);
 
 		if($password == $row['userpassword'])
 		{
@@ -64,7 +64,7 @@ class UserData {
 
   		if($row['counter'] == 0)
   		{
-  			$password = hash('sha512', $pass . $this->salt);
+  			$password = hash('sha256', $pass . $this->salt);
   			$dataOp->insertNewUser($name, $password, $email, $realname, $salt );
 
     		return true;
@@ -78,7 +78,7 @@ class UserData {
     public function change_password()
     {
         $userid = $_SESSION['userid'];
-        $password = hash('sha512', $_POST['pass'].$this->salt);
+        $password = hash('sha256', $_POST['pass'].$this->salt);
 
         $db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
         $query = 'UPDATE user SET userpassword = "'.$password.'" WHERE id = "'.$userid.'"';
