@@ -61,14 +61,10 @@ class UserData {
 		$dataOp = new DataOperations();
 		$result = $dataOp->getUserCount($name);
   		$row = $result->fetch_assoc();
-		foreach($row as $temp){
-			echo '<br>'.$temp;
-		}
 
   		if($row['counter'] == 0)
   		{
   			$password = hash('sha512', $pass . $this->salt);
-			echo '<br> yes is i her';
   			$dataOp->insertNewUser($name, $password, $email, $realname, $salt );
 
     		return true;
