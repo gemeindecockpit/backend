@@ -20,11 +20,6 @@
 			<span class="text-danger"><?php if (isset($error_message)) { echo $error_message; } ?></span>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-md-4 col-md-offset-4 text-center">	
-		New User? <a href="register.php">Sign Up Here</a>
-		</div>
-	</div>	
 </div>
 <?php
 
@@ -45,11 +40,7 @@ $my_method = $_SERVER['REQUEST_METHOD'];
 
 
 session_start();
-if (isset($_SESSION['userid'])){
-	echo '<br><span> your are logged in</span>';
-} else {
-	echo '<br><span> your are not logged in</span>';
-}
+
 
 
 $uri_info = new URISplit();
@@ -74,7 +65,7 @@ else
 {
 	if(isset($_SESSION['userid']))
 	{
-		
+		echo '<br><span> your are logged in</span>';
 		
 	}
 
@@ -91,7 +82,8 @@ else
 		}
 		else
 		{
-				
+			//Debug: create a user to test the login and register function
+			echo '<br><span> your are logged in but a User with the username : testus and the pw: testtest has been created for you</span>' . $user->register('testus', 'testtest');	
 		}
 	}
 }
