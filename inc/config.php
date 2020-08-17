@@ -13,7 +13,10 @@ define('DB_NAME', 'gemeindecockpit');
 define('DB_USER', 'user');
 define('DB_USER_PASSWORD', 'password');
 
-# More defines here
+# SALT value
+define('SALT', 'wevsvirus');
+
+# more defines here
 
 ?>
 

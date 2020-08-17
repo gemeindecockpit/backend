@@ -11,7 +11,7 @@ require_once("lib/class-dataoberations.php");
 require_once("lib/class-dataoutput.php");
 
 
-#Informations about Servers and methods
+#Informations about servers and methods
 $my_hostname = $_SERVER['HTTP_HOST'];
 $my_uri = $_SERVER['REQUEST_URI'];
 $my_method = $_SERVER['REQUEST_METHOD'];

@@ -11,6 +11,8 @@ class UserData {
     protected $db_user;
     protected $db_user_password;
 
+    protected $salt;
+
 
 
 	public function __construct() 
@@ -23,6 +25,9 @@ class UserData {
             $this->db_user = DB_USER;
         if(defined('DB_USER_PASSWORD'))
             $this->db_user_password = DB_USER_PASSWORD;
+
+        if(defined('SALT'))
+            $this->salt = SALT;
         
 
         return;
@@ -37,7 +42,7 @@ class UserData {
   		$row = $result->fetch_assoc();
   		$db->close();
 
-  		$pass = hash('sha512', $_POST['pass']);
+  		$pass = hash('sha512', $_POST['pass'].$this->salt);
 
 		if($pass == $row['userpassword'])
 		{
@@ -62,9 +67,9 @@ class UserData {
 
   		if($row['counter'] == 0 && !empty($_POST['pass']))
   		{
-  			$pass = hash('sha512', $_POST['pass']);
+  			$pass = hash('sha512', $_POST['pass'].$this->salt);
 
-  			$db = new mysqli($this->config['db_host'], $this->config['db_user'], $this->config['db_pass'], $this->config['db_name']);
+  			$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
         	$query = 'INSERT INTO user (username, userpassword) VALUES ("'.$_POST['name'].'","'.$pass.'")';
   			$db->query($query);
   			$db->close();
