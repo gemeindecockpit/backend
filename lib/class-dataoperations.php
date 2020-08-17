@@ -53,7 +53,6 @@ class DataOperations {
 		$stmt = $db->prepare('INSERT INTO user (username, userpassword) VALUES (:name, :pass, :email, :realname, :salt)');
 		$errors = $db->error_list;
 		echo $stmt->debug
-		echo gettype($errors) . ' has following errors: ' . sizeof($errors);
 		foreach($errors as $temp){
 			echo '<br>'.$temp;
 		}
