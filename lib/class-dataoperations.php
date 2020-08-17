@@ -52,7 +52,7 @@ class DataOperations {
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 		$stmt = $db->prepare('INSERT INTO user (username, userpassword) VALUES (:name, :pass)');
 		$errors = $db->error_list;
-		echo gettype($errors) . ' has following errors: ';
+		echo gettype($errors) . ' has following errors: ' . sizeof($errors);
 		foreach($errors as $temp){
 			echo '<br>'.$temp;
 		}
