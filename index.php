@@ -7,7 +7,7 @@ require_once("inc/config.php");
 require_once("lib/class-urisplit.php");
 require_once("lib/class-user.php");
 require_once("lib/class-dataoutput.php");
-require_once("lib/class-dataoberations.php");
+require_once("lib/class-dataoperations.php");
 require_once("lib/class-dataoutput.php");
 
 
