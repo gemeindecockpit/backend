@@ -35,6 +35,26 @@ class DataOperations {
 		$db->close();
 		return $stmt->get_result();
 	}
+	
+	//returns the number of occurrences of users with the username $user as a resultset
+	public static function getUserCount($user){		
+		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$stmt = $db->prepare('SELECT COUNT(*) as counter FROM user WHERE username = ?');
+		$stmt->bind_param('s', $user); // 's' specifies the variable type => 'string'
+		$stmt->execute();
+		$db->close();
+		return $stmt->get_result();
+	}
+	//returns the error code of the insert querry. 0 if there was no error
+	public static function insertNewUser($username, $userpassword){
+		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$stmt = $db->prepare('INSERT INTO user (username, userpassword) VALUES (:name, :pass)');
+		$stmt->bind_param(':name', $username);
+		$stmt->bind_param(':pass', $userpassword);
+		$stmt->execute();
+		$db->close();
+		return $stmt->errno;
+	}
 
 
 }

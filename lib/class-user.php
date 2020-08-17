@@ -54,23 +54,19 @@ class UserData {
     		return false;
     }
 
-
-    public function register()
+	//registers a new user, returns true if the user was generated succesfully
+	//user with the same username are not possible
+    public function register($name, $pass)
     {
-    	$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-        $query = 'SELECT COUNT(*) as counter FROM user WHERE username= "'.$_POST['name'].'"';
-  		$result = $db->query($query);
+		$result = DataOperations::getUserCount($name);
   		$row = $result->fetch_assoc();
-  		$db->close();
 
-  		if($row['counter'] == 0 && !empty($_POST['pass']))
+
+  		if($row['counter'] == 0)
   		{
-  			$password = hash('sha512', $_POST['pass'].$this->salt);
+  			$password = hash('sha512', $pass . $this->salt);
 
-  			$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-        	$query = 'INSERT INTO user (username, userpassword) VALUES ("'.$_POST['name'].'","'.$pass.'")';
-  			$db->query($query);
-  			$db->close();
+  			DataOperations::insertNewUser($name, $password )
 
     		return true;
   		}
