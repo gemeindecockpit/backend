@@ -57,7 +57,7 @@ $user = new UserData();
 $data_operation = new DataOperations();
 $data_out = new DataOutput();
 
-# destroy session after logout
+# TODO login aufrufen
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login') 
 {
 	session_destroy();
@@ -80,7 +80,7 @@ else
 
 	else
 	{
-		if($_POST['submit'] == "login")
+		if(isset($_POST['submit']) && $_POST['submit'] == "login")
 		{
 			if($user->login()){
 				
