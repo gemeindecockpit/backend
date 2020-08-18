@@ -34,7 +34,7 @@ define('DUMMY_FEUERWEHR', array('id' => 1,
 	 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/',
 				'fields' => array('Einsatzkraefte' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/einsatzkraefte/',
 								'Autos broom broom' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/autos%20broom%20broom'))));
-								
+
 define('DUMMY_FEUERWEHR2', array('id' => 2,
 	 'name' => 'Wir machen Nass',
 	 'description' => 'heh',
@@ -49,7 +49,7 @@ define('DUMMY_FEUERWEHR_FELD1', array('id' => 1,
 	 'red_value' => 3.0,
 	 'relational_flag' => true,
 	 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/einsatzkraefte/')));
- 
+
  define('DUMMY_FEUERWEHR_FELD2', array('id' => 2,
 		 'name' => 'Autos broom broom',
 		 'max_value' => 'null',
@@ -57,7 +57,7 @@ define('DUMMY_FEUERWEHR_FELD1', array('id' => 1,
 		 'red_value' => 3.0,
 		 'relational_flag' => false,
 		 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/autos%20broom%20broom/')));
-		 
+
 define('EINSATZKRAEFTE_2020_08_15', array('field_id' => 1,
 		 'field_name' => 'einsatkraefte',
 		 'user_id' => '1',
@@ -74,6 +74,17 @@ define('EINSATZKRAEFTE_2020_08_16', array('field_id' => 1,
 		 'date' => '12-12-2020',
 		 'links' => array('self' => 'litwinow.xyz/data/38000/feuerwehr/feuerwerk/einsatzkraefte/2020/12/12/')));
 
+define('ALLEN_ORGANISATION', array(
+  'links' => array(
+      'self' => 'litwinow.xyz/config/',
+      '38300' => array(
+        'feuerwehr' => array(
+          'feuerwerk' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/',
+          'wir machen nass' => 'litwinow.xyz/config/38000/feuerwehr/wir%20machen%20nass/'
+        )
+      )
+    )
+  )
+);
+
 ?>
-
-
