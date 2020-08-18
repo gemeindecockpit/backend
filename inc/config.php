@@ -26,8 +26,6 @@ define('SALT', 'wevsvirus');
 //Debugging
 $object = (object) ['id' => 1, 'name' => 'feuerwerk', 'description' => 'testetst', 'type' => 'feuerwehr', 'contact' => 'feuer@wehr.com'];
 $jsonDummy = json_encode($object);
-echo '<br>' . $jsonDummy;
-config/38000/feuerwehr/feuerwerk/
 ?>
 
 
