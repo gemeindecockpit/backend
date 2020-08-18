@@ -74,7 +74,6 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 					echo 'Computer sagt nein';
 				}
 
-			}
 	} else {
 		header('Content-type: application/json');
 		$temp = new DataOutput();
