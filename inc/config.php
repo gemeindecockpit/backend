@@ -24,7 +24,7 @@ define('SALT', 'wevsvirus');
 
 # more defines here
 //Debugging
-define('DUMMY_FEUERWEHR', array = ('id' => 1, 'name' => 'feuerwerk', 'description' => 'testetst', 'type' => 'feuerwehr', 'contact' => 'feuer@wehr.com'));
+define('DUMMY_FEUERWEHR', array('id' => 1, 'name' => 'feuerwerk', 'description' => 'testetst', 'type' => 'feuerwehr', 'contact' => 'feuer@wehr.com'));
 ?>
 
 
