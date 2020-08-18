@@ -40,16 +40,16 @@ define('DUMMY_FEUERWEHR_FELD1', array('id' => 1,
 	 'max_value' => 5.0,
 	 'yellow_value' => 4.0,
 	 'red_value' => 3.0,
-	 'relational_flag' => true),
-	 	 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/einsatzkraefte/')));
+	 'relational_flag' => true,
+	 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/einsatzkraefte/')));
  
  define('DUMMY_FEUERWEHR_FELD2', array('id' => 2,
 		 'name' => 'Autos broom broom',
 		 'max_value' => 'null',
 		 'yellow_value' => 4.0,
 		 'red_value' => 3.0,
-		 'relational_flag' => false)
-	 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/autos%20broom%20broom/')));
+		 'relational_flag' => false,
+		 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/autos%20broom%20broom/')));
 ?>
 
 
