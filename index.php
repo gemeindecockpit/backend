@@ -53,7 +53,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' &&
 } else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && 
 	isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == '38000' && 
 	isset($uri_info->path_vars[2]) && $uri_info->path_vars[2] == 'feuerwehr' &&
-	isset($uri_info->path_vars[3]) && $uri_info->path_vars[3] == 'feuerwerk' &&) {
+	isset($uri_info->path_vars[3]) && $uri_info->path_vars[3] == 'feuerwerk') {
 	header('Content-type: application/json');
 	$temp = new DataOutput();
 	echo $temp->output_as_json(DUMMY_FEUERWEHR);
