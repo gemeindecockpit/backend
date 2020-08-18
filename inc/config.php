@@ -50,6 +50,23 @@ define('DUMMY_FEUERWEHR_FELD1', array('id' => 1,
 		 'red_value' => 3.0,
 		 'relational_flag' => false,
 		 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/autos%20broom%20broom/')));
+		 
+define('EINSATZKRAEFTE_2020_08_15', array('field_id' => 1,
+		 'field_name' => 'einsatkraefte',
+		 'user_id' => '1',
+		 'username' => 'testus',
+		 'value' => '3',
+		 'date' => '11-12-2020',
+		 'links' => array('self' => 'litwinow.xyz/data/38000/feuerwehr/feuerwerk/einsatzkraefte/2020/12/11/')));
+
+define('EINSATZKRAEFTE_2020_08_16', array('field_id' => 1,
+		 'field_name' => 'einsatkraefte',
+		 'user_id' => '1',
+		 'username' => 'testus',
+		 'value' => '3',
+		 'date' => '12-12-2020',
+		 'links' => array('self' => 'litwinow.xyz/data/38000/feuerwehr/feuerwerk/einsatzkraefte/2020/12/12/')));
+
 ?>
 
 
