@@ -34,6 +34,13 @@ define('DUMMY_FEUERWEHR', array('id' => 1,
 	 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/',
 				'fields' => array('Einsatzkraefte' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/einsatzkraefte/',
 								'Autos broom broom' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/autos%20broom%20broom'))));
+								
+define('DUMMY_FEUERWEHR2', array('id' => 2,
+	 'name' => 'Wir machen Nass',
+	 'description' => 'heh',
+	 'type' => 'feuerwehr',
+	 'contact' => 'feuer@nass.com',
+	 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/wir%20machen%20nass/')));
 
 define('DUMMY_FEUERWEHR_FELD1', array('id' => 1,
 	 'name' => 'Einsatzkraefte',
