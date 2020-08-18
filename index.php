@@ -40,7 +40,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout')
 */
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 	config_call($uri_info,$data_out);
-} else if($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data') {
+} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data') {
 	data_call($uri_info,$data_out);
 }	else {
 
