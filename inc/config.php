@@ -30,7 +30,7 @@ define('DUMMY_FEUERWEHR', array('id' => 1,
 	 'name' => 'feuerwerk',
 	 'description' => 'testetst',
 	 'type' => 'feuerwehr',
-	 'contact' => 'feuer@wehr.com'
+	 'contact' => 'feuer@wehr.com',
 	 'links' => array('self' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/',
 				'fields' => array('Einsatzkraefte' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/einsatzkraefte/',
 								'Autos broom broom' => 'litwinow.xyz/config/38000/feuerwehr/feuerwerk/autos%20broom%20broom'))));
