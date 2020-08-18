@@ -16,7 +16,7 @@ define('NUTS0', 'deutschland');
 define('NUTS1', 'niedersachsen');
 define('NUTS2', 'braunschweig');
 define('NUTS3', 'braunschweig');
-
+define('DUMMY_JSON', $jsonDummy);
 
 
 # SALT value
