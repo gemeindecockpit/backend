@@ -61,7 +61,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' &&
 	
 	
 	
-}
+}	else {
 
 
 	if(isset($_SESSION['userid']))
@@ -87,7 +87,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' &&
 			echo '<br><span> you are not logged in but a User with the username : testus and the pw: testtest has been created for you</span>' . $user->register('testus', 'testtest', 'test@email.com', 'realname', 'wiesoisthiereinsalt');	
 		}
 	}
-
+}
 
 
 ?>
