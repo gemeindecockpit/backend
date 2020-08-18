@@ -25,6 +25,18 @@ define('SALT', 'wevsvirus');
 # more defines here
 //Debugging
 define('DUMMY_FEUERWEHR', array('id' => 1, 'name' => 'feuerwerk', 'description' => 'testetst', 'type' => 'feuerwehr', 'contact' => 'feuer@wehr.com'));
+define('DUMMY_FEUERWEHR_FELD1', array('id' => 1,
+ 'name' => 'Einsatzkräfte',
+ 'max_value' => 5.0,
+ 'yellow_value' => 4.0,
+ 'red_value' => 3.0,
+ 'relational_flag' => true));
+ define('DUMMY_FEUERWEHR_FELD2', array('id' => 2,
+ 'name' => 'Autos broom broom',
+ 'max_value' => 'null',
+ 'yellow_value' => 4.0,
+ 'red_value' => 3.0,
+ 'relational_flag' => false));
 ?>
 
 

@@ -38,16 +38,32 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout')
 	session_destroy();
 }
 */
-
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && 
 	isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == '38000' && 
 	isset($uri_info->path_vars[2]) && $uri_info->path_vars[2] == 'feuerwehr' &&
-	isset($uri_info->path_vars[3]) && $uri_info->path_vars[3] == 'feuerwerk') 
+	isset($uri_info->path_vars[3]) && $uri_info->path_vars[3] == 'feuerwerk' &&
+	isset($uri_info->path_vars[4]) && $uri_info->path_vars[4] == 'einsatzkraefte') 
 {
 	header('Content-type: application/json');
 	$temp = new DataOutput();
+	echo $temp->output_as_json(DUMMY_FEUERWEHR_FELD1);
+	
+	
+	
+} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && 
+	isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == '38000' && 
+	isset($uri_info->path_vars[2]) && $uri_info->path_vars[2] == 'feuerwehr' &&
+	isset($uri_info->path_vars[3]) && $uri_info->path_vars[3] == 'feuerwerk' &&) {
+	header('Content-type: application/json');
+	$temp = new DataOutput();
 	echo $temp->output_as_json(DUMMY_FEUERWEHR);
-} else {
+	
+	
+	
+	
+}
+
+
 	if(isset($_SESSION['userid']))
 	{
 		echo '<br><span> your are logged in</span>';
@@ -71,7 +87,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' &&
 			echo '<br><span> you are not logged in but a User with the username : testus and the pw: testtest has been created for you</span>' . $user->register('testus', 'testtest', 'test@email.com', 'realname', 'wiesoisthiereinsalt');	
 		}
 	}
-}
+
 
 
 ?>
