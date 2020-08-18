@@ -12,6 +12,10 @@ define('DB_HOST', 'localhost');
 define('DB_NAME', 'gemeindecockpit');
 define('DB_USER', 'alx');
 define('DB_USER_PASSWORD', 'testing');
+define('NUTS0', 'deutschland');
+define('NUTS1', 'niedersachsen');
+define('NUTS2', 'braunschweig');
+define('NUTS3', 'braunschweig');
 
 # SALT value
 define('SALT', 'wevsvirus');
