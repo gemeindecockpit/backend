@@ -16,7 +16,7 @@ define('NUTS0', 'deutschland');
 define('NUTS1', 'niedersachsen');
 define('NUTS2', 'braunschweig');
 define('NUTS3', 'braunschweig');
-define('DUMMY_JSON', $jsonDummy);
+
 
 
 # SALT value
@@ -24,8 +24,7 @@ define('SALT', 'wevsvirus');
 
 # more defines here
 //Debugging
-$object = (object) ['id' => 1, 'name' => 'feuerwerk', 'description' => 'testetst', 'type' => 'feuerwehr', 'contact' => 'feuer@wehr.com'];
-$jsonDummy = json_encode($object);
+define('DUMMY_FEUERWEHR', array = ('id' => 1, 'name' => 'feuerwerk', 'description' => 'testetst', 'type' => 'feuerwehr', 'contact' => 'feuer@wehr.com'));
 ?>
 
 

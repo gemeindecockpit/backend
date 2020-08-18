@@ -45,7 +45,8 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' &&
 	isset($uri_info->path_vars[3]) && $uri_info->path_vars[3] == 'feuerwerk') 
 {
 	header('Content-type: application/json');
-	echo DUMMY_JSON;
+	$temp = new DataOutput();
+	echo $temp->output_as_json(DUMMY_FEUERWEHR);
 } else {
 	if(isset($_SESSION['userid']))
 	{
