@@ -16,19 +16,19 @@ define('NUTS0', 'deutschland');
 define('NUTS1', 'niedersachsen');
 define('NUTS2', 'braunschweig');
 define('NUTS3', 'braunschweig');
-define('DOMAIN', 'litwinow.xyz/');
+define('DOMAIN', 'litwinow.xyz' );
 
-define('URI_CONFIG', DOMAIN . 'config/');
+define('URI_CONFIG', DOMAIN . '/config' );
 
-define('URI_WF_PLZ', URI_CONFIG . '38300/');
+define('URI_WF_PLZ', URI_CONFIG . '/38300' );
 
-define('URI_WF_FEUERWEHREN', URI_WF_PLZ . 'feuerwehr/');
+define('URI_WF_FEUERWEHREN', URI_WF_PLZ . '/feuerwehr' );
 
-define('URI_WF_FEUERWEHR', URI_WF_FEUERWEHREN . 'WF%20Feuerwehr/');
-define('URI_FREIWILLIGE_FEUERWEHR', URI_WF_FEUERWEHREN . 'Freiwillige%20Feuerwehr/');
+define('URI_WF_FEUERWEHR', URI_WF_FEUERWEHREN . '/WF%20Feuerwehr' );
+define('URI_FREIWILLIGE_FEUERWEHR', URI_WF_FEUERWEHREN . '/Freiwillige%20Feuerwehr' );
 
-define('URI_EINSATZKRAEFTE', URI_WF_FEUERWEHR . 'einsatkraefte/');
-define('URI_FAHRZEUGE', URI_WF_FEUERWEHR . 'fahrzeuge/');
+define('URI_EINSATZKRAEFTE', URI_WF_FEUERWEHR . '/einsatzkraefte' );
+define('URI_FAHRZEUGE', URI_WF_FEUERWEHR . '/fahrzeuge' );
 
 
 
@@ -60,8 +60,8 @@ define('NAME', array(
 define('ALLEN_ORGANISATION', array(
   'links' => array(
       'self' => URI_CONFIG,
-      '38300' => array(
-        'feuerwehr' => URI_WF_FEUERWEHREN
+      'PLZ' => array(
+        '38300' => URI_WF_PLZ
       )
     )
   )
@@ -159,7 +159,7 @@ define('EINSATZKRAEFTE_2020_08_15', array(
 	 'value' => '3',
 	 'date' => '11-12-2020',
 	 'links' => array(
-		 'self' => URI_EINSATZKRAEFTE . '2020/08/15/'
+		 'self' => URI_EINSATZKRAEFTE . '/2020/08/15'
 		)
  	)
 );
@@ -172,7 +172,7 @@ define('EINSATZKRAEFTE_2020_08_16', array(
 	 'value' => '3',
 	 'date' => '12-12-2020',
 	 'links' => array(
-		 'self' => URI_EINSATZKRAEFTE . '2020/08/16/'
+		 'self' => URI_EINSATZKRAEFTE . '/2020/08/16'
 	 )
  )
 );
