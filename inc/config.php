@@ -9,7 +9,7 @@ define('DEBUG_MODE', false);
 
 # Access to MySQL Database
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'gemeindecockpit');
+define('DB_NAME', 'wevsvirus');
 define('DB_USER', 'alx');
 define('DB_USER_PASSWORD', 'testing');
 define('NUTS0', 'deutschland');
