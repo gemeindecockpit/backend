@@ -81,7 +81,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 } else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){
 	header('Content-type: application/json');
 	$temp = new DataOutput();
-	echo $temp->get_current_self_link();
+	echo $temp->output_as_json([]);
 } else {
 
 		if(isset($_POST['submit']) && $_POST['submit'] == "login")
