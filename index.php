@@ -78,20 +78,19 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 		$temp = new DataOutput();
 		echo $temp->output_as_json(ALLEN_ORGANISATION);
 	}
-}	else {
+} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){
+	$temp = new DataOutput();
+	echo $temp->get_current_self_link();
+} else {
 
-	if(isset($_SESSION['userid']))
-	{
-		echo '<br><span> your are logged in</span>';
-
-	}
-
-	else
-	{
 		if(isset($_POST['submit']) && $_POST['submit'] == "login")
 		{
 			if($user->login()){
-
+				// check if the user id is set and returns a json with the links to the 
+				if(isset($_SESSION['userid'])){
+					header('Content-type: application/json');
+					
+				}
 			} else{
 
 			}
@@ -102,7 +101,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 			//Debug: create a user to test the login and register function
 			echo '<br><span> you are not logged in but a User with the username : testus and the pw: testtest has been created for you</span>' . $user->register('testus', 'testtest', 'test@email.com', 'realname', 'wiesoisthiereinsalt');
 		}
-	}
+	
 }
 
 
