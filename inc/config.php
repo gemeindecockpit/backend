@@ -11,7 +11,7 @@ define('DEBUG_MODE', false);
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'wevsvirus');
 define('DB_USER', 'alx');
-define('DB_USER_PASSWORD', 'testing');
+define('DB_USER_PASSWORD', 'Testing123,');
 define('NUTS0', 'deutschland');
 define('NUTS1', 'niedersachsen');
 define('NUTS2', 'braunschweig');

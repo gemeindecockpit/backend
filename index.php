@@ -24,20 +24,19 @@ $uri_info = new URISplit();
 $user = new UserData();
 $data_operation = new DataOperations();
 $data_out = new DataOutput();
-/*
-# TODO login aufrufen
+
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login')
 {
 	session_destroy();
 }
 */
-/*
+
 # destroy session after logout
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout')
 {
 	session_destroy();
 }
-*/
+
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 	if(isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == '38000' &&
 			isset($uri_info->path_vars[2]) && $uri_info->path_vars[2] == 'feuerwehr') {
