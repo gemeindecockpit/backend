@@ -11,7 +11,7 @@ class DataOutput {
 	public function __construct() 
 	{
 		$links_array = [];
-		$this->add_keyvalue_to_links_array('self', get_current_self_link());
+		$this->add_keyvalue_to_links_array('self', $this->get_current_self_link());
         return;
     }
 
