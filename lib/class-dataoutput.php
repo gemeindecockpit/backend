@@ -6,7 +6,7 @@
 # like json etc.
 
 class DataOutput {
-	public $links_array;
+	private $links_array;
 	
 	public function __construct() 
 	{
@@ -18,13 +18,13 @@ class DataOutput {
 
 	public function output_as_json($data_array)
 	{
-		$data_array['links'] = $links_array;
+		$data_array['links'] = $this->links_array;
 		$json_string = json_encode($data_array);
 		return $json_string;
 	}
 	//adds a field to the data that will be converted to json. Mainly used for HATEOAS-Links
 	public function add_keyvalue_to_links_array($key, $value){
-		$links_array[$key] = $value;
+		$this->links_array[$key] = $value;
 	}
 	//returns a link to the current resource
 	//TODO look into alternatives for http_host and request_uri. The client can set HTTP_HOST and REQUEST_URI to any arbitrary value it wants.
