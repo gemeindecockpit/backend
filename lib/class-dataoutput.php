@@ -6,7 +6,7 @@
 # like json etc.
 
 class DataOutput {
-	$links_array;
+	private $links_array;
 	
 	public function __construct() 
 	{
