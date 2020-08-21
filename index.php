@@ -41,7 +41,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout')
 	session_destroy();
 }
 
-if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !isset($_SESSION['userid']) {
+if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !isset($_SESSION['userid'])) {
 	if(isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == '38000' &&
 			isset($uri_info->path_vars[2]) && $uri_info->path_vars[2] == 'feuerwehr') {
 
