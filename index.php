@@ -25,10 +25,12 @@ $user = new UserData();
 $data_operation = new DataOperations();
 $data_out = new DataOutput();
 
+//TODO sent '400 Bad Request' back if post was not used
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login')
 {
 	//TODO muss man hier eventuell die post sanitizen? 
 	if(isset($_POST['name']) && isset($_POST['pass'])){
+		$user->register($_POST['name'], $_POST['pass'], 'test@email', 'realus', '123');
 		$user->login($_POST['name'],$_POST['pass']);
 		echo 'you send a post for the login';
 	}
