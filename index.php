@@ -29,7 +29,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login')
 {
 	session_destroy();
 }
-*/
+
 
 # destroy session after logout
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout')
