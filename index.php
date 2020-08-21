@@ -30,9 +30,8 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login')
 {
 	//TODO muss man hier eventuell die post sanitizen? 
 	if(isset($_POST['name']) && isset($_POST['pass'])){
-		$user->register($_POST['name'], $_POST['pass'], 'test@email', 'realus', '123');
+		//$user->register($_POST['name'], $_POST['pass'], 'test@email', 'realus', '123');
 		$user->login($_POST['name'],$_POST['pass']);
-		echo 'you send a post for the login';
 	}
 }
 
@@ -84,17 +83,15 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 		$temp = new DataOutput();
 		echo json_encode(ALLEN_ORGANISATION);
 	}
-} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){
+} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data' && !isset($_SESSION['userid'])) {
 	header('Content-type: application/json');
 	$temp = new DataOutput();
 	echo $temp->output_as_json([]);
 } else {
+	// check if the user id is set and return a json with the links to the resources available to the user
 	if(isset($_SESSION['userid'])){
-		// check if the user id is set and return a json with the links to the resources available to the user
-		if(isset($_SESSION['userid'])){
-			header('Content-type: application/json');
-			echo 'you are logged in as ' . $_SESSION['username'];
-		}
+		header('Content-type: application/json');
+		echo 'you are logged in as ' . $_SESSION['username'];
 	} else{
 		echo 'you are not logged in ';
 	}
