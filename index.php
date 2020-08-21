@@ -46,29 +46,29 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 						if(isset($uri_info->path_vars[7]) && $uri_info->path_vars[7]  = '11') {
 							header('Content-type: application/json');
 							$temp = new DataOutput();
-							echo $temp->output_as_json(EINSATZKRAEFTE_2020_08_15);
+							echo $temp->json_encode(EINSATZKRAEFTE_2020_08_15);
 						} else if (isset($uri_info->path_vars[7]) && $uri_info->path_vars[7]  = '12') {
 							header('Content-type: application/json');
 							$temp = new DataOutput();
-							echo $temp->output_as_json(EINSATZKRAEFTE_2020_08_16);
+							echo $temp->json_encode(EINSATZKRAEFTE_2020_08_16);
 						} else {
 							header('Content-type: application/json');
 							$temp = new DataOutput();
-							echo $temp->output_as_json(DUMMY_FEUERWEHR_FELD1);
+							echo $temp->json_encode(DUMMY_FEUERWEHR_FELD1);
 						}
 					} else if (isset($uri_info->path_vars[4]) && $uri_info->path_vars[4] == 'autos%20broom%20broom') {
 						header('Content-type: application/json');
 						$temp = new DataOutput();
-						echo $temp->output_as_json(DUMMY_FEUERWEHR_FELD2);
+						echo $temp->json_encode(DUMMY_FEUERWEHR_FELD2);
 					} else {
 						header('Content-type: application/json');
 						$temp = new DataOutput();
-						echo $temp->output_as_json(DUMMY_FEUERWEHR);
+						echo $temp->json_encode(DUMMY_FEUERWEHR);
 					}
 				} else if (isset($uri_info->path_vars[3]) && $uri_info->path_vars[3] == 'wir%20machen%20nass'){
 					header('Content-type: application/json');
 					$temp = new DataOutput();
-					echo $temp->output_as_json(DUMMY_FEUERWEHR2);
+					echo $temp->json_encode(DUMMY_FEUERWEHR2);
 				} else {
 					echo 'Computer sagt nein';
 				}
@@ -76,7 +76,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 	} else {
 		header('Content-type: application/json');
 		$temp = new DataOutput();
-		echo $temp->output_as_json(ALLEN_ORGANISATION);
+		echo $temp->json_encode(ALLEN_ORGANISATION);
 	}
 } else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){
 	header('Content-type: application/json');
