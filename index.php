@@ -93,7 +93,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 		// check if the user id is set and return a json with the links to the resources available to the user
 		if(isset($_SESSION['userid'])){
 			header('Content-type: application/json');
-			echo 'you are logged in';
+			echo 'you are logged in as ' . $_SESSION['username'];
 		}
 	} else{
 		echo 'you are not logged in ';
