@@ -6,10 +6,11 @@
 # like json etc.
 
 class DataOutput {
-	$links_array = [];
+	$links_array;
 	
 	public function __construct() 
 	{
+		$links_array = [];
 		add_keyvalue_to_links_array('self', get_current_self_link());
         return;
     }
