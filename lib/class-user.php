@@ -31,7 +31,7 @@ class UserData {
         return;
     }
 
-
+	//TODO was passiert, wenn der user nicht in der db ist?
 	public function login($username, $password)
     {
 		$dataOp = new DataOperations();

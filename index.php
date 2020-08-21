@@ -27,7 +27,11 @@ $data_out = new DataOutput();
 
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login')
 {
-	session_destroy();
+	//TODO muss man hier eventuell die post sanitizen? 
+	if(isset($_POST['name']) && isset($_POST['pass'])){
+		$user->login($_POST['name'],$_POST['pass']);
+		echo 'you send a post for the login';
+	}
 }
 
 
@@ -37,7 +41,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout')
 	session_destroy();
 }
 
-if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
+if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !isset($_SESSION['userid']) {
 	if(isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == '38000' &&
 			isset($uri_info->path_vars[2]) && $uri_info->path_vars[2] == 'feuerwehr') {
 
@@ -83,26 +87,16 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 	$temp = new DataOutput();
 	echo $temp->output_as_json([]);
 } else {
-
-		if(isset($_POST['submit']) && $_POST['submit'] == "login")
-		{
-			if($user->login()){
-				// check if the user id is set and returns a json with the links to the 
-				if(isset($_SESSION['userid'])){
-					header('Content-type: application/json');
-					
-				}
-			} else{
-
-			}
-
+	if(isset($_SESSION['userid']){
+		// check if the user id is set and return a json with the links to the resources available to the user
+		if(isset($_SESSION['userid'])){
+			header('Content-type: application/json');
+			echo 'you are logged in';
 		}
-		else
-		{
-			//Debug: create a user to test the login and register function
-			echo '<br><span> you are not logged in but a User with the username : testus and the pw: testtest has been created for you</span>' . $user->register('testus', 'testtest', 'test@email.com', 'realname', 'wiesoisthiereinsalt');
-		}
-	
+	} else{
+		echo 'you are not logged in '
+	}
+
 }
 
 
