@@ -26,7 +26,7 @@ class DataOperations {
 
         return;
     }
-	//returns a resultset containing the userdata for $user
+	//returns a resultset containing the userdata for $user where $user is the username
 	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
 	public function get_user($user) {
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
@@ -61,6 +61,23 @@ class DataOperations {
 		$error = $stmt->errno;
 		$db->close();
 		return $error;
+	}
+	
+	    public function get_by_id($id)
+    {
+        #returns userdata by a given userid
+		#TODO make it a prepaired statement
+        $db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+        $query = 'SELECT username, email, realname FROM user WHERE id= "'.$id.'"';
+        $result = $db->query($query);
+        $user_data = $result->fetch_assoc();
+        $db->close();
+
+    	return $user_data;
+    }
+	
+	public function update_password($userid, $password){
+		#TODO
 	}
 
 

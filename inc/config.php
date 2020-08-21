@@ -12,20 +12,23 @@ define('DB_HOST', 'localhost');
 define('DB_NAME', 'wevsvirus');
 define('DB_USER', 'alx');
 define('DB_USER_PASSWORD', 'Testing123,');
-define('NUTS0', 'deutschland');
-define('NUTS1', 'niedersachsen');
-define('NUTS2', 'braunschweig');
-define('NUTS3', 'braunschweig');
-define('DOMAIN', 'litwinow.xyz');
-
-
 
 
 # SALT value
 define('SALT', 'wevsvirus');
 
+# deeze NUTS defines
+define('NUTS0', 'deutschland');
+define('NUTS1', 'niedersachsen');
+define('NUTS2', 'braunschweig');
+define('NUTS3', 'braunschweig');
+define('PLZ', '38000');
+
 # more defines here
+
+
 //Debugging
+//TODO: remove debugging gedöns
 define('DUMMY_FEUERWEHR', array('id' => 1,
 	 'name' => 'feuerwerk',
 	 'description' => 'testetst',
