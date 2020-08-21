@@ -18,7 +18,7 @@ class DataOutput {
 
 	public function output_as_json($data_array)
 	{
-		$data_array['links'] = $links_array;
+		$data_array['links'] = this->$links_array;
 		$json_string = json_encode($data_array);
 		return $json_string;
 	}
