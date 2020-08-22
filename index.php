@@ -93,8 +93,8 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 		//root domain
 		if(empty($uri_info->path_vars[0])){
 			header('Content-type: application/json');
-			$data_out->add_keyvalue_to_links_array('config', $data_out->get_current_self_link() . '/config/' );
-			$data_out->add_keyvalue_to_links_array('config', $data_out->get_current_self_link() . '/data/' );
+			$data_out->add_keyvalue_to_links_array('config', $data_out->get_current_self_link() . 'config/' );
+			$data_out->add_keyvalue_to_links_array('data', $data_out->get_current_self_link() . 'data/' );
 			echo $data_out->output_as_json([]);
 		} else {
 			//config path
