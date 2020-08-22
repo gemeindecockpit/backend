@@ -91,7 +91,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 	// check if the user id is set and return a json with the links to the resources available to the user
 	if(isset($_SESSION['userid'])){
 		//root domain
-		echo '</br>session id is set path vars size is : ' . sizeof($uri_info->path_vars);
+		echo '</br>session id is set path vars size is : ' . sizeof($uri_info->path_vars) . '   ' . $uri_info->path_vars[0];
 		if(sizeof($uri_info->path_vars) == 0){
 			header('Content-type: application/json');
 			$data_out->add_keyvalue_to_links_array('config', $data_out->get_current_self_link() . '/config/' );
