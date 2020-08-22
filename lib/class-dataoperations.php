@@ -62,11 +62,11 @@ class DataOperations {
 		$db->close();
 		return $error;
 	}
-	
-	    public function get_by_id($id)
+	#returns userdata by a given userid
+	#TODO make it a prepaired statement
+	public function get_by_id($id)
     {
-        #returns userdata by a given userid
-		#TODO make it a prepaired statement
+
         $db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
         $query = 'SELECT username, email, realname FROM user WHERE id= "'.$id.'"';
         $result = $db->query($query);
@@ -79,8 +79,30 @@ class DataOperations {
 	public function update_password($userid, $password){
 		#TODO
 	}
-
-
+	
+	public function get_all_config_PLZ_for_user($userid){
+		#TODO
+	}
+	
+	public function get_all_data_PLZ_for_user($userid){
+		#TODO
+	}
+	
+	public function get_all_data_types_for_user($userid){
+		#TODO
+	}
+	
+	public function get_all_config_types_for_user($userid){
+		#TODO
+	}
+	
+	public function get_all_data_organizations_for_user_for_type($userid, $type){
+		#TODO
+	}
+	
+	public function get_all_config_organizations_for_user_for_type($userid, $type){
+		#TODO
+	}
 }
 
 ?>

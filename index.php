@@ -97,11 +97,12 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 			$data_out->add_keyvalue_to_links_array('data', $data_out->get_current_self_link() . 'data/' );
 			echo $data_out->output_as_json([]);
 		} else {
-			//config path
-			if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config'){
-				
+			if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config'){		 //config path
+				header('Content-type: application/json');
+				//TODO output all plz the user has access to
 			} else if (isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){ //data path
-				
+				header('Content-type: application/json');
+				//TODO output all plz the user has access to
 			}
 		}
 	} else{
