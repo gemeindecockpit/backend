@@ -104,14 +104,13 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 					case 'data':
 						//header('Content-type: application/json');
 						//TODO output all plz the user has access to
-						echo $uri_info->path_vars[0];
 						break;
 						
 					case ''; //domain only
 					
 						header('Content-type: application/json');
-						$data_out->add_keyvalue_to_links_array('config', $data_out->get_current_self_link() . 'config/' );
-						$data_out->add_keyvalue_to_links_array('data', $data_out->get_current_self_link() . 'data/' );
+						$data_out->add_keyvalue_to_links_array('config', $data_out->get_current_self_link() . 'config' );
+						$data_out->add_keyvalue_to_links_array('data', $data_out->get_current_self_link() . 'data' );
 						echo $data_out->output_as_json([]);
 						break;
 						
@@ -123,7 +122,21 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				}
 				break;
 				
-			case 2:
+			case 2: //PLZ TODO
+				switch ($uri_info->path_vars[1]) {
+					case PLZ:
+						header('Content-type: application/json');
+						$data_out->add_keyvalue_to_links_array('config', $data_out->get_current_self_link() . 'config/' . PLZ );
+						$data_out->add_keyvalue_to_links_array('data', $data_out->get_current_self_link() . 'data' . PLZ);
+						echo $data_out->output_as_json([]);
+						break;
+						
+					default:
+					
+						header("HTTP/1.0 404 Not Found");
+						break;
+						
+				}
 				break;
 				
 			case 3:
@@ -137,7 +150,6 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				break;
 			
 		}
-			echo $uri_info->path_vars[sizeof($uri_info->path_vars)-1];
 	} else {
 		echo 'you are not logged in';
 	}
