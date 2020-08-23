@@ -88,27 +88,58 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 	$temp = new DataOutput();
 	echo $temp->output_as_json([]);
 } else {
+	
 	// check if the user id is set and return a json with the links to the resources available to the user
 	if(isset($_SESSION['userid'])){
-		//root domain
-		if(empty($uri_info->path_vars[0])){
-			header('Content-type: application/json');
-			$data_out->add_keyvalue_to_links_array('config', $data_out->get_current_self_link() . 'config/' );
-			$data_out->add_keyvalue_to_links_array('data', $data_out->get_current_self_link() . 'data/' );
-			echo $data_out->output_as_json([]);
-		} else {
-			if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config'){		 //config path
-				header('Content-type: application/json');
-				//TODO output all plz the user has access to
-			} else if (isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){ //data path
-				header('Content-type: application/json');
-				//TODO output all plz the user has access to
-			}
+		switch (sizeof($uri_info->path_vars)){
+			case 1:
+			//this is the case when the base domain is called AND when one path_vars is set
+				switch ($uri_info->path_vars[0]) {
+					case 'config':
+					
+						header('Content-type: application/json');
+						//TODO output all plz the user has access to
+						break;
+						
+					case 'data':
+					header('Content-type: application/json');
+					//TODO output all plz the user has access to
+						break;
+						
+					case ''; //domain only
+					
+						header('Content-type: application/json');
+						$data_out->add_keyvalue_to_links_array('config', $data_out->get_current_self_link() . 'config/' );
+						$data_out->add_keyvalue_to_links_array('data', $data_out->get_current_self_link() . 'data/' );
+						echo $data_out->output_as_json([]);
+						break;
+						
+					default:
+					
+						header("HTTP/1.0 404 Not Found");
+						break;
+						
+				}
+				break;
+				
+			case 2:
+				break;
+				
+			case 3:
+				break;
+				
+			case 4:
+				break;
+				
+			default:
+				header("HTTP/1.0 404 Not Found");
+				break;
+			
 		}
-	} else{
-		echo 'you are not logged in ';
+	} else {
+		echo 'you are not logged in';
 	}
-echo 'size_ : ' . sizeof($uri_info->path_vars);
+
 }
 
 
