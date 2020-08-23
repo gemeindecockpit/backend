@@ -102,8 +102,9 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 						break;
 						
 					case 'data':
-					header('Content-type: application/json');
-					//TODO output all plz the user has access to
+						//header('Content-type: application/json');
+						//TODO output all plz the user has access to
+						echo $uri_info->path_vars[0];
 						break;
 						
 					case ''; //domain only
