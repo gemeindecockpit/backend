@@ -140,7 +140,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 	} else {
 		echo 'you are not logged in';
 	}
-
+	echo sizeof($uri_info->path_vars);
 }
 
 
