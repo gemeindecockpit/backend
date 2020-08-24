@@ -195,7 +195,7 @@ function echo_json_all_orgs_for_user_for_type($type){
 	$result =  $data_operation->get_all_data_organizations_for_user_for_type($_SESSION['userid'], $type);
 	$typearray = Array();
 	while($row = $result->fetch_assoc()) {
-		array_push($typearray, $row['type']); 
+		array_push($typearray, $row['name']); 
 	}
 	$typearray_links = Array();
 	foreach($typearray as $val){
