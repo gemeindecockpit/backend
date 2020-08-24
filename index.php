@@ -25,23 +25,6 @@ $user = new UserData();
 $data_operation = new DataOperations();
 $data_out = new DataOutput();
 
-//#TODO: sent '400 Bad Request' back if post was not used
-if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login')
-{
-	if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
-	
-		//#TODO: muss man hier eventuell die post sanitizen? 
-		if(isset($_POST['name']) && isset($_POST['pass'])){
-			//$user->register($_POST['name'], $_POST['pass'], 'test@email', 'realus', '123');
-			$user->login($_POST['name'],$_POST['pass']);
-		}
-	} else {
-		header("HTTP/1.0 405 Method Not Allowed");
-		header("Access-Control-Allow-Methods: POST");
-	}
-}
-
 
 # destroy session after logout
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout')
@@ -123,6 +106,17 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				//#TODO: output all plz the user has access to
 			} else if (sizeof($uri_info->path_vars) > 1 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){
 				
+			} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login'){
+					if ($_SERVER['REQUEST_METHOD'] === 'POST') {					
+						//#TODO: muss man hier eventuell die post sanitizen? 
+						if(isset($_POST['name']) && isset($_POST['pass'])){
+							//$user->register($_POST['name'], $_POST['pass'], 'test@email', 'realus', '123');
+							$user->login($_POST['name'],$_POST['pass']);
+						}
+					} else {
+						header("HTTP/1.0 405 Method Not Allowed");
+						header("Access-Control-Allow-Methods: POST");
+					}
 			} else {
 				header("HTTP/1.0 404 Not Found");
 			}
