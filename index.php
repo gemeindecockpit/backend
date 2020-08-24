@@ -146,7 +146,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 
 }
 
-public function echo_json_all_types_for_user(){
+function echo_json_all_types_for_user(){
 	$result = $data_operation->get_all_config_types_for_user($_SESSION['userid']);
 	$typearray = Array();
 	while($row = $result->fetch_assoc()) {
