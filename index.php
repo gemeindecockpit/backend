@@ -147,18 +147,18 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 }
 
 function echo_json_all_types_for_user(){
-	$result = $data_operation->get_all_config_types_for_user($_SESSION['userid']);
+	$result = global $data_operation->get_all_config_types_for_user($_SESSION['userid']);
 	$typearray = Array();
 	while($row = $result->fetch_assoc()) {
 		array_push($typearray, $row['type']); 
 	}
 	$typearray_links = Array();
 	foreach($typearray as $val){
-		$typearray_links[$val] = $data_out->get_current_self_link() . '/' . $val;
+		$typearray_links[$val] = global $data_out->get_current_self_link() . '/' . $val;
 	}
-	$data_out->add_keyvalue_to_links_array('types', $typearray_links);						
+	global $data_out->add_keyvalue_to_links_array('types', $typearray_links);						
 	header('Content-type: application/json');
-	echo $data_out->output_as_json($typearray);
+	echo global $data_out->output_as_json($typearray);
 }
 
 ?>
