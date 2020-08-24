@@ -26,11 +26,7 @@ $data_operation = new DataOperations();
 $data_out = new DataOutput();
 
 
-# destroy session after logout
-if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout')
-{
-	session_destroy();
-}
+
 
 if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !isset($_SESSION['userid'])) {
 	if(isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == '38000' &&
@@ -111,6 +107,8 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				//#TODO: output all plz the user has access to
 			} else if (sizeof($uri_info->path_vars) > 1 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){
 				
+			} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout') {
+				session_destroy();
 			} else {
 				header("HTTP/1.0 404 Not Found");
 			}
