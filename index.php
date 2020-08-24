@@ -110,14 +110,13 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				switch (sizeof($uri_info->path_vars)){
 					case 2:
 						if($uri_info->path_vars[1] == PLZ){
-							echo_json_all_types_for_user();
+							//echo_json_all_types_for_user();
 						} else {
 							header("HTTP/1.0 404 Not Found");
 						}
 						break;
 					case 3:
 						$result =  $data_operation->get_all_data_types_for_user($_SESSION['userid']);
-						echo 'here =?';
 						$typearray = Array();
 						while($row = $result->fetch_assoc()) {
 							array_push($typearray, $row['type']); 
