@@ -194,8 +194,10 @@ function echo_json_all_orgs_for_user_for_type($type){
 	$data_out = new DataOutput();
 	$result =  $data_operation->get_all_data_organizations_for_user_for_type($_SESSION['userid'], $type);
 	$typearray = Array();
+	$typearray_full = Array();
 	while($row = $result->fetch_assoc()) {
 		array_push($typearray, $row['name']); 
+		array_push($typearray_full, $row); 
 	}
 	$typearray_links = Array();
 	foreach($typearray as $val){
@@ -203,7 +205,7 @@ function echo_json_all_orgs_for_user_for_type($type){
 	}
 	$data_out->add_keyvalue_to_links_array($type, $typearray_links);						
 	header('Content-type: application/json');
-	echo  $data_out->output_as_json($typearray);
+	echo  $data_out->output_as_json($typearray_full);
 }
 
 ?>
