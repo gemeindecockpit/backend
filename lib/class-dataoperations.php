@@ -115,10 +115,10 @@ class DataOperations {
 	public function get_all_data_organizations_for_user_for_type($userid, $type){
 		#TODO: richtig?
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-		$stmt = $db->prepare('select * from organisation 
+		$stmt = $db->prepare('select organisation.* from organisation 
 		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id 
 		where can_see_organisation.user_id = ? and type = ?
-		Union distinct select * from organisation 
+		Union distinct select organisation.* from organisation 
 		inner join can_alter_organisation on can_alter_organisation.organisation_id = organisation.id 
 		where can_alter_organisation.user_id = ? and type = ?');
 		//$errors = $db->error_list;
