@@ -118,12 +118,12 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 			if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				//#TODO: muss man hier eventuell die post sanitizen? 
 				if(isset($_POST['name']) && isset($_POST['pass'])){
-					$user->register($_POST['name'], $_POST['pass'], 'test@email', 'realus', '123');
+					//$user->register($_POST['name'], $_POST['pass'], 'test@email', 'realus', '123');
 
 					if($user->login($_POST['name'],$_POST['pass'])){
-						echo 'login yes';
+						header("HTTP/1.0 200 Login Successfull");
 					} else {
-						echo 'login no';
+						header("HTTP/1.0 403 Forbidden");
 					}
 						
 				}
