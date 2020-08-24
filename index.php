@@ -119,7 +119,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				//#TODO: muss man hier eventuell die post sanitizen? 
 				if(isset($_POST['name']) && isset($_POST['pass'])){
 					//$user->register($_POST['name'], $_POST['pass'], 'test@email', 'realus', '123');
-					$user->login($_POST['name'],$_POST['pass']);
+					echo $user->login($_POST['name'],$_POST['pass']);
 				}
 			} else {
 				header("HTTP/1.0 405 Method Not Allowed");
