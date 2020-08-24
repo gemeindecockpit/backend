@@ -115,6 +115,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 		}
 		
 	} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login'){
+			echo 'in login';
 			if ($_SERVER['REQUEST_METHOD'] === 'POST') {					
 				//#TODO: muss man hier eventuell die post sanitizen? 
 				if(isset($_POST['name']) && isset($_POST['pass'])){
