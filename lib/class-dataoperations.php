@@ -90,7 +90,7 @@ class DataOperations {
 	*/
 	public function get_all_data_types_for_user($userid){
 		#TODO:
-		return get_all_config_types_for_user($userid);
+		return $this->get_all_config_types_for_user($userid);
 	}
 	
 	public function get_all_config_types_for_user($userid){
