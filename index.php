@@ -117,6 +117,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 						break;
 					case 3:
 						$result =  $data_operation->get_all_data_types_for_user($_SESSION['userid']);
+						echo 'here =?';
 						$typearray = Array();
 						while($row = $result->fetch_assoc()) {
 							array_push($typearray, $row['type']); 
@@ -206,7 +207,7 @@ function echo_json_all_orgs_for_user_for_type($type){
 	echo  $data_out->output_as_json($typearray);
 }
 
-function echo_json_one_org_for_user_for_type($orgid){
+function echo_json_one_org_for_user($orgid){
 	$data_operation = new DataOperations();
 	$data_out = new DataOutput();
 	$result =  $data_operation->get_all_data_organizations_for_user_for_type($_SESSION['userid'], $type);
