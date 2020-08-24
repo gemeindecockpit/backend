@@ -92,18 +92,9 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				//#TODO: output all plz the user has access to
 			} else if (sizeof($uri_info->path_vars) > 1 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 				if (sizeof($uri_info->path_vars) == 2 && isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == PLZ){
-					$result = $data_operation->get_all_config_types_for_user($_SESSION['userid']);
-					$typearray = Array();
-					while($row = $result->fetch_assoc()) {
-						array_push($typearray, $row['type']); 
-					}
-					$typearray_links = Array();
-					foreach($typearray as $val){
-						$typearray_links[$val] = $data_out->get_current_self_link() . '/' . $val;
-					}
-					$data_out->add_keyvalue_to_links_array('types', $typearray_links);						
-					header('Content-type: application/json');
-					echo $data_out->output_as_json($typearray);
+					
+					$this->echo_json_all_types_for_user();
+					
 				} else if (sizeof($uri_info->path_vars) > 2 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[1] == 'config'){
 					
 				}
@@ -114,6 +105,14 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				echo $data_out->output_as_json([]);
 				//#TODO: output all plz the user has access to
 			} else if (sizeof($uri_info->path_vars) > 1 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){
+				
+				if (sizeof($uri_info->path_vars) == 2 && isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == PLZ){
+					
+					$this->echo_json_all_types_for_user();
+					
+				} else if (sizeof($uri_info->path_vars) > 2 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[1] == 'config'){
+					
+				}
 				
 			} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout') {
 				session_destroy();
@@ -147,5 +146,19 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 
 }
 
+private function echo_json_all_types_for_user(){
+	$result = $data_operation->get_all_config_types_for_user($_SESSION['userid']);
+	$typearray = Array();
+	while($row = $result->fetch_assoc()) {
+		array_push($typearray, $row['type']); 
+	}
+	$typearray_links = Array();
+	foreach($typearray as $val){
+		$typearray_links[$val] = $data_out->get_current_self_link() . '/' . $val;
+	}
+	$data_out->add_keyvalue_to_links_array('types', $typearray_links);						
+	header('Content-type: application/json');
+	echo $data_out->output_as_json($typearray);
+}
 
 ?>
