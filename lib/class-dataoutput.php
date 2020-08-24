@@ -27,8 +27,8 @@ class DataOutput {
 		$this->links_array[$key] = $value;
 	}
 	//returns a link to the current resource
-	//TODO look into alternatives for http_host and request_uri. The client can set HTTP_HOST and REQUEST_URI to any arbitrary value it wants.
-	//TODO check if params are also shown
+	//#TODO:look into alternatives for http_host and request_uri. The client can set HTTP_HOST and REQUEST_URI to any arbitrary value it wants.
+	//#TODO:check if params are also shown
 	public function get_current_self_link(){
 		return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 	}

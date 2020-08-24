@@ -63,7 +63,7 @@ class DataOperations {
 		return $error;
 	}
 	#returns userdata by a given userid
-	#TODO make it a prepaired statement
+	#TODO::make it a prepaired statement
 	public function get_by_id($id)
     {
 
@@ -77,19 +77,19 @@ class DataOperations {
     }
 	
 	public function update_password($userid, $password){
-		#TODO
+		#TODO:
 	}
 	/* brauchen wir glaube ich garnicht, da wir ja eh nur eine plz haben oder? Wenn doch muss das auch noch ins datenmodell eingebaut werden
 	public function get_all_config_PLZ_for_user($userid){
-		#TODO
+		#TODO:
 	}
 	
 	public function get_all_data_PLZ_for_user($userid){
-		#TODO
+		#TODO:
 	}
 	*/
 	public function get_all_data_types_for_user($userid){
-		#TODO
+		#TODO:
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 		$stmt = $db->prepare('select name from organisation
 		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id 
@@ -104,7 +104,7 @@ class DataOperations {
 	}
 	
 	public function get_all_config_types_for_user($userid){
-		#TODO
+		#TODO:
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 		$stmt = $db->prepare('select name from organisation
 		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id 
@@ -119,11 +119,11 @@ class DataOperations {
 	}
 	
 	public function get_all_data_organizations_for_user_for_type($userid, $type){
-		#TODO
+		#TODO:
 	}
 	
 	public function get_all_config_organizations_for_user_for_type($userid, $type){
-		#TODO
+		#TODO:
 	}
 }
 

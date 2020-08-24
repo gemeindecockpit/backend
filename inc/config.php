@@ -28,7 +28,7 @@ define('PLZ', '38000');
 
 
 //Debugging
-//TODO: remove debugging gedöns
+//#TODO: remove debugging gedöns
 define('DUMMY_FEUERWEHR', array('id' => 1,
 	 'name' => 'feuerwerk',
 	 'description' => 'testetst',
