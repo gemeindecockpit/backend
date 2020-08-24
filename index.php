@@ -93,7 +93,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 			} else if (sizeof($uri_info->path_vars) > 1 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 				if (sizeof($uri_info->path_vars) == 2 && isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == PLZ){
 					
-					//echo_json_all_types_for_user();
+					echo_json_all_types_for_user();
 					
 				} else if (sizeof($uri_info->path_vars) > 2 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[1] == 'config'){
 					
@@ -110,7 +110,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				switch (sizeof($uri_info->path_vars)){
 					case 2:
 						if($uri_info->path_vars[1] == PLZ){
-							//echo_json_all_types_for_user();
+							echo_json_all_types_for_user();
 						} else {
 							header("HTTP/1.0 404 Not Found");
 						}
@@ -127,20 +127,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 							header("HTTP/1.0 404 Not Found");
 						}
 						break;
-				}	
-				if (sizeof($uri_info->path_vars) == 2 && isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == PLZ){
-					
-					echo_json_all_types_for_user();
-					
-				} else if (sizeof($uri_info->path_vars) > 2){
-						//caching the types available for the user
-						$result =  $data_operation->get_all_data_types_for_user($_SESSION['userid']);
-						$typearray = Array();
-						while($row = $result->fetch_assoc()) {
-							array_push($typearray, $row['type']); 
-						}
-				}
-				
+				}				
 			} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout') {
 				session_destroy();
 			} else {
