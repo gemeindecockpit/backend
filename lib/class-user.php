@@ -32,6 +32,8 @@ class UserData {
     }
 
 	//#TODO:was passiert, wenn der user nicht in der db ist?
+	//#TODO: wenn login mit daten versucht wird, die nicht in der Datenbank sind, schmeißt er nen error weil er auf $row['salt'] zugreifen möchte, obwohl dieser nicht gesetzt ist
+	// heißt es muss vorher gecheckt werden, ob die datenanfrage überhaupt einen user zurück gibt
 	public function login($username, $password)
     {
 		$dataOp = new DataOperations();
