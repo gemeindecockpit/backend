@@ -126,6 +126,8 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 						header("HTTP/1.0 403 Forbidden");
 					}
 						
+				} else {
+					header("HTTP/1.0 400 Bad Request - pass and name are required");
 				}
 			} else {
 				header("HTTP/1.0 405 Method Not Allowed");
