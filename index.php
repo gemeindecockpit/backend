@@ -96,6 +96,11 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				//#TODO: output all plz the user has access to
 			} else if (sizeof($uri_info->path_vars) > 1 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
 				if (sizeof($uri_info->path_vars) == 2 && isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == PLZ){
+					$result = $data_operation->get_all_config_types_for_user($_SESSION['userid']);
+					while($row = mysql_fetch_assoc($result)) {
+						$data_out->add_keyvalue_to_links_array('organizations', $row['name']); 
+					}
+				} else if (sizeof($uri_info->path_vars) > 2 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[1] == 'config'){
 					
 				}
 			} else if (sizeof($uri_info->path_vars) == 1 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){ //data path
