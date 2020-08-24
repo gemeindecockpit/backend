@@ -91,7 +91,7 @@ class DataOperations {
 	public function get_all_data_types_for_user($userid){
 		#TODO:
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-		$stmt = $db->prepare('select name from organisation
+		$stmt = $db->prepare('select DISTINCT type from organisation
 		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id 
 		where can_see_organisation.user_id = ?');
 		//$errors = $db->error_list;
@@ -106,7 +106,7 @@ class DataOperations {
 	public function get_all_config_types_for_user($userid){
 		#TODO:
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-		$stmt = $db->prepare('select name from organisation
+		$stmt = $db->prepare('select DISTINCT type from organisation
 		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id 
 		where can_see_organisation.user_id = ?');
 		//$errors = $db->error_list;
@@ -120,10 +120,32 @@ class DataOperations {
 	
 	public function get_all_data_organizations_for_user_for_type($userid, $type){
 		#TODO:
+		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$stmt = $db->prepare('select name from organisation
+		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id 
+		where can_see_organisation.user_id = ?');
+		//$errors = $db->error_list;
+		$stmt->bind_param('i', $userid);
+
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$db->close();
+		return $result;
 	}
 	
 	public function get_all_config_organizations_for_user_for_type($userid, $type){
 		#TODO:
+		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$stmt = $db->prepare('select name from organisation
+		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id 
+		where can_see_organisation.user_id = ?');
+		//$errors = $db->error_list;
+		$stmt->bind_param('i', $userid);
+
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$db->close();
+		return $result;
 	}
 }
 
