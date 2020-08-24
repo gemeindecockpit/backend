@@ -102,6 +102,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				//output all plz the user has access to
 				header('Content-type: application/json');
 				$data_out->add_keyvalue_to_links_array('config', $data_out->get_current_self_link() . PLZ );
+				echo 'hier';
 				echo $data_out->output_as_json([]);
 				//TODO output all plz the user has access to
 			} else if (sizeof($uri_info->path_vars) > 1 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
