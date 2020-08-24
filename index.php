@@ -97,9 +97,13 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 					while($row = $result->fetch_assoc()) {
 						array_push($typearray, $row['type']); 
 					}
-					$data_out->add_keyvalue_to_links_array('organizations', $typearray);
+					$typearray_links = Array();
+					foreach($typearray as $val){
+						$typearray_links[$val] = $data_out->get_current_self_link() . '/' . $val;
+					}
+					$data_out->add_keyvalue_to_links_array('types', $typearray_links);						
 					header('Content-type: application/json');
-					echo $data_out->output_as_json([]);
+					echo $data_out->output_as_json($typearray);
 				} else if (sizeof($uri_info->path_vars) > 2 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[1] == 'config'){
 					
 				}
