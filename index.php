@@ -94,7 +94,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				if (sizeof($uri_info->path_vars) == 2 && isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == PLZ){
 					$result = $data_operation->get_all_config_types_for_user($_SESSION['userid']);
 					while($row = $result->fetch_assoc()) {
-						$data_out->add_keyvalue_to_links_array('organizations', $row['name']); 
+						$data_out->add_keyvalue_to_links_array('organizations', $row['type']); 
 					}
 				} else if (sizeof($uri_info->path_vars) > 2 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[1] == 'config'){
 					
