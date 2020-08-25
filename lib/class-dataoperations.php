@@ -130,6 +130,42 @@ class DataOperations {
 		return $result;
 	}
 	
+	public function get_one_data_organizations_for_user_by_id($userid, $orgid){
+		#TODO: richtig?
+		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$stmt = $db->prepare('select organisation.* from organisation 
+		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id 
+		where can_see_organisation.user_id = ? and organisation.id = ?
+		Union distinct select organisation.* from organisation 
+		inner join can_alter_organisation on can_alter_organisation.organisation_id = organisation.id 
+		where can_alter_organisation.user_id = ? and organisation.id = ?');
+		//$errors = $db->error_list;
+		$stmt->bind_param('iiii', $userid, $orgid, $userid, $orgid);
+
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$db->close();
+		return $result;
+	}
+	
+	public function get_one_data_organizations_for_user_by_name($userid, $name){
+		#TODO: richtig?
+		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$stmt = $db->prepare('select organisation.* from organisation 
+		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id 
+		where can_see_organisation.user_id = ? and organisation.name = ?
+		Union distinct select organisation.* from organisation 
+		inner join can_alter_organisation on can_alter_organisation.organisation_id = organisation.id 
+		where can_alter_organisation.user_id = ? and organisation.name = ?');
+		//$errors = $db->error_list;
+		$stmt->bind_param('isis', $userid, $name, $userid, $name);
+
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$db->close();
+		return $result;
+	}
+	
 	public function get_all_config_organizations_for_user_for_type($userid, $type){
 		#TODO:
 		return get_all_data_organizations_for_user_for_type($userid, $type);

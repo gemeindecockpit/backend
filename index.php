@@ -91,12 +91,35 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 				echo $data_out->output_as_json([]);
 				//#TODO: output all plz the user has access to
 			} else if (sizeof($uri_info->path_vars) > 1 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
-				if (sizeof($uri_info->path_vars) == 2 && isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == PLZ){
-					
-					echo_json_all_types_for_user();
-					
-				} else if (sizeof($uri_info->path_vars) > 2 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[1] == 'config'){
-					
+								switch (sizeof($uri_info->path_vars)){
+					case 2:
+						if($uri_info->path_vars[1] == PLZ){
+							echo_json_all_types_for_user();
+						} else {
+							header("HTTP/1.0 404 Not Found");
+						}
+						break;
+					case 3:
+						if($uri_info->path_vars[1] == PLZ && in_array($uri_info->path_vars[2], get_user_types())){
+							echo_json_all_orgs_for_user_for_type($uri_info->path_vars[2]);
+						} else {
+							header("HTTP/1.0 404 Not Found");
+						}
+						break;
+					case 4:
+						//TODO: Was wenn in der zb 2 Krankenhäuser mit dem selben namen sind? irgendwie muss die id mit in den url
+						if($uri_info->path_vars[1] == PLZ && in_array($uri_info->path_vars[2], get_user_types()) && in_array($uri_info->path_vars[3], get_all_orgs_for_user_for_type($uri_info->path_vars[2]))){
+							$results = $data_operation->get_one_data_organizations_for_user_by_name($_SESSION['userid'], $uri_info->path_vars[3]);
+							$row = $results->fetch_assoc();
+							try{
+								echo_json_one_org_for_user($row['id']);
+							} catch (Exception $e){
+								header("HTTP/1.0 404 Not Found");
+							}
+						} else {
+							header("HTTP/1.0 404 Not Found");
+						}
+						break;
 				}
 			} else if (sizeof($uri_info->path_vars) == 1 && isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data'){ //data path
 				//output all plz the user has access to
@@ -116,12 +139,7 @@ if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config' && !iss
 						}
 						break;
 					case 3:
-						$result =  $data_operation->get_all_data_types_for_user($_SESSION['userid']);
-						$typearray = Array();
-						while($row = $result->fetch_assoc()) {
-							array_push($typearray, $row['type']); 
-						}
-						if($uri_info->path_vars[1] == PLZ && in_array($uri_info->path_vars[2], $typearray)){
+						if($uri_info->path_vars[1] == PLZ && in_array($uri_info->path_vars[2], get_user_types())){
 							echo_json_all_orgs_for_user_for_type($uri_info->path_vars[2]);
 						} else {
 							header("HTTP/1.0 404 Not Found");
@@ -177,14 +195,8 @@ function echo_json_all_types_for_user(){
 	echo  $data_out->output_as_json($typearray);
 }
 function echo_json_all_orgs_for_user_for_type($type){
-	$data_operation = new DataOperations();
-	$data_out = new DataOutput();
-	$result =  $data_operation->get_all_data_organizations_for_user_for_type($_SESSION['userid'], $type);
-	$typearray = Array();
-	while($row = $result->fetch_assoc()) {
-		array_push($typearray, $row['name']); 
-	}
 	$typearray_links = Array();
+	$typearray = get_all_orgs_for_user_for_type($type);
 	foreach($typearray as $val){
 		$typearray_links[$val] =  $data_out->get_current_self_link() . '/' . $val;
 	}
@@ -192,11 +204,35 @@ function echo_json_all_orgs_for_user_for_type($type){
 	header('Content-type: application/json');
 	echo  $data_out->output_as_json($typearray);
 }
+//returns the names of the orgs the user has access to
+function get_all_orgs_for_user_for_type($type){
+	$data_operation = new DataOperations();
+	$data_out = new DataOutput();
+	$result =  $data_operation->get_all_data_organizations_for_user_for_type($_SESSION['userid'], $type);
+	$typearray = Array();
+	while($row = $result->fetch_assoc()) {
+		array_push($typearray, $row['name']); 
+	}
+	return $typearray;
+}
+
+//returns the ids of the orgs the user has access to
+function get_all_orgids_for_user_for_type($type){
+	$data_operation = new DataOperations();
+	$data_out = new DataOutput();
+	$result =  $data_operation->get_all_data_organizations_for_user_for_type($_SESSION['userid'], $type);
+	$typearray = Array();
+	while($row = $result->fetch_assoc()) {
+		array_push($typearray, $row['id']); 
+	}
+	return $typearray;
+}
+
 
 function echo_json_one_org_for_user($orgid){
 	$data_operation = new DataOperations();
 	$data_out = new DataOutput();
-	$result =  $data_operation->get_all_data_organizations_for_user_for_type($_SESSION['userid'], $type);
+	$result =  $data_operation->get_one_data_organizations_for_user_by_id($_SESSION['userid'], $orgid);
 	$typearray = Array();
 	$typearray_full = Array();
 	while($row = $result->fetch_assoc()) {
@@ -210,6 +246,16 @@ function echo_json_one_org_for_user($orgid){
 	$data_out->add_keyvalue_to_links_array($type, $typearray_links);						
 	header('Content-type: application/json');
 	echo  $data_out->output_as_json($typearray_full);
+}
+//returns all types the user has access to
+function get_user_types(){
+	$data_operation = new DataOperations();
+	$result =  $data_operation->get_all_data_types_for_user($_SESSION['userid']);
+	$typearray = Array();
+	while($row = $result->fetch_assoc()) {
+		array_push($typearray, $row['type']); 
+	}
+	return $typearray;
 }
 
 ?>
