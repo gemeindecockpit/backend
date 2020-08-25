@@ -244,7 +244,7 @@ function echo_json_one_org_for_user($orgid){
 	foreach($typearray as $val){
 		$typearray_links[$val] =  $data_out->get_current_self_link() . '/' . $val;
 	}
-	$data_out->add_keyvalue_to_links_array($type, $typearray_links);						
+	$data_out->add_keyvalue_to_links_array('woot', $typearray_links);						
 	header('Content-type: application/json');
 	echo  $data_out->output_as_json($typearray_full);
 }
