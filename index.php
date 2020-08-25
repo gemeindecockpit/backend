@@ -195,6 +195,7 @@ function echo_json_all_types_for_user(){
 	echo  $data_out->output_as_json($typearray);
 }
 function echo_json_all_orgs_for_user_for_type($type){
+	$data_out = new DataOutput();
 	$typearray_links = Array();
 	$typearray = get_all_orgs_for_user_for_type($type);
 	foreach($typearray as $val){
