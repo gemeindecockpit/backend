@@ -237,16 +237,19 @@ function echo_json_one_org_for_user($orgid){
 	$typearray = Array();
 	$typearray_full = Array();
 	while($row = $result->fetch_assoc()) {
-		array_push($typearray, $row['name']); 
 		array_push($typearray_full, $row); 
 	}
+	$result = $data_operation->get_all_fields_for_org($orgid);
+	while($row = $result->fetch_assoc()) {
+		array_push($typearray, $row['name']); 
+	}
 	$typearray_links = Array();
-	/* TODO: add links to fields
+
 	foreach($typearray as $val){
 		$typearray_links[$val] =  $data_out->get_current_self_link() . '/' . $val;
 	}
-	$data_out->add_keyvalue_to_links_array('woot', $typearray_links);	
-	*/	
+	$data_out->add_keyvalue_to_links_array('fields', $typearray_links);	
+	
 	header('Content-type: application/json');
 	echo  $data_out->output_as_json($typearray_full);
 }

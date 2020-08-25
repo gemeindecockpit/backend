@@ -170,6 +170,21 @@ class DataOperations {
 		#TODO:
 		return get_all_data_organizations_for_user_for_type($userid, $type);
 	}
+	#oof
+	public function get_all_fields_for_org($orgid){
+		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$stmt = $db->prepare('SELECT field.* from field 
+		inner join organisation_has_field on organisation_has_field.field_id = field.id 
+		inner join organisation on organisation.id = organisation_has_field.organisation_id 
+		where organisation.id = ?');
+		//$errors = $db->error_list;
+		$stmt->bind_param('i', $orgid);
+
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$db->close();
+		return $result;
+	}
 }
 
 ?>
