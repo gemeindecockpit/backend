@@ -22,6 +22,7 @@ define('NUTS0', 'deutschland');
 define('NUTS1', 'niedersachsen');
 define('NUTS2', 'braunschweig');
 define('NUTS3', 'braunschweig');
+define('NUTS_FULL', NUTS0 . '/' . NUTS1 . '/'. NUTS2 . '/'. NUTS3);
 define('PLZ', '38000');
 
 # more defines here
