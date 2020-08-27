@@ -15,7 +15,7 @@ class UserData {
 
 
 
-	public function __construct() 
+	public function __construct()
 	{
         if(defined('DB_HOST'))
             $this->db_host = DB_HOST;
@@ -26,7 +26,7 @@ class UserData {
         if(defined('DB_USER_PASSWORD'))
             $this->db_user_password = DB_USER_PASSWORD;
 
-        
+
 
         return;
     }
@@ -46,7 +46,7 @@ class UserData {
 		{
 			$_SESSION['userid'] = $row['id'];
 			$_SESSION['username'] = $row['username'];
-			
+
     		return true;
   		}
 
@@ -78,7 +78,7 @@ class UserData {
     public function change_password() {
         $userid = $_SESSION['userid'];
 		$dataOp = new DataOperations();
-		
+
 		$result = $dataOp->get_by_id($userid);
 		$row = $result->fetch_assoc();
         $password = hash('sha256', $_POST['pass']. SALT . $row['salt']);
@@ -87,7 +87,7 @@ class UserData {
         return;
     }
 
-} 
+}
 
 
 ?>
