@@ -5,9 +5,12 @@ require_once("inc/config.php");
 
 #-- classes --
 require_once("lib/class-urisplit.php");
-//require_once("lib/class-user.php");
+require_once("lib/class-user.php");
 require_once("lib/class-dataoutput.php");
-//require_once("lib/class-dataoperations.php");
+require_once("lib/class-dataoperations.php");
+
+require_once("lib\class-getRequestHandler.php");
+require_once("lib\class-postRequestHandler.php");
 
 
 #Informations about servers and methods
@@ -18,81 +21,30 @@ $my_method = $_SERVER['REQUEST_METHOD'];
 
 session_start();
 
-
+if(DEBUG_MODE)
+	$_SESSION['user_id'] = 4;
 
 $uri_info = new URISplit();
-//$user = new UserData();
-//$data_operation = new DataOperations();
+$user = new UserData();
+$data_operation = new DataOperations();
 $data_out = new DataOutput();
-/*
-# TODO login aufrufen
-if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login')
-{
-	session_destroy();
-}
-*/
-/*
-# destroy session after logout
-if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'logout')
-{
-	session_destroy();
-}
-*/
-if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'config') {
-	config_call($uri_info,$data_out);
-} else if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'data') {
-	data_call($uri_info,$data_out);
-}	else {
-	echo 'Computer sagt nein';
+
+if($_SERVER['REQUEST_METHOD'] === 'GET') {
+	$request_handler = new GetRequestHandler($uri_info->path_vars,$data_operation);
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	$request_handler = new PostRequestHandler($uri_info->path_vars,$data_operation);
+} elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+	$request_handler = new PutRequestHandler($uri_info->path_vars,$data_operation);
 }
 
-function config_call($uri_info, $data_out) {
-	if(isset($uri_info->path_vars[1]) && $uri_info->path_vars[1] == '38300') {
-			if(isset($uri_info->path_vars[2]) && $uri_info->path_vars[2] == 'feuerwehr'){
-					if(isset($uri_info->path_vars[3]) && $uri_info->path_vars[3] == 'WF%20Feuerwehr') {
-							if(isset($uri_info->path_vars[4]) && $uri_info->path_vars[4] == 'einsatzkraefte') {
-								header('Content-type: application/json');
-								echo $data_out->output_as_json(WF_FEUERWEHR_FELD1);
-							} else if (isset($uri_info->path_vars[4]) && $uri_info->path_vars[4] == 'fahrzeuge') {
-								header('Content-type: application/json');
-								echo $data_out->output_as_json(WF_FEUERWEHR_FELD2);
-							} else if (isset($uri_info->path_vars[4])) {
-								echo "Andere Felder gibt es noch nicht";
-							} else {
-								header('Content-type: application/json');
-								echo $data_out->output_as_json(WF_FEUERWEHR);
-							}
-					} else if (isset($uri_info->path_vars[3]) && $uri_info->path_vars[3] == 'Freiwillige%20Feuerwehr') {
-						if (isset($uri_info->path_vars[4])) {
-							echo 'Für die freiwillige Feuerwehr wurden noch keine Felder angelegt';
-						} else {
-							header('Content-type: application/json');
-							echo $data_out->output_as_json(FREIWILLIGE_FEUERWEHR);
-						}
-					} else if(isset($uri_info->path_vars[3])) {
-						echo "Diese Feuerwehr gibt es nicht";
-					} else {
-						header('Content-type: application/json');
-						echo $data_out->output_as_json(WF_FEUERWEHREN);
-					}
-			} else if(isset($uri_info->path_vars[2])) {
-				echo $uri_info->path_vars[2];
-			} else {
-				header('Content-type: application/json');
-				echo $data_out->output_as_json(PLZ_38300);
-			}
-	} else if(isset($uri_info->path_vars[1])) {
-		echo 'Bisher gibt es nur Kacheln für Wolfenbüttel';
+if(!isset($_SESSION['user_id'])) {
+	if(isset($uri_info->path_vars[0]) && $uri_info->path_vars[0] == 'login') {
+		$request_handler->handleLoginRequest();
 	} else {
-		header('Content-type: application/json');
-		echo $data_out->output_as_json(ALLEN_ORGANISATION);
+		header("HTTP/1.0 404 Not Found");
 	}
-	return;
+} else {
+	echo $request_handler->handleRequest();
 }
-
-function data_call($uri_info,$data_out){
-	return;
-}
-
 
 ?>
