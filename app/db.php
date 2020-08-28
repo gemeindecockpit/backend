@@ -93,7 +93,7 @@ class DatabaseOps {
 		#TODO:
 		return $this->get_all_config_types_for_user($userid);
 	}
-	
+
 	public function get_all_config_types_for_user($userid){
 		#TODO: richtig?
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
@@ -180,6 +180,23 @@ class DatabaseOps {
 		where organisation.id = ?');
 		//$errors = $db->error_list;
 		$stmt->bind_param('i', $orgid);
+
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$db->close();
+		return $result;
+	}
+
+	public function get_all_NUTS_codes_for_user($user_id) {
+		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$stmt = $db->prepare(
+			'SELECT nuts0,nuts1,nuts2,nuts3
+				FROM view_nuts
+				WHERE zipcode IN
+				(SELECT zipcode FROM view_organisation_visible_for_user WHERE user_id = ?)'
+			);
+
+		$stmt->bind_param('i', $user_id);
 
 		$stmt->execute();
 		$result = $stmt->get_result();
