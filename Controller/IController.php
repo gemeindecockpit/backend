@@ -2,6 +2,8 @@
 
 interface IController {
 
+    // Blablabla
+
 
   //needed for GET-Requests
   //returns one entity
