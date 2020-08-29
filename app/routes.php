@@ -8,7 +8,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 require_once(__DIR__ . '/../app/db.php');
+require_once(__DIR__ . '/../Controller/OrganisationController.php');
 session_start();
+$_SESSION['user_id'] = 4;
 
 return function (App $app) {
     $app->options('/{routes:.*}', function (Request $request, Response $response) {
@@ -38,8 +40,9 @@ return function (App $app) {
     });
 
     $app->get('/config/'. NUTS_FULL, function (Request $request, Response $response) {
-        $response->getBody()->write(echo_json_all_types_for_user());
-        return $response->withHeader('Content-type', 'application/json');
+      $orgController = new OrganisationController();
+      $response->getBody()->write(json_encode($orgController->get_all_types_for_user($_SESSION['user_id'])));
+      return $response->withHeader('Content-type', 'application/json');
     });
 
     $app->get('/config/'. NUTS_FULL . '/{orgaType}', function (Request $request, Response $response, $args) {
@@ -103,20 +106,25 @@ return function (App $app) {
     //GET-REQUESTS #############################################################################
 
     $app->get('/data/'. NUTS_FULL , function (Request $request, Response $response) {
-        $response->getBody()->write(echo_json_all_types_for_user());
-        return $response->withHeader('Content-type', 'application/json');
+      $orgController = new OrganisationController();
+      $response->getBody()->write(json_encode($orgController->get_all_types_for_user($_SESSION['user_id'])));
+      return $response->withHeader('Content-type', 'application/json');
     });
 
     $app->get('/data/'. NUTS_FULL . '/{orgaType}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write(json_encode(get_all_orgs_for_user_for_type($args['orgaType'])));
-        return $response->withHeader('Content-type', 'application/json');
+      $orgController = new OrganisationController();
+      $response->getBody()->write(json_encode($orgController->get_all_orgs_for_user_for_type($_SESSION['user_id'], $args['orgaType'])));
+      return $response->withHeader('Content-type', 'application/json');
     });
 
-    $app->get('/data/'. NUTS_FULL . '/{orgaType}/{entity}', function (Request $request, Response $response) {
-        $response->getBody()->write('TODO: GET – Liefert daten zu einer Entity');
-        //Moglichen Parameter
-        //Last={all | x} liefert den gesamten Verlauf bzw. Den der letzten x Tage
-        return $response->withHeader('Content-type', 'application/json');
+    $app->get('/data/'. NUTS_FULL . '/{orgaType}/{entity}', function (Request $request, Response $response, $args) {
+      printf('mysqli_set_local_infile_default');
+      $orgController = new OrganisationController();
+      echo $_SESSION['user_id'] . $args['orgaType'] . $args['entity'];
+      $response->getBody()->write(json_encode($orgController->get_org_by_name_for_user($_SESSION['user_id'], $args['entity'], $args['orgaType'])));
+      //Moglichen Parameter
+      //Last={all | x} liefert den gesamten Verlauf bzw. Den der letzten x Tage
+      return $response->withHeader('Content-type', 'application/json');
     });
 
     $app->get('/data/'. NUTS_FULL . '/{orgaType}/{entity}/{year:[1|2|3][0-9][0-9][0-9]}[/{month:[0-9][0-9]}[/{day:[0-9][0-9]}]]', function (Request $request, Response $response, $args) {
@@ -145,33 +153,8 @@ return function (App $app) {
         $group->get('/{id}', ViewUserAction::class);
     });
 
-    $app->get('/data[/' . NUTS0 . '[/' . NUTS1 . '[/' . NUTS2 . ']]]', function (Request $request, Response $response) {
+    $app->get('/data[/ ' . NUTS0 . '[/' . NUTS1 . '[/' . NUTS2 . ']]]', function (Request $request, Response $response) {
         $response->getBody()->write('TODO: User NutsController to display correct available NUTZ');
         return $response;
     });
 };
-
-function echo_json_all_types_for_user() {
-	$data_operation = new DatabaseOps();
-	$result =  $data_operation->get_all_config_types_for_user(4); //TODO: $_SESSION['userid'] nutzen und keine hardcode 4 lmao
-	$typearray = Array();
-	while($row = $result->fetch_assoc()) {
-		array_push($typearray, $row['type']);
-	}
-  return json_encode($typearray);
-	 //$data_out->add_keyvalue_to_links_array('types', $typearray_links);
-	//header('Content-type: application/json');
-	//echo  $data_out->output_as_json($typearray);
-}
-
-function get_all_orgs_for_user_for_type($type) {
-
-  $data_operation = new DatabaseOps();
-	$result =  $data_operation->get_all_data_organizations_for_user_for_type(4, $type);//TODO: $_SESSION['userid'] nutzen und keine hardcode 4 lmao
-	$typearray = Array();
-	while($row = $result->fetch_assoc()) {
-		array_push($typearray, $row['name']);
-	}
-	return $typearray;
-
-}

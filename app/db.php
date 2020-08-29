@@ -27,6 +27,42 @@ class DatabaseOps {
 
         return;
     }
+
+
+		public function view_all_organisation_visible_for_user($user_id) {
+			$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+			$stmt = $db->prepare('SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?');
+			$stmt->bind_param('i', $user_id);
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$db->close();
+			return $result;
+		}
+
+		public function view_one_organisation_visible_for_user($user_id, $org_id, $org_type) {
+			$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+			$stmt = $db->prepare('SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND organisation_id = ? AND tpye = ?');
+			$stmt->bind_param('iis', $user_id, $org_id, $org_type);
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$db->close();
+			return $result;
+		}
+
+		//TODO:
+		public function view_data_for_fields_for_org_for_user($user_id, $org_name, $org_type){
+
+		}
+
+		public function view_one_organisation_visible_for_user_by_name($user_id, $org_name, $org_type) {
+			$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+			$stmt = $db->prepare('SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND name = ? AND type = ?');
+			$stmt->bind_param('iss', $user_id, $org_name, $org_type);
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$db->close();
+			return $result;
+		}
 	//returns a resultset containing the userdata for $user where $user is the username
 	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
 	public function get_user($user) {
@@ -94,9 +130,12 @@ class DatabaseOps {
 		return $this->get_all_config_types_for_user($userid);
 	}
 
-	public function get_all_config_types_for_user($userid){
+	public function get_all_types_for_user($user_id){
 		#TODO: richtig?
 		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$stmt = $db->prepare('SELECT DISTINCT(type) FROM view_organisation_visible_for_user WHERE user_id = ?');
+		$stmt->bind_param('i', $user_id);
+		/*
 		$stmt = $db->prepare('select DISTINCT type from organisation
 		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id
 		where can_see_organisation.user_id = ?
@@ -104,8 +143,9 @@ class DatabaseOps {
 		select distinct type from organisation
 		inner join can_alter_organisation on can_alter_organisation.organisation_id = organisation.id
 		where can_alter_organisation.user_id = ?');
+		*/
 		//$errors = $db->error_list;
-		$stmt->bind_param('ii', $userid, $userid);
+		//$stmt->bind_param('ii', $userid, $userid);
 
 		$stmt->execute();
 		$result = $stmt->get_result();
