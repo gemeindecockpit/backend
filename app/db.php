@@ -34,16 +34,18 @@ class DatabaseOps {
 		return new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 	}
 
-	private function get_stmt($stmt_string, $db) {
-		$stmt = $db->prepare($stmt_string);
-		return $stmt;
-	}
-
-	private function execute_stmt($stmt) {
+	private function execute_select_stmt($stmt) {
 		$stmt->execute();
-		$result = $stmt->get_result();
+		$result = $this->execute_select_stmt($stmt);
 		$stmt->close();
 		return $result;
+	}
+
+	private function execute_insert_stmt($stmt) {
+		$stmt->execute();
+		$errno = $stmt->errno
+		$stmt->close();
+		return $errno;
 	}
 
 
@@ -51,9 +53,9 @@ class DatabaseOps {
 		public function get_all_organisations($user_id) {
 			$db = $this->get_db_connection();
 			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?';
-			$stmt = $this->get_stmt($stmt_string);
+			$stmt = $db->prepare($stmt_string);
 			$stmt->bind_param('i', $user_id);
-			$result = $this->execute_stmt($stmt);
+			$result = $this->execute_select_stmt($stmt);
 			$db->close();
 			return $result;
 		}
@@ -61,9 +63,9 @@ class DatabaseOps {
 		public function get_organisation_by_id($user_id, $orga_id) {
 			$db = $this->get_db_connection();
 			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND organisation_id = ?';
-			$stmt = $this->get_stmt($stmt_string);
+			$stmt = $db->prepare($stmt_string);
 			$stmt->bind_param('iis', $user_id, $orga_id);
-			$result = $this->execute_stmt($stmt);
+			$result = $this->execute_select_stmt($stmt);
 			$db->close();
 			return $result;
 		}
@@ -76,9 +78,9 @@ class DatabaseOps {
 				$param_string .= 's';
 				$stmt_string .= ' AND ' . $key . ' = ' . $value;
 			}
-			$stmt = $this->get_stmt($stmt_string);
+			$stmt = $db->prepare($stmt_string);
 			$stmt->bind_param($param_string, $user_id, ...$args);
-			$result = $this->execute_stmt($stmt);
+			$result = $this->execute_select_stmt($stmt);
 			$db->close();
 			return $result;
 		}
@@ -97,7 +99,7 @@ class DatabaseOps {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('SELECT * FROM user WHERE username = ?');
 		$stmt->bind_param('s', $username); // 's' specifies the variable type => 'string'
-		$result = $this->execute_stmt($stmt);
+		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
 	}
@@ -108,7 +110,7 @@ class DatabaseOps {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('SELECT COUNT(*) as counter FROM user WHERE username = ?');
 		$stmt->bind_param('s', $user); // 's' specifies the variable type => 'string'
-		$result = $this->execute_stmt($stmt);
+		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
 	}
@@ -119,27 +121,25 @@ class DatabaseOps {
 		$stmt = $db->prepare('INSERT INTO user (username, userpassword, email, realname, salt) VALUES (?, ?, ?, ?, ?)');
 		//$errors = $db->error_list;
 		$stmt->bind_param('sssss', $username, $userpassword, $email, $realname, $salt);
-
-		$stmt->execute();
-		$error = $stmt->errno;
+		$error = $this->execute_insert_stmt($stmt);
 		$db->close();
+
 		return $error;
 	}
 	#returns userdata by a given userid
-	#TODO::make it a prepaired statement
-	public function get_by_id($id)
+	public function get_user_by_id($user_id)
     {
-
         $db = $this->get_db_connection();
-        $query = 'SELECT username, email, realname FROM user WHERE id= "'.$id.'"';
-        $result = $db->query($query);
-        $user_data = $result->fetch_assoc();
+		$stmt_string = 'SELECT username, email, realname FROM user WHERE id = ?';
+        $stmt = $db->prepare($stmt_string);
+		$stmt->bind_param('i', $user_id);
+		$result = $this->execute_select_stmt($stmt);
         $db->close();
 
-    	return $user_data;
+    	return $result;
     }
 
-	public function update_password($userid, $password){
+	public function update_password($user_id, $password){
 		#TODO:
 	}
 	/* brauchen wir glaube ich garnicht, da wir ja eh nur eine plz haben oder? Wenn doch muss das auch noch ins datenmodell eingebaut werden
@@ -151,35 +151,22 @@ class DatabaseOps {
 		#TODO:
 	}
 	*/
-	public function get_all_data_types_for_user($userid){
+	public function get_all_data_types_for_user($user_id){
 		#TODO:
-		return $this->get_all_config_types_for_user($userid);
+		return $this->get_all_config_types_for_user($user_id);
 	}
 
 	public function get_all_types_for_user($user_id){
-		#TODO: richtig?
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('SELECT DISTINCT(type) FROM view_organisation_visible_for_user WHERE user_id = ?');
 		$stmt->bind_param('i', $user_id);
-		/*
-		$stmt = $db->prepare('select DISTINCT type from organisation
-		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id
-		where can_see_organisation.user_id = ?
-		Union distinct
-		select distinct type from organisation
-		inner join can_alter_organisation on can_alter_organisation.organisation_id = organisation.id
-		where can_alter_organisation.user_id = ?');
-		*/
-		//$errors = $db->error_list;
-		//$stmt->bind_param('ii', $userid, $userid);
 
-		$stmt->execute();
-		$result = $stmt->get_result();
+		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
 	}
 
-	public function get_all_data_organizations_for_user_for_type($userid, $type){
+	public function get_all_data_organisations_for_user_for_type($userid, $type){
 		#TODO: richtig?
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('select organisation.* from organisation
@@ -191,13 +178,12 @@ class DatabaseOps {
 		//$errors = $db->error_list;
 		$stmt->bind_param('isis', $userid, $type, $userid, $type);
 
-		$stmt->execute();
-		$result = $stmt->get_result();
+		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
 	}
 
-	public function get_one_data_organizations_for_user_by_id($userid, $orgid){
+	public function get_one_data_organisations_for_user_by_id($userid, $orgid){
 		#TODO: richtig?
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('select organisation.* from organisation
@@ -209,13 +195,12 @@ class DatabaseOps {
 		//$errors = $db->error_list;
 		$stmt->bind_param('iiii', $userid, $orgid, $userid, $orgid);
 
-		$stmt->execute();
-		$result = $stmt->get_result();
+		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
 	}
 
-	public function get_one_data_organizations_for_user_by_name($userid, $name){
+	public function get_one_data_organisations_for_user_by_name($userid, $name){
 		#TODO: richtig?
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('select organisation.* from organisation
@@ -227,28 +212,24 @@ class DatabaseOps {
 		//$errors = $db->error_list;
 		$stmt->bind_param('isis', $userid, $name, $userid, $name);
 
-		$stmt->execute();
-		$result = $stmt->get_result();
+		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
 	}
 
-	public function get_all_config_organizations_for_user_for_type($userid, $type){
+	public function get_all_config_organisations_for_user_for_type($userid, $type){
 		#TODO:
-		return get_all_data_organizations_for_user_for_type($userid, $type);
+		return get_all_data_organisations_for_user_for_type($userid, $type);
 	}
 	#oof
-	public function get_all_fields_for_org($orgid){
+	public function get_fields_by_organisation_id($orga_id){
 		$db = $this->get_db_connection();
-		$stmt = $db->prepare('SELECT field.* from field
-		inner join organisation_has_field on organisation_has_field.field_id = field.id
-		inner join organisation on organisation.id = organisation_has_field.organisation_id
-		where organisation.id = ?');
+		$stmt_string = 'SELECT * from view_organisations_and_fields WHERE organisation_id = ?';
+		$stmt = $db->prepare($stmt_string);
 		//$errors = $db->error_list;
 		$stmt->bind_param('i', $orgid);
 
-		$stmt->execute();
-		$result = $stmt->get_result();
+		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
 	}
@@ -256,35 +237,32 @@ class DatabaseOps {
 	public function get_NUTS_codes($user_id, ...$args) {
 		$db = $this->get_db_connection();
 		$stmt_string =
-			'SELECT nuts0,nuts1,nuts2,nuts3
-			FROM view_nuts
-			WHERE zipcode
-			IN (SELECT zipcode
-				FROM view_organisation_visible_for_user
-				WHERE user_id = ?';
+			'SELECT DISTINCT nuts0,nuts1,nuts2,nuts3
+			FROM view_organisation_visible_for_user
+			WHERE user_id = ?';
 		$param_string = 'i';
 		for($i = 0; $i < sizeof($args); $i++) {
 			$stmt_string .= ' AND nuts' . $i . ' = ?';
 			$param_string .= 's';
 		}
-		$stmt_string .= ')';
+		$stmt_string .= ')'; // End the query_string
 		$stmt = $this->get_stmt($stmt_string, $db);
 		$stmt->bind_param($param_string,$user_id, ...$args);
 
-		$result = $this->execute_stmt($stmt);
+		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
 	}
 
 	public function get_all_NUTS_codes_for_user($user_id) {
 		$db = $this->get_db_connection();
-		$stmt_string = 'SELECT nuts0,nuts1,nuts2,nuts3
+		$stmt_string =
+				'SELECT DISTINCT nuts0,nuts1,nuts2,nuts3
 				FROM view_nuts
-				WHERE zipcode IN
-				(SELECT zipcode FROM view_organisation_visible_for_user WHERE user_id = ?)';
+				WHERE user_id = ?)';
 		$stmt = $this->get_stmt($stmt_string, $db);
 		$stmt->bind_param('i', $user_id);
-		$result = $this->execute_stmt($stmt);
+		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
 	}
