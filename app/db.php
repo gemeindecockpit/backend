@@ -29,42 +29,7 @@ class DatabaseOps {
     }
 
 
-
-		public function view_all_organisation_visible_for_user($user_id) {
-			$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-			$stmt = $db->prepare('SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?');
-			$stmt->bind_param('i', $user_id);
-			$stmt->execute();
-			$result = $stmt->get_result();
-			$db->close();
-			return $result;
-		}
-
-		public function view_one_organisation_visible_for_user($user_id, $org_id, $org_type) {
-			$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-			$stmt = $db->prepare('SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND organisation_id = ? AND tpye = ?');
-			$stmt->bind_param('iis', $user_id, $org_id, $org_type);
-			$stmt->execute();
-			$result = $stmt->get_result();
-			$db->close();
-			return $result;
-		}
-
-		//TODO:
-		public function view_data_for_fields_for_org_for_user($user_id, $org_name, $org_type){
-
-		}
-
-		public function view_one_organisation_visible_for_user_by_name($user_id, $org_name, $org_type) {
-			$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-			$stmt = $db->prepare('SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND name = ? AND type = ?');
-			$stmt->bind_param('iss', $user_id, $org_name, $org_type);
-			$stmt->execute();
-			$result = $stmt->get_result();
-			$db->close();
-			return $result;
-		}
-
+	// Helper functions to tidy up the other functions
 	private function get_db_connection() {
 		return new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 	}
@@ -82,33 +47,75 @@ class DatabaseOps {
 	}
 
 
+
+		public function get_all_organisations($user_id) {
+			$db = $this->get_db_connection();
+			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?';
+			$stmt = $this->get_stmt($stmt_string);
+			$stmt->bind_param('i', $user_id);
+			$result = $this->execute_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_organisation_by_id($user_id, $orga_id) {
+			$db = $this->get_db_connection();
+			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND organisation_id = ?';
+			$stmt = $this->get_stmt($stmt_string);
+			$stmt->bind_param('iis', $user_id, $orga_id);
+			$result = $this->execute_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_organisations($user_id, ...$args) {
+			$db = $this->get_db_connection();
+			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?';
+			$param_string = 'i';
+			foreach($args as $key=>$value) {
+				$param_string .= 's';
+				$stmt_string .= ' AND ' . $key . ' = ' . $value;
+			}
+			$stmt = $this->get_stmt($stmt_string);
+			$stmt->bind_param($param_string, $user_id, ...$args);
+			$result = $this->execute_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		//TODO:
+		public function get_data_for_fields_for_org_for_user($user_id, $org_name, $org_type){
+
+		}
+
+
+
+
 	//returns a resultset containing the userdata for $user where $user is the username
 	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
-	public function get_user($user) {
-		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+	public function get_user($username) {
+		$db = $this->get_db_connection();
 		$stmt = $db->prepare('SELECT * FROM user WHERE username = ?');
-		$stmt->bind_param('s', $user); // 's' specifies the variable type => 'string'
-		$stmt->execute();
-		$result = $stmt->get_result();
+		$stmt->bind_param('s', $username); // 's' specifies the variable type => 'string'
+		$result = $this->execute_stmt($stmt);
 		$db->close();
 		return $result;
 	}
 
 	//returns the number of occurrences of users with the username $user as a resultset
 	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
-	public function getUserCount($user){
-		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+	public function get_user_count($user){
+		$db = $this->get_db_connection();
 		$stmt = $db->prepare('SELECT COUNT(*) as counter FROM user WHERE username = ?');
 		$stmt->bind_param('s', $user); // 's' specifies the variable type => 'string'
-		$stmt->execute();
-		$result = $stmt->get_result();
+		$result = $this->execute_stmt($stmt);
 		$db->close();
 		return $result;
 	}
 	//returns the error code of the insert querry. 0 if there was no error
 	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
-	public function insertNewUser($username, $userpassword, $email, $realname, $salt){
-		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+	public function insert_new_user($username, $userpassword, $email, $realname, $salt){
+		$db = $this->get_db_connection();
 		$stmt = $db->prepare('INSERT INTO user (username, userpassword, email, realname, salt) VALUES (?, ?, ?, ?, ?)');
 		//$errors = $db->error_list;
 		$stmt->bind_param('sssss', $username, $userpassword, $email, $realname, $salt);
@@ -123,7 +130,7 @@ class DatabaseOps {
 	public function get_by_id($id)
     {
 
-        $db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+        $db = $this->get_db_connection();
         $query = 'SELECT username, email, realname FROM user WHERE id= "'.$id.'"';
         $result = $db->query($query);
         $user_data = $result->fetch_assoc();
@@ -151,7 +158,7 @@ class DatabaseOps {
 
 	public function get_all_types_for_user($user_id){
 		#TODO: richtig?
-		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$db = $this->get_db_connection();
 		$stmt = $db->prepare('SELECT DISTINCT(type) FROM view_organisation_visible_for_user WHERE user_id = ?');
 		$stmt->bind_param('i', $user_id);
 		/*
@@ -174,7 +181,7 @@ class DatabaseOps {
 
 	public function get_all_data_organizations_for_user_for_type($userid, $type){
 		#TODO: richtig?
-		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$db = $this->get_db_connection();
 		$stmt = $db->prepare('select organisation.* from organisation
 		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id
 		where can_see_organisation.user_id = ? and type = ?
@@ -192,7 +199,7 @@ class DatabaseOps {
 
 	public function get_one_data_organizations_for_user_by_id($userid, $orgid){
 		#TODO: richtig?
-		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$db = $this->get_db_connection();
 		$stmt = $db->prepare('select organisation.* from organisation
 		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id
 		where can_see_organisation.user_id = ? and organisation.id = ?
@@ -210,7 +217,7 @@ class DatabaseOps {
 
 	public function get_one_data_organizations_for_user_by_name($userid, $name){
 		#TODO: richtig?
-		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$db = $this->get_db_connection();
 		$stmt = $db->prepare('select organisation.* from organisation
 		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id
 		where can_see_organisation.user_id = ? and organisation.name = ?
@@ -232,7 +239,7 @@ class DatabaseOps {
 	}
 	#oof
 	public function get_all_fields_for_org($orgid){
-		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+		$db = $this->get_db_connection();
 		$stmt = $db->prepare('SELECT field.* from field
 		inner join organisation_has_field on organisation_has_field.field_id = field.id
 		inner join organisation on organisation.id = organisation_has_field.organisation_id
