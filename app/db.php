@@ -27,6 +27,23 @@ class DatabaseOps {
 
         return;
     }
+
+	private function get_db_connection() {
+		return new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
+	}
+
+	private function get_stmt($stmt_string, $db) {
+		$stmt = $db->prepare($stmt_string);
+		return $stmt;
+	}
+
+	private function execute_stmt($stmt) {
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		return $result;
+	}
+
 	//returns a resultset containing the userdata for $user where $user is the username
 	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
 	public function get_user($user) {
@@ -187,19 +204,38 @@ class DatabaseOps {
 		return $result;
 	}
 
-	public function get_all_NUTS_codes_for_user($user_id) {
-		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-		$stmt = $db->prepare(
+	public function get_NUTS_codes($user_id, ...$args) {
+		$db = $this->get_db_connection();
+		$stmt_string =
 			'SELECT nuts0,nuts1,nuts2,nuts3
+			FROM view_nuts
+			WHERE zipcode
+			IN (SELECT zipcode
+				FROM view_organisation_visible_for_user
+				WHERE user_id = ?';
+		$param_string = 'i';
+		for($i = 0; $i < sizeof($args); $i++) {
+			$stmt_string .= ' AND nuts' . $i . ' = ?';
+			$param_string .= 's';
+		}
+		$stmt_string .= ')';
+		$stmt = $this->get_stmt($stmt_string, $db);
+		$stmt->bind_param($param_string,$user_id, ...$args);
+
+		$result = $this->execute_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
+	public function get_all_NUTS_codes_for_user($user_id) {
+		$db = $this->get_db_connection();
+		$stmt_string = 'SELECT nuts0,nuts1,nuts2,nuts3
 				FROM view_nuts
 				WHERE zipcode IN
-				(SELECT zipcode FROM view_organisation_visible_for_user WHERE user_id = ?)'
-			);
-
+				(SELECT zipcode FROM view_organisation_visible_for_user WHERE user_id = ?)';
+		$stmt = $this->get_stmt($stmt_string, $db);
 		$stmt->bind_param('i', $user_id);
-
-		$stmt->execute();
-		$result = $stmt->get_result();
+		$result = $this->execute_stmt($stmt);
 		$db->close();
 		return $result;
 	}
