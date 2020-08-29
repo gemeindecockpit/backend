@@ -5,7 +5,7 @@
 
 # DEBUGMODE on or off
 # values true, false
-define('DEBUG_MODE', true);
+define('DEBUG_MODE', false);
 
 # Access to MySQL Database
 define('DB_HOST', 'db01.kadzioch-media-it.de');

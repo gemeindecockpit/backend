@@ -8,8 +8,18 @@ class NUTSController extends AbstractController {
         parent::__construct();
     }
 
-    public function getOne($user_id, $id) {
+    public function getOne($user_id, ...$args) {
+        $nuts_codes = array();
+        if(is_null($args)) {
+            $nuts_codes = $this->getAll($user_id);
+        } else {
+            $query_result = $this->db_ops->get_NUTS_codes($user_id, ...$args);
 
+            while($row = $query_result->fetch_assoc()) {
+                $nuts_codes[] = $row;
+            }
+        }
+        return $nuts_codes;
     }
 
     public function getAll($user_id) {

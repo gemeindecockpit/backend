@@ -13,7 +13,7 @@ abstract class AbstractController {
 
   //needed for GET-Requests
   //returns one entity
-  abstract public function getOne($user_id, $id);
+  abstract public function getOne($user_id, ...$args);
   //returns all entities of this type
   abstract public function getAll($user_id);
 
