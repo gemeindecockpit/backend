@@ -15,7 +15,8 @@ class OrganisationController extends AbstractController {
     return $org_array;
   }
 
-  public function getOne($user_id, $id){
+  public function getOne($user_id, ...$args){
+    $id = $args[0];
     $db = new DatabaseOps();
     $result = $db->view_one_organisation_visible_for_user($user_id, $id);
     return $result->fetch_assoc();
@@ -25,8 +26,8 @@ class OrganisationController extends AbstractController {
     $db = new DatabaseOps();
     $result = $db->view_one_organisation_visible_for_user_by_name($user_id, $org_name, $org_type);
     $fields_array = [];
-    
-    return array_push($result->fetch_assoc(), $fields_array);
+
+    //return array_push($result->fetch_assoc(), $fields_array);
 
   }
   public function get_all_orgs_for_user_for_type($user_id, $type){

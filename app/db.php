@@ -28,7 +28,7 @@ class DatabaseOps {
         return;
     }
 
-<<<<<<< HEAD
+
 
 		public function view_all_organisation_visible_for_user($user_id) {
 			$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
@@ -64,7 +64,7 @@ class DatabaseOps {
 			$db->close();
 			return $result;
 		}
-=======
+
 	private function get_db_connection() {
 		return new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 	}
@@ -81,7 +81,7 @@ class DatabaseOps {
 		return $result;
 	}
 
->>>>>>> 706afcc985b300c050a5b907d1e22860eab2d604
+
 	//returns a resultset containing the userdata for $user where $user is the username
 	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
 	public function get_user($user) {
