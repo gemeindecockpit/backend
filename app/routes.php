@@ -46,8 +46,9 @@ return function (App $app) {
     });
 
     $app->get('/config/'. NUTS_FULL . '/{orgaType}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write(json_encode(get_all_orgs_for_user_for_type($args['orgaType'])));
-        return $response->withHeader('Content-type', 'application/json');
+      $orgController = new OrganisationController();
+      $response->getBody()->write(json_encode($orgControllerget_all_organisations_by_type($args['orgaType'])));
+      return $response->withHeader('Content-type', 'application/json');
     });
 
     $app->get('/config/'. NUTS_FULL . '/{orgaType}/{entity}', function (Request $request, Response $response, $args) {
@@ -107,13 +108,13 @@ return function (App $app) {
 
     $app->get('/data/'. NUTS_FULL , function (Request $request, Response $response) {
       $orgController = new OrganisationController();
-      $response->getBody()->write(json_encode($orgController->get_all_types_for_user($_SESSION['user_id'])));
+      $response->getBody()->write(json_encode($orgController->get_all_types($_SESSION['user_id'])));
       return $response->withHeader('Content-type', 'application/json');
     });
 
     $app->get('/data/'. NUTS_FULL . '/{orgaType}', function (Request $request, Response $response, $args) {
       $orgController = new OrganisationController();
-      $response->getBody()->write(json_encode($orgController->get_all_orgs_for_user_for_type($_SESSION['user_id'], $args['orgaType'])));
+      $response->getBody()->write(json_encode($orgController->get_all_organisations_by_type($_SESSION['user_id'], $args['orgaType'])));
       return $response->withHeader('Content-type', 'application/json');
     });
 

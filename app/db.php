@@ -35,16 +35,13 @@ class DatabaseOps {
 	}
 
 	private function execute_select_stmt($stmt) {
-		$stmt->execute();
-		$result = $this->execute_select_stmt($stmt);
-		$stmt->close();
-		return $result;
+		return $stmt->execute();
 	}
 
 	private function execute_insert_stmt($stmt) {
 		$stmt->execute();
-		$errno = $stmt->errno
-		$stmt->close();
+		$errno = $stmt->errno;
+		//$stmt->close();
 		return $errno;
 	}
 
@@ -92,7 +89,7 @@ class DatabaseOps {
 				'SELECT
 					organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
 				FROM view_organisation_visible_for_user
-				WHERE user_id = ? AND type = ? AND can_alter = 1')
+				WHERE user_id = ? AND type = ? AND can_alter = 1');
 			//$errors = $db->error_list;
 			$stmt->bind_param('is', $user_id, $org_type);
 
@@ -108,7 +105,7 @@ class DatabaseOps {
 				'SELECT
 					organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
 				FROM view_organisation_visible_for_user
-				WHERE user_id = ? AND organisation_id = ? AND can_alter = 1')
+				WHERE user_id = ? AND organisation_id = ? AND can_alter = 1');
 			//$errors = $db->error_list;
 			$stmt->bind_param('ii', $user_id, $org_id);
 
@@ -124,7 +121,7 @@ class DatabaseOps {
 				'SELECT
 					organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
 				FROM view_organisation_visible_for_user
-				WHERE user_id = ? AND name = ? AND can_alter = 1')
+				WHERE user_id = ? AND name = ? AND can_alter = 1');
 			//$errors = $db->error_list;
 			$stmt->bind_param('is', $user_id, $org_name);
 
@@ -190,26 +187,19 @@ class DatabaseOps {
 	public function update_password($user_id, $password){
 		#TODO:
 	}
-	/* brauchen wir glaube ich garnicht, da wir ja eh nur eine plz haben oder? Wenn doch muss das auch noch ins datenmodell eingebaut werden
-	public function get_all_config_PLZ_for_user($userid){
-		#TODO:
-	}
 
-	public function get_all_data_PLZ_for_user($userid){
-		#TODO:
-	}
-	*/
 	public function get_all_data_types_for_user($user_id){
 		#TODO:
 		return $this->get_all_config_types_for_user($user_id);
 	}
 
 	public function get_all_types_for_user($user_id){
-		$db = $this->get_db_connection();
+		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 		$stmt = $db->prepare('SELECT DISTINCT(type) FROM view_organisation_visible_for_user WHERE user_id = ?');
 		$stmt->bind_param('i', $user_id);
+		$stmt->execute();
 
-		$result = $this->execute_select_stmt($stmt);
+		$stmt->close();
 		$db->close();
 		return $result;
 	}
