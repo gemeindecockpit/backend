@@ -35,7 +35,10 @@ class DatabaseOps {
 	}
 
 	private function execute_select_stmt($stmt) {
-		return $stmt->execute();
+		$stmt->execute();
+		$results = $stmt->get_result();
+		$stmt->close();
+		return $results;
 	}
 
 	private function execute_insert_stmt($stmt) {
@@ -66,7 +69,7 @@ class DatabaseOps {
 			$db->close();
 			return $result;
 		}
-
+		//@Tom kommentare für sowas pls
 		public function get_organisations($user_id, ...$args) {
 			$db = $this->get_db_connection();
 			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?';
@@ -160,7 +163,6 @@ class DatabaseOps {
 		return $result;
 	}
 	//returns the error code of the insert querry. 0 if there was no error
-	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
 	public function insert_new_user($username, $userpassword, $email, $realname, $salt){
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('INSERT INTO user (username, userpassword, email, realname, salt) VALUES (?, ?, ?, ?, ?)');
@@ -172,8 +174,7 @@ class DatabaseOps {
 		return $error;
 	}
 	#returns userdata by a given userid
-	public function get_user_by_id($user_id)
-    {
+	public function get_user_by_id($user_id){
         $db = $this->get_db_connection();
 		$stmt_string = 'SELECT username, email, realname FROM user WHERE id = ?';
         $stmt = $db->prepare($stmt_string);
@@ -198,10 +199,10 @@ class DatabaseOps {
 		$stmt = $db->prepare('SELECT DISTINCT(type) FROM view_organisation_visible_for_user WHERE user_id = ?');
 		$stmt->bind_param('i', $user_id);
 		$stmt->execute();
-
+		$results = $stmt->get_result();
 		$stmt->close();
 		$db->close();
-		return $result;
+		return $results;
 	}
 
 
@@ -210,7 +211,7 @@ class DatabaseOps {
 		#TODO:
 		return get_all_data_organisations_for_user_for_type($userid, $type);
 	}
-	#oof
+
 	public function get_fields_by_organisation_id($org_id){
 		$db = $this->get_db_connection();
 		$stmt_string = 'SELECT * from view_organisations_and_fields WHERE organisation_id = ?';
