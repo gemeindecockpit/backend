@@ -122,7 +122,7 @@ return function (App $app) {
       printf('mysqli_set_local_infile_default');
       $orgController = new OrganisationController();
       echo $_SESSION['user_id'] . $args['orgaType'] . $args['entity'];
-      $response->getBody()->write(json_encode($orgController->get_org_by_name_for_user($_SESSION['user_id'], $args['entity'], $args['orgaType'])));
+      $response->getBody()->write(json_encode($orgController->get_organisation_by_name($_SESSION['user_id'], $args['entity'], $args['orgaType'])));
       //Moglichen Parameter
       //Last={all | x} liefert den gesamten Verlauf bzw. Den der letzten x Tage
       return $response->withHeader('Content-type', 'application/json');

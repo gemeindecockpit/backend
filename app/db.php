@@ -69,17 +69,29 @@ class DatabaseOps {
 			$db->close();
 			return $result;
 		}
-		//@Tom kommentare für sowas pls
+		//@Tom kommentare für sowas pls und teste es vor einem commit lmao
 		public function get_organisations($user_id, ...$args) {
 			$db = $this->get_db_connection();
 			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?';
 			$param_string = 'i';
 			foreach($args as $key=>$value) {
+
 				$param_string .= 's';
 				$stmt_string .= ' AND ' . $key . ' = ' . $value;
 			}
 			$stmt = $db->prepare($stmt_string);
 			$stmt->bind_param($param_string, $user_id, ...$args);
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_organisation_by_name($user_id, $type, $entity) {
+			$db = $this->get_db_connection();
+			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND type = ? AND name = ?';
+			$param_string = 'iss';
+			$stmt = $db->prepare($stmt_string);
+			$stmt->bind_param($param_string, $user_id, $type, $entity);
 			$result = $this->execute_select_stmt($stmt);
 			$db->close();
 			return $result;
@@ -212,9 +224,9 @@ class DatabaseOps {
 		return get_all_data_organisations_for_user_for_type($userid, $type);
 	}
 
-	public function get_fields_by_organisation_id($org_id){
+	public function get_configfields_by_organisation_id($org_id){
 		$db = $this->get_db_connection();
-		$stmt_string = 'SELECT * from view_organisations_and_fields WHERE organisation_id = ?';
+		$stmt_string = 'SELECT field_id, field_name, max_value, yellow_value, red_value, relational_flag, priority from view_organisations_and_fields WHERE organisation_id = ?';
 		$stmt = $db->prepare($stmt_string);
 		//$errors = $db->error_list;
 		$stmt->bind_param('i', $org_id);
@@ -223,6 +235,14 @@ class DatabaseOps {
 		$db->close();
 		return $result;
 	}
+
+	function utf8_converter($array){
+    array_walk_recursive($array, function(&$item, $key){
+        $item = mb_convert_encoding($item, 'UTF-8');
+    });
+
+    return $array;
+}
 
 	public function get_NUTS_codes($user_id, ...$args) {
 		$db = $this->get_db_connection();

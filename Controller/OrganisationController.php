@@ -22,13 +22,36 @@ class OrganisationController extends AbstractController {
     return $result->fetch_assoc();
   }
 
-  public function get_organisations_by_name($user_id, $org_name){
+  public function get_organisation_by_name($user_id, $entity, $org_type){
     $db = new DatabaseOps();
-    $result = $db->get_organisations_by_name($user_id, $org_name);
+    $result = $db->get_organisation_by_name($user_id, $org_type, $entity);
     $fields_array = [];
+    $ret = $result->fetch_assoc();
+    $field_result = $this->get_fields_for_org($user_id, $entity, $org_type);
 
-    //return array_push($result->fetch_assoc(), $fields_array);
+    while($row = $field_result->fetch_assoc()){
+      array_walk_recursive($row, [$this, 'encode_items']);
+      array_push($fields_array, $row);
+    }
+    $ret['fields'] = $fields_array ;
 
+    return $ret;
+
+  }
+
+  function encode_items(&$item, $key){
+     $item = utf8_encode($item);
+   }
+
+  public function get_fields_for_org($user_id, $entity, $org_type){
+    //gettign id
+    $db = new DatabaseOps();
+    $result = $db->get_organisation_by_name($user_id, $org_type, $entity);
+    $fields_array = [];
+    $ret = $result->fetch_assoc();
+    $orgid = $ret['organisation_id'];
+    $result = $db->get_fields_by_organisation_id($orgid);
+    return $result;
   }
   public function get_all_organisations_by_type($user_id, $org_type){
     $db = new DatabaseOps();
