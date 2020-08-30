@@ -60,11 +60,11 @@ class DatabaseOps {
 			return $result;
 		}
 
-		public function get_organisation_by_id($user_id, $orga_id) {
+		public function get_organisation_by_id($user_id, $org_id) {
 			$db = $this->get_db_connection();
 			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND organisation_id = ?';
 			$stmt = $db->prepare($stmt_string);
-			$stmt->bind_param('iis', $user_id, $orga_id);
+			$stmt->bind_param('iis', $user_id, $org_id);
 			$result = $this->execute_select_stmt($stmt);
 			$db->close();
 			return $result;
@@ -80,6 +80,54 @@ class DatabaseOps {
 			}
 			$stmt = $db->prepare($stmt_string);
 			$stmt->bind_param($param_string, $user_id, ...$args);
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_alterable_organisations_by_type($user_id, $org_type){
+			#TODO: richtig?
+			$db = $this->get_db_connection();
+			$stmt = $db->prepare(
+				'SELECT
+					organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
+				FROM view_organisation_visible_for_user
+				WHERE user_id = ? AND type = ? AND can_alter = 1')
+			//$errors = $db->error_list;
+			$stmt->bind_param('is', $user_id, $org_type);
+
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_alterable_organisation_by_id($userid, $orgid){
+			#TODO: richtig?
+			$db = $this->get_db_connection();
+			$stmt = $db->prepare(
+				'SELECT
+					organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
+				FROM view_organisation_visible_for_user
+				WHERE user_id = ? AND organisation_id = ? AND can_alter = 1')
+			//$errors = $db->error_list;
+			$stmt->bind_param('ii', $user_id, $org_id);
+
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_alterable_organisations_by_name($user_id, $org_name){
+			#TODO: richtig?
+			$db = $this->get_db_connection();
+			$stmt = $db->prepare(
+				'SELECT
+					organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
+				FROM view_organisation_visible_for_user
+				WHERE user_id = ? AND name = ? AND can_alter = 1')
+			//$errors = $db->error_list;
+			$stmt->bind_param('is', $user_id, $org_name);
+
 			$result = $this->execute_select_stmt($stmt);
 			$db->close();
 			return $result;
@@ -166,68 +214,19 @@ class DatabaseOps {
 		return $result;
 	}
 
-	public function get_all_data_organisations_for_user_for_type($userid, $type){
-		#TODO: richtig?
-		$db = $this->get_db_connection();
-		$stmt = $db->prepare('select organisation.* from organisation
-		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id
-		where can_see_organisation.user_id = ? and type = ?
-		Union distinct select organisation.* from organisation
-		inner join can_alter_organisation on can_alter_organisation.organisation_id = organisation.id
-		where can_alter_organisation.user_id = ? and type = ?');
-		//$errors = $db->error_list;
-		$stmt->bind_param('isis', $userid, $type, $userid, $type);
 
-		$result = $this->execute_select_stmt($stmt);
-		$db->close();
-		return $result;
-	}
-
-	public function get_one_data_organisations_for_user_by_id($userid, $orgid){
-		#TODO: richtig?
-		$db = $this->get_db_connection();
-		$stmt = $db->prepare('select organisation.* from organisation
-		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id
-		where can_see_organisation.user_id = ? and organisation.id = ?
-		Union distinct select organisation.* from organisation
-		inner join can_alter_organisation on can_alter_organisation.organisation_id = organisation.id
-		where can_alter_organisation.user_id = ? and organisation.id = ?');
-		//$errors = $db->error_list;
-		$stmt->bind_param('iiii', $userid, $orgid, $userid, $orgid);
-
-		$result = $this->execute_select_stmt($stmt);
-		$db->close();
-		return $result;
-	}
-
-	public function get_one_data_organisations_for_user_by_name($userid, $name){
-		#TODO: richtig?
-		$db = $this->get_db_connection();
-		$stmt = $db->prepare('select organisation.* from organisation
-		inner join can_see_organisation on can_see_organisation.organisation_id = organisation.id
-		where can_see_organisation.user_id = ? and organisation.name = ?
-		Union distinct select organisation.* from organisation
-		inner join can_alter_organisation on can_alter_organisation.organisation_id = organisation.id
-		where can_alter_organisation.user_id = ? and organisation.name = ?');
-		//$errors = $db->error_list;
-		$stmt->bind_param('isis', $userid, $name, $userid, $name);
-
-		$result = $this->execute_select_stmt($stmt);
-		$db->close();
-		return $result;
-	}
 
 	public function get_all_config_organisations_for_user_for_type($userid, $type){
 		#TODO:
 		return get_all_data_organisations_for_user_for_type($userid, $type);
 	}
 	#oof
-	public function get_fields_by_organisation_id($orga_id){
+	public function get_fields_by_organisation_id($org_id){
 		$db = $this->get_db_connection();
 		$stmt_string = 'SELECT * from view_organisations_and_fields WHERE organisation_id = ?';
 		$stmt = $db->prepare($stmt_string);
 		//$errors = $db->error_list;
-		$stmt->bind_param('i', $orgid);
+		$stmt->bind_param('i', $org_id);
 
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();
