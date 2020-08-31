@@ -71,6 +71,7 @@ class OrganisationController extends AbstractController {
 
   public function get_config_for_field($user_id, $entity, $org_type, $field_name){
     $field_result = $this->get_configfields_for_org($user_id, $entity, $org_type);
+
     while($row = $field_result->fetch_assoc()){
       if($row['field_name'] == $field_name){
         array_walk_recursive($row, [$this, 'encode_items']);
