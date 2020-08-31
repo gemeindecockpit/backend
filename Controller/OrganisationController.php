@@ -99,7 +99,8 @@ class OrganisationController extends AbstractController {
   }
 
   public function get_all_organisations_by_type($user_id, $org_type){
-    $result = $this->db_opsget_all_organisations($user_id);
+    $db = new DatabaseOps();
+    $result = $db->get_all_organisations($user_id);
     $org_array = Array();
     while($row = $result->fetch_assoc()){
       if($row['type'] == $org_type){
@@ -110,7 +111,8 @@ class OrganisationController extends AbstractController {
   }
 
   public function get_all_types($user_id){
-    $result = $this->db_opsget_all_types_for_user($user_id);
+    $db = new DatabaseOps();
+    $result = $db->get_all_types_for_user($user_id);
     $org_array = Array();
     while($row = $result->fetch_assoc()){
       $org_array[] = $row['type'];
