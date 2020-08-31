@@ -70,26 +70,6 @@ class DatabaseOps {
 			return $result;
 		}
 
-/*
-		//@Tom kommentare für sowas pls und teste es vor einem commit lmao
-		public function get_organisations($user_id, $args) {
-			$db = $this->get_db_connection();
-			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?';
-			$param_string = 'i';
-			foreach($args as $key=>$value) {
-				$param_string .= 's';
-				$stmt_string .= ' AND ' . $key . ' = ?';
-			}
-			echo $stmt_string;
-			$stmt = $db->prepare($stmt_string);
-			$stmt->bind_param($param_string, $user_id, ...$args);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
-*/
-
-
 		public function get_organisations_by_nuts0($user_id, $nuts0) {
 			$db = $this->get_db_connection();
 			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND nuts0 = ?';
@@ -247,9 +227,38 @@ class DatabaseOps {
 			return $result;
 		}
 
-		//TODO:
-		public function get_data_for_fields_for_org_for_user($user_id, $org_name, $org_type){
+		public function get_all_types($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
+			$db = $this->get_db_connection();
+			$stmt = $db->prepare(
+				'SELECT DISTINCT type
+				FROM view_organisation_visible_for_user
+				WHERE user_id = ?
+				AND nuts0 = ?
+				AND nuts1 = ?
+				AND nuts2 = ?
+				AND nuts3 = ?'
+			);
+			$stmt->bind_param('issss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3);
 
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_all_fields_from_organisation_by_id($user_id, $organisation_id) {
+			$db = $this->get_db_connection();
+			$stmt = $db->prepare(
+				'SELECT
+					field_id, field_name, max_value, yellow_value, red_value, relational_flag, view_organisations_and_fields.priority, can_see_organisation.can_alter
+				FROM view_organisations_and_fields
+				JOIN can_see_organisation ON can_see_organisation.organisation_id = view_organisations_and_fields.organisation_id
+				WHERE can_see_organisation.user_id = ?
+				AND can_see_organisation.organisation_id = ?');
+			$stmt->bind_param('ii', $user_id, $organisation_id);
+
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
 		}
 
 
@@ -378,27 +387,18 @@ class DatabaseOps {
 		return $result;
 	}
 
-	function utf8_converter($array){
-    array_walk_recursive($array, function(&$item, $key){
-        $item = mb_convert_encoding($item, 'UTF-8');
-    });
-
-    return $array;
-}
-
-	public function get_NUTS_codes($user_id, ...$args) {
+	public function get_next_NUTS_codes($user_id, ...$args) {
 		$db = $this->get_db_connection();
 		$stmt_string =
-			'SELECT DISTINCT nuts0,nuts1,nuts2,nuts3
-			FROM view_organisation_visible_for_user
+			'SELECT DISTINCT (nuts' . sizeof($args) .
+			') FROM view_organisation_visible_for_user
 			WHERE user_id = ?';
 		$param_string = 'i';
 		for($i = 0; $i < sizeof($args); $i++) {
 			$stmt_string .= ' AND nuts' . $i . ' = ?';
 			$param_string .= 's';
 		}
-		$stmt_string .= ')'; // End the query_string
-		$stmt = $this->get_stmt($stmt_string, $db);
+		$stmt = $db->prepare($stmt_string);
 		$stmt->bind_param($param_string,$user_id, ...$args);
 
 		$result = $this->execute_select_stmt($stmt);
@@ -412,11 +412,19 @@ class DatabaseOps {
 				'SELECT DISTINCT nuts0,nuts1,nuts2,nuts3
 				FROM view_nuts
 				WHERE user_id = ?)';
-		$stmt = $this->get_stmt($stmt_string, $db);
+		$stmt = $db->prepare($stmt_string);
 		$stmt->bind_param('i', $user_id);
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
+	}
+
+	function utf8_converter($array){
+	array_walk_recursive($array, function(&$item, $key){
+		$item = mb_convert_encoding($item, 'UTF-8');
+	});
+
+	return $array;
 	}
 }
 

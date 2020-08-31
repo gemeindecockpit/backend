@@ -32,6 +32,12 @@ abstract class AbstractController {
         return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
     }
 
+    abstract protected function format_json($self_link, $query_result, $next_entity_type, $next_enities);
+
+    function encode_items(&$item, $key){
+       $item = utf8_encode($item);
+     }
+
   //needed for GET-Requests
   //returns one entity
   abstract public function get_one($user_id, ...$args);
