@@ -98,14 +98,12 @@ class DatabaseOps {
 		}
 
 		public function get_alterable_organisations_by_type($user_id, $org_type){
-			#TODO: richtig?
 			$db = $this->get_db_connection();
 			$stmt = $db->prepare(
 				'SELECT
 					organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
 				FROM view_organisation_visible_for_user
 				WHERE user_id = ? AND type = ? AND can_alter = 1');
-			//$errors = $db->error_list;
 			$stmt->bind_param('is', $user_id, $org_type);
 
 			$result = $this->execute_select_stmt($stmt);
@@ -230,6 +228,19 @@ class DatabaseOps {
 		$stmt = $db->prepare($stmt_string);
 		//$errors = $db->error_list;
 		$stmt->bind_param('i', $org_id);
+
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
+
+	public function get_datafields_by_organisation_name($user_id, $org_name, $org_type){
+		$db = $this->get_db_connection();
+		$stmt_string = 'SELECT view_up_to_date_data_from_all_fields.field_id, view_organisations_and_fields.field_name, view_up_to_date_data_from_all_fields.field_value, view_up_to_date_data_from_all_fields.date FROM view_organisations_and_fields JOIN view_organisation_visible_for_user ON view_organisation_visible_for_user.organisation_id = view_organisations_and_fields.organisation_id JOIN view_up_to_date_data_from_all_fields ON view_up_to_date_data_from_all_fields.field_id = view_organisations_and_fields.field_id INNER JOIN (SELECT field_id , MAX(date) AS date FROM view_up_to_date_data_from_all_fields GROUP BY field_id) AS max_date ON max_date.field_id = view_up_to_date_data_from_all_fields.field_id AND view_up_to_date_data_from_all_fields.date = max_date.date where user_id = ? AND organisation_name = ? AND organisation_type = ?';
+		$stmt = $db->prepare($stmt_string);
+		//$errors = $db->error_list;
+		$stmt->bind_param('iss',$user_id , $org_name, $org_type);
 
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();

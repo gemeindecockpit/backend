@@ -41,24 +41,28 @@ return function (App $app) {
 
     $app->get('/config/'. NUTS_FULL, function (Request $request, Response $response) {
       $orgController = new OrganisationController();
-      $response->getBody()->write(json_encode($orgController->get_all_types_for_user($_SESSION['user_id'])));
+      $response->getBody()->write(json_encode($orgController->get_all_types($_SESSION['user_id'])));
       return $response->withHeader('Content-type', 'application/json');
     });
 
     $app->get('/config/'. NUTS_FULL . '/{orgaType}', function (Request $request, Response $response, $args) {
       $orgController = new OrganisationController();
-      $response->getBody()->write(json_encode($orgControllerget_all_organisations_by_type($args['orgaType'])));
+      $response->getBody()->write(json_encode($orgController->get_all_organisations_by_type($_SESSION['user_id'], $args['orgaType'])));
       return $response->withHeader('Content-type', 'application/json');
     });
 
     $app->get('/config/'. NUTS_FULL . '/{orgaType}/{entity}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write('TODO: GET – liefert die configdaten zu einer Entität ');
-        return $response->withHeader('Content-type', 'application/json');
+      $orgController = new OrganisationController();
+      $orgController->get_config_for_organisation_by_name($_SESSION['user_id'], $args['entity'], $args['orgaType']);
+      $response->getBody()->write(json_encode($orgController->get_config_for_organisation_by_name($_SESSION['user_id'], $args['entity'], $args['orgaType'])));
+
+      return $response->withHeader('Content-type', 'application/json');
     });
 
     $app->get('/config/'. NUTS_FULL . '/{orgaType}/{entity}/{field}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write('TODO: GET – liefert die Configdaten zu einem Field ');
-        return $response->withHeader('Content-type', 'application/json');
+      $orgController = new OrganisationController();
+      $response->getBody()->write(json_encode($orgController->get_config_for_field($_SESSION['user_id'], $args['entity'], $args['orgaType'], $args['field'])));
+      return $response->withHeader('Content-type', 'application/json');
     });
 
     //POST-REQUESTS ##############################################################################################
@@ -119,10 +123,8 @@ return function (App $app) {
     });
 
     $app->get('/data/'. NUTS_FULL . '/{orgaType}/{entity}', function (Request $request, Response $response, $args) {
-      printf('mysqli_set_local_infile_default');
       $orgController = new OrganisationController();
-      echo $_SESSION['user_id'] . $args['orgaType'] . $args['entity'];
-      $response->getBody()->write(json_encode($orgController->get_organisation_by_name($_SESSION['user_id'], $args['entity'], $args['orgaType'])));
+      $response->getBody()->write(json_encode($orgController->get_data_for_organisation_by_name($_SESSION['user_id'], $args['entity'], $args['orgaType'])));
       //Moglichen Parameter
       //Last={all | x} liefert den gesamten Verlauf bzw. Den der letzten x Tage
       return $response->withHeader('Content-type', 'application/json');
@@ -141,11 +143,12 @@ return function (App $app) {
         return $response->withHeader('Content-type', 'application/json');
     });
 
-    $app->get('/data/'. NUTS_FULL . '/{orgaType}/{entity}/{field}', function (Request $request, Response $response) {
-        $response->getBody()->write('TODO: GET – Liefert daten zu einer Entity');
-        //Moglichen Parameter
-        // last={all|x}  liefert den gesamten Verlauf bzw. Den der letzten x Tage
-        return $response->withHeader('Content-type', 'application/json');
+    $app->get('/data/'. NUTS_FULL . '/{orgaType}/{entity}/{field}', function (Request $request, Response $response, $args) {
+      $orgController = new OrganisationController();
+      $response->getBody()->write(json_encode($orgController->get_data_for_field($_SESSION['user_id'], $args['entity'], $args['orgaType'], $args['field'])));
+      //Moglichen Parameter
+      // last={all|x}  liefert den gesamten Verlauf bzw. Den der letzten x Tage
+      return $response->withHeader('Content-type', 'application/json');
     });
 
 
