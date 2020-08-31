@@ -87,16 +87,18 @@ class OrganisationController extends AbstractController {
   public function get_configfields_for_org($user_id, $entity, $org_type){
     $db = new DatabaseOps();
     //gettign id
-    $result = $db->get_configfields_by_organisation_id($user_id, $org_type, $entity);
+    $result = $db->get_organisation_by_name($user_id, $org_type, $entity);
     $fields_array = [];
     $ret = $result->fetch_assoc();
+    error_log(json_encode($ret));
     $orgid = $ret['organisation_id'];
     $result = $db->get_configfields_by_organisation_id($orgid);
     return $result;
   }
 
   public function get_all_organisations_by_type($user_id, $org_type){
-    $result = $this->db_opsget_all_organisations($user_id);
+    $db = new DatabaseOps();
+    $result = $db->get_all_organisations($user_id);
     $org_array = Array();
     while($row = $result->fetch_assoc()){
       if($row['type'] == $org_type){
@@ -107,7 +109,8 @@ class OrganisationController extends AbstractController {
   }
 
   public function get_all_types($user_id){
-    $result = $this->db_opsget_all_types_for_user($user_id);
+    $db = new DatabaseOps();
+    $result = $db->get_all_types_for_user($user_id);
     $org_array = Array();
     while($row = $result->fetch_assoc()){
       $org_array[] = $row['type'];
