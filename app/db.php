@@ -69,18 +69,122 @@ class DatabaseOps {
 			$db->close();
 			return $result;
 		}
+
+/*
 		//@Tom kommentare für sowas pls und teste es vor einem commit lmao
-		public function get_organisations($user_id, ...$args) {
+		public function get_organisations($user_id, $args) {
 			$db = $this->get_db_connection();
 			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?';
 			$param_string = 'i';
 			foreach($args as $key=>$value) {
-
 				$param_string .= 's';
-				$stmt_string .= ' AND ' . $key . ' = ' . $value;
+				$stmt_string .= ' AND ' . $key . ' = ?';
 			}
+			echo $stmt_string;
 			$stmt = $db->prepare($stmt_string);
 			$stmt->bind_param($param_string, $user_id, ...$args);
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+*/
+
+
+		public function get_organisations_by_nuts0($user_id, $nuts0) {
+			$db = $this->get_db_connection();
+			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND nuts0 = ?';
+			$stmt = $db->prepare($stmt_string);
+			$stmt->bind_param('is', $user_id, $nuts0);
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_organisations_by_nuts01($user_id, $nuts0, $nuts1) {
+			$db = $this->get_db_connection();
+			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND nuts0 = ? AND nuts1 = ?';
+			$stmt = $db->prepare($stmt_string);
+			$stmt->bind_param('iss', $user_id, $nuts0, $nuts1);
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_organisations_by_nuts012($user_id, $nuts0, $nuts1, $nuts2) {
+			$db = $this->get_db_connection();
+			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user
+			WHERE user_id = ?
+			AND nuts0 = ?
+			AND nuts1 = ?
+			AND nuts2 = ?';
+			$stmt = $db->prepare($stmt_string);
+			$stmt->bind_param('isss', $user_id, $nuts0, $nuts1, $nuts2);
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_organisations_by_nuts0123($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
+			$db = $this->get_db_connection();
+			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user
+			WHERE user_id = ?
+			AND nuts0 = ?
+			AND nuts1 = ?
+			AND nuts2 = ?
+			AND nuts3 = ?';
+			$stmt = $db->prepare($stmt_string);
+			$stmt->bind_param('issss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3);
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_organisations_by_nuts0123_type($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type) {
+			$db = $this->get_db_connection();
+			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user
+			WHERE user_id = ?
+			AND nuts0 = ?
+			AND nuts1 = ?
+			AND nuts2 = ?
+			AND nuts3 = ?
+			AND type = ?';
+			$stmt = $db->prepare($stmt_string);
+			$stmt->bind_param('isssss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type);
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_organisations_by_nuts0123_type_name($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
+			$db = $this->get_db_connection();
+			$stmt = $db->prepare(
+				'SELECT * FROM view_organisation_visible_for_user
+				WHERE user_id = ?
+				AND nuts0 = ?
+				AND nuts1 = ?
+				AND nuts2 = ?
+				AND nuts3 = ?
+				AND type = ?
+				AND name = ?'
+			);
+			$stmt->bind_param('issssss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name);
+			$result = $this->execute_select_stmt($stmt);
+			$db->close();
+			return $result;
+		}
+
+		public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
+			$db = $this->get_db_connection();
+			$stmt = $db->prepare(
+				'SELECT view_fields_visible_for_user.*
+				FROM view_fields_visible_for_user
+				JOIN view_organisations_and_fields
+					ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
+				WHERE view_fields_visible_for_user.user_id = ?
+				AND view_organisations_and_fields.organisation_id = ?
+				AND view_fields_visible_for_user.field_name = ?'
+			);
+			$stmt->bind_param('iis', $user_id, $org_id, $field_name);
 			$result = $this->execute_select_stmt($stmt);
 			$db->close();
 			return $result;

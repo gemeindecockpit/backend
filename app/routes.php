@@ -10,7 +10,17 @@ use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 require_once(__DIR__ . '/../app/db.php');
 require_once(__DIR__ . '/../Controller/OrganisationController.php');
 session_start();
+
+// TODO: Delete before pushing to production!
 $_SESSION['user_id'] = 4;
+
+function assoc_array_to_indexed($assoc_array) {
+    $indexed_array = [];
+    foreach($assoc_array as $value) {
+        $indexed_array[] = $value;
+    }
+    return $indexed_array;
+}
 
 return function (App $app) {
     $app->options('/{routes:.*}', function (Request $request, Response $response) {
@@ -34,29 +44,66 @@ return function (App $app) {
     //
     ############################################################################################
     //GET-REQUESTS ##############################################################################################
-    $app->get('/config[/' . NUTS0 . '[/' . NUTS1 . '[/' . NUTS2 . ']]]', function (Request $request, Response $response) {
-        $response->getBody()->write('TODO: User NutsController to display correct available NUTZ');
-        return $response;
+    $app->get('/config', function (Request $request, Response $response) {
+        $orgController = new OrganisationController();
+        $response->getBody()->write(json_encode($orgController->get_all($_SESSION['user_id'])));
+        return $response->withHeader('Content-type', 'application/json');
     });
 
-    $app->get('/config/'. NUTS_FULL, function (Request $request, Response $response) {
-      $orgController = new OrganisationController();
-      $response->getBody()->write(json_encode($orgController->get_all_types($_SESSION['user_id'])));
-      return $response->withHeader('Content-type', 'application/json');
+    $app->get('/config/{nuts0}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0($_SESSION['user_id'], ...$args_indexed)));
+        return $response->withHeader('Content-type', 'application/json');
     });
 
-    $app->get('/config/'. NUTS_FULL . '/{orgaType}', function (Request $request, Response $response, $args) {
-      $orgController = new OrganisationController();
-      $response->getBody()->write(json_encode($orgController->get_all_organisations_by_type($_SESSION['user_id'], $args['orgaType'])));
-      return $response->withHeader('Content-type', 'application/json');
+    $app->get('/config/{nuts0}/{nuts1}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts01($_SESSION['user_id'], ...$args_indexed)));
+        return $response->withHeader('Content-type', 'application/json');
     });
 
-    $app->get('/config/'. NUTS_FULL . '/{orgaType}/{entity}', function (Request $request, Response $response, $args) {
-      $orgController = new OrganisationController();
-      $orgController->get_config_for_organisation_by_name($_SESSION['user_id'], $args['entity'], $args['orgaType']);
-      $response->getBody()->write(json_encode($orgController->get_config_for_organisation_by_name($_SESSION['user_id'], $args['entity'], $args['orgaType'])));
+    $app->get('/config/{nuts0}/{nuts1}/{nuts2}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts012($_SESSION['user_id'], ...$args_indexed)));
+        return $response->withHeader('Content-type', 'application/json');
+    });
 
-      return $response->withHeader('Content-type', 'application/json');
+    $app->get('/config/{nuts0}/{nuts1}/{nuts2}/{nuts3}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0123($_SESSION['user_id'], ...$args_indexed)));
+        return $response->withHeader('Content-type', 'application/json');
+    });
+
+    $app->get('/config/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{type}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0123_type($_SESSION['user_id'], ...$args_indexed)));
+        return $response->withHeader('Content-type', 'application/json');
+    });
+
+    $app->get('/config/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{type}/{name}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0123_type_name($_SESSION['user_id'], ...$args_indexed)));
+        return $response->withHeader('Content-type', 'application/json');
+    });
+
+    $app->get('/config/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{type}/{name}/{field}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $field_name = $args_assoc['field'];
+        unset($args_assoc['field']);
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $org = $orgController->get_config_for_organisations_by_nuts0123_type_name($_SESSION['user_id'], ...$args_indexed);
+        $orgs_id = -1;
+        if(isset($org[0])) {
+            $org_id = $org[0]['organisation_id'];
+        }
+        $response->getBody()->write(json_encode($orgController->get_config_for_field_by_name($_SESSION['user_id'], $org_id, $field_name)));
+        return $response->withHeader('Content-type', 'application/json');
     });
 
     $app->get('/config/'. NUTS_FULL . '/{orgaType}/{entity}/{field}', function (Request $request, Response $response, $args) {

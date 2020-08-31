@@ -10,6 +10,27 @@ abstract class AbstractController {
         $this->db_ops = new DatabaseOps();
     }
 
+    protected function assoc_array_to_indexed($assoc_array) {
+        $indexed_array = [];
+        foreach($assoc_array as $value) {
+            $indexed_array[] = $value;
+        }
+        return $indexed_array;
+    }
+
+    protected function format_query_result($query_result) {
+        $result = [];
+        while($row = $query_result->fetch_assoc()) {
+            array_walk_recursive($row, [$this, 'encode_items']);
+            array_push($result, $row);
+        }
+
+        return $result;
+    }
+
+    protected function get_self_link(...$args) {
+        return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
+    }
 
   //needed for GET-Requests
   //returns one entity

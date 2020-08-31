@@ -6,3 +6,5 @@
 !/logs/README.md
 .phpunit.result.cache
 commit.sh
+composer.json
+composer.lock
