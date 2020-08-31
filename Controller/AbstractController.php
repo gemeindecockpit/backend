@@ -13,9 +13,9 @@ abstract class AbstractController {
 
   //needed for GET-Requests
   //returns one entity
-  abstract public function getOne($user_id, ...$args);
+  abstract public function get_one($user_id, ...$args);
   //returns all entities of this type
-  abstract public function getAll($user_id);
+  abstract public function get_all($user_id);
 
 /*
   //needed for POST-Requests
