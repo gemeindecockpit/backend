@@ -93,7 +93,6 @@ class OrganisationController extends AbstractController {
 
     $fields_array = [];
     $ret = $result->fetch_assoc();
-    error_log(json_encode($ret));
     $orgid = $ret['organisation_id'];
     $result = $db->get_configfields_by_organisation_id($orgid);
     return $result;
