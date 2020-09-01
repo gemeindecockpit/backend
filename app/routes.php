@@ -334,7 +334,7 @@ return function (App $app) {
 			}
 
 		} else {
-			$header = "HTTP/1.0 400 Bad Request - pass and name are required";
+			$header = "HTTP/1.0 400 Bad Request - 'username' and 'password' are required";
 		}
         $response->getBody()->write($header);
         return $response->withStatus($status, 'tert')->withHeader('Login-Response', $header);
