@@ -24,6 +24,21 @@ class OrganisationController extends AbstractController {
     return $this->format_json($self_link, $query_result, 'nuts0', $next_nuts);
   }
 
+  public function get_all_data($user_id){
+    $query_result = $this->db_ops->get_all_organisations($user_id);
+    $query_result = $this->format_query_result($query_result);
+
+    $next_nuts_query_result = $this->db_ops->get_next_NUTS_codes($user_id);
+    $next_nuts = [];
+    while($row = $next_nuts_query_result->fetch_array()) {
+        array_walk_recursive($row, [$this, 'encode_items']);
+        $next_nuts[] = $row[0];
+    }
+
+    $self_link = $this->get_self_link('data');
+    return $this->format_json_data($self_link, $query_result, 'nuts0', $next_nuts);
+  }
+
   public function get_one($user_id, ...$args){
   }
 
@@ -41,6 +56,21 @@ class OrganisationController extends AbstractController {
       $self_link = $this->get_self_link('config', $nuts0);
       return $this->format_json($self_link, $query_result, 'nuts1', $next_nuts);
   }
+//TODO: repepetive code
+  public function get_data_for_organisations_by_nuts0($user_id, $nuts0) {
+      $query_result = $this->db_ops->get_organisations_by_nuts0($user_id, $nuts0);
+      $query_result = $this->format_query_result($query_result);
+
+      $next_nuts_query_result = $this->db_ops->get_next_NUTS_codes($user_id, $nuts0);
+      $next_nuts = [];
+      while($row = $next_nuts_query_result->fetch_array()) {
+          array_walk_recursive($row, [$this, 'encode_items']);
+          $next_nuts[] = $row[0];
+      }
+
+      $self_link = $this->get_self_link('data', $nuts0);
+      return $this->format_json_data($self_link, $query_result, 'nuts1', $next_nuts);
+  }
 
   public function get_config_for_organisations_by_nuts01($user_id, $nuts0, $nuts1) {
       $query_result = $this->db_ops->get_organisations_by_nuts01($user_id, $nuts0, $nuts1);
@@ -55,6 +85,21 @@ class OrganisationController extends AbstractController {
 
       $self_link = $this->get_self_link('config', $nuts0, $nuts1);
       return $this->format_json($self_link, $query_result, 'nuts2', $next_nuts);
+  }
+//TODO: maybe combine this function with the one above by outsourcing the last part with the 'config'
+  public function get_data_for_organisations_by_nuts01($user_id, $nuts0, $nuts1) {
+      $query_result = $this->db_ops->get_organisations_by_nuts01($user_id, $nuts0, $nuts1);
+      $query_result = $this->format_query_result($query_result);
+
+      $next_nuts_query_result = $this->db_ops->get_next_NUTS_codes($user_id, $nuts0, $nuts1);
+      $next_nuts = [];
+      while($row = $next_nuts_query_result->fetch_array()) {
+          array_walk_recursive($row, [$this, 'encode_items']);
+          $next_nuts[] = $row[0];
+      }
+
+      $self_link = $this->get_self_link('data', $nuts0, $nuts1);
+      return $this->format_json_data($self_link, $query_result, 'nuts2', $next_nuts);
   }
 
   public function get_config_for_organisations_by_nuts012($user_id, $nuts0, $nuts1, $nuts2) {
@@ -72,7 +117,40 @@ class OrganisationController extends AbstractController {
       return $this->format_json($self_link, $query_result, 'nuts3', $next_nuts);
   }
 
+  public function get_data_for_organisations_by_nuts012($user_id, $nuts0, $nuts1, $nuts2) {
+      $query_result = $this->db_ops->get_organisations_by_nuts012($user_id, $nuts0, $nuts1, $nuts2);
+      $query_result = $this->format_query_result($query_result);
+
+      $next_nuts_query_result = $this->db_ops->get_next_NUTS_codes($user_id, $nuts0, $nuts1, $nuts2);
+      $next_nuts = [];
+      while($row = $next_nuts_query_result->fetch_array()) {
+          array_walk_recursive($row, [$this, 'encode_items']);
+          $next_nuts[] = $row[0];
+      }
+
+      $self_link = $this->get_self_link('data', $nuts0, $nuts1, $nuts2);
+      return $this->format_json_data($self_link, $query_result, 'nuts3', $next_nuts);
+  }
+
   public function get_config_for_organisations_by_nuts0123($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
+      $args = func_get_args();
+      $query_result = $this->db_ops->get_organisations_by_nuts0123(...$args);
+      $query_result = $this->format_query_result($query_result);
+
+      $next_entities_query_result = $this->db_ops->get_all_types(...$args);
+      $next_entities = [];
+      while($row = $next_entities_query_result->fetch_array()) {
+          array_walk_recursive($row, [$this, 'encode_items']);
+          $next_entities[] = $row[0];
+      }
+
+      unset($args[0]);
+      $self_link = $this->get_self_link('config', ...$args);
+
+      return $this->format_json($self_link, $query_result, 'orgatype', $next_entities);
+  }
+
+  public function get_data_for_organisations_by_nuts0123($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
       $args = func_get_args();
       $query_result = $this->db_ops->get_organisations_by_nuts0123(...$args);
       $query_result = $this->format_query_result($query_result);
@@ -134,11 +212,26 @@ class OrganisationController extends AbstractController {
   private function get_org_link($org) {
       return htmlspecialchars($_SERVER['SERVER_NAME'].'/config/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['type'].'/'.$org['name']);
   }
+  private function get_org_link_data($org) {
+      return htmlspecialchars($_SERVER['SERVER_NAME'].'/data/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['type'].'/'.$org['name']);
+  }
 
   protected function format_json($self_link, $query_result, $next_entity_type = '', $next_entities = []) {
       $links['self'] = $self_link;
       foreach($query_result as $org) {
           $links['organisations'][$org['name']] = $this->get_org_link($org);
+      }
+      foreach ($next_entities as $value) {
+          $links[$next_entity_type][$value] = $self_link . '/' . $value;
+      }
+      $json_array = array('organisations'=>$query_result, 'links'=>$links);
+      return $json_array;
+  }
+
+  protected function format_json_data($self_link, $query_result, $next_entity_type = '', $next_entities = []) {
+      $links['self'] = $self_link;
+      foreach($query_result as $org) {
+          $links['organisations'][$org['name']] = $this->get_org_link_data($org);
       }
       foreach ($next_entities as $value) {
           $links[$next_entity_type][$value] = $self_link . '/' . $value;

@@ -156,12 +156,39 @@ return function (App $app) {
     ############################################################################################
     //GET-REQUESTS #############################################################################
 
-    $app->get('/data/'. NUTS_FULL , function (Request $request, Response $response) {
-      $orgController = new OrganisationController();
-      $response->getBody()->write(json_encode($orgController->get_all_types($_SESSION['user_id'])));
-      return $response->withHeader('Content-type', 'application/json');
+		$app->get('/data', function (Request $request, Response $response) {
+        $orgController = new OrganisationController();
+        $response->getBody()->write(json_encode($orgController->get_all_data($_SESSION['user_id'])));
+        return $response->withHeader('Content-type', 'application/json');
     });
 
+    $app->get('/data/{nuts0}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts0($_SESSION['user_id'], ...$args_indexed)));
+        return $response->withHeader('Content-type', 'application/json');
+    });
+
+    $app->get('/data/{nuts0}/{nuts1}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts01($_SESSION['user_id'], ...$args_indexed)));
+        return $response->withHeader('Content-type', 'application/json');
+    });
+
+    $app->get('/data/{nuts0}/{nuts1}/{nuts2}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts012($_SESSION['user_id'], ...$args_indexed)));
+        return $response->withHeader('Content-type', 'application/json');
+    });
+
+    $app->get('/data/{nuts0}/{nuts1}/{nuts2}/{nuts3}', function (Request $request, Response $response, $args_assoc) {
+        $orgController = new OrganisationController();
+        $args_indexed = assoc_array_to_indexed($args_assoc);
+        $response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts0123($_SESSION['user_id'], ...$args_indexed)));
+        return $response->withHeader('Content-type', 'application/json');
+		});
     $app->get('/data/'. NUTS_FULL . '/{orgaType}', function (Request $request, Response $response, $args) {
       $orgController = new OrganisationController();
       $response->getBody()->write(json_encode($orgController->get_all_organisations_by_type($_SESSION['user_id'], $args['orgaType'])));
