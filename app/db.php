@@ -335,6 +335,15 @@ class DatabaseOps {
 		return $result;
 	}
 
+	public function get_login_info($username) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare('SELECT id, username, userpassword, salt FROM user WHERE username = ?');
+		$stmt->bind_param('s', $username);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
 	public function update_password($user_id, $password){
 		#TODO:
 	}

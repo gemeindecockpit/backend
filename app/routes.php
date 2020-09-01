@@ -8,7 +8,11 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 require_once(__DIR__ . '/../app/db.php');
-require_once(__DIR__ . '/../Controller/OrganisationController.php');
+
+foreach(glob(__DIR__ . "/../Controller/*.php") as $filename) {
+	require_once($filename);
+}
+
 session_start();
 
 // TODO: Delete before pushing to production!
@@ -207,5 +211,40 @@ return function (App $app) {
     $app->get('/data[/ ' . NUTS0 . '[/' . NUTS1 . '[/' . NUTS2 . ']]]', function (Request $request, Response $response) {
         $response->getBody()->write('TODO: User NutsController to display correct available NUTZ');
         return $response;
+    });
+
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////
+    //                          LOGIN                                              //
+    ////////////////////////////////////////////////////////////////////////////////
+
+    $app->post('/login', function(Request $request, Response $response) {
+        $loginController = new LoginController();
+        if(isset($_POST['username']) && isset($_POST['password'])){
+			if($loginController->login($_POST['username'],$_POST['password'])){
+				$header = "HTTP/1.0 200 Login Successfull";
+			} else {
+				$header = "HTTP/1.0 403 Forbidden";
+			}
+
+		} else {
+			$header = "HTTP/1.0 400 Bad Request - pass and name are required";
+		}
+        $response->getBody()->write($header);
+        return $response->withHeader('Login-Response', $header); // TODO: Not sure how to correctly set the header here
+    });
+
+    $app->post('/logout', function(Request $request, Response $response) {
+        $loginController = new LoginController();
+        if($loginController->logout()) {
+            $header = "HTTP/1.0 200 Logout Successfull";
+        } else {
+            $header = "HTTP/1.0 400 Bad Request - need to be logged in first";
+        }
+        $response->getBody()->write($header);
+        return $response->withHeader('Login-Response', $header); // TODO: Not sure how to correctly set the header here
     });
 };
