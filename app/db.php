@@ -49,219 +49,229 @@ class DatabaseOps {
 	}
 
 
+	############################################################################################
+	//    ______   ______   .__   __.  _______  __    _______
+	//   /      | /  __  \  |  \ |  | |   ____||  |  /  _____|
+	//  |  ,----'|  |  |  | |   \|  | |  |__   |  | |  |  __
+	//  |  |     |  |  |  | |  . `  | |   __|  |  | |  | |_ |
+	//  |  `----.|  `--'  | |  |\   | |  |     |  | |  |__| |
+	//   \______| \______/  |__| \__| |__|     |__|  \______|
+	//
+	############################################################################################
 
-		public function get_all_organisations($user_id) {
-			$db = $this->get_db_connection();
-			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?';
-			$stmt = $db->prepare($stmt_string);
-			$stmt->bind_param('i', $user_id);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+	/////////////////////////////////////////
+	//		organisations				  //
+	////////////////////////////////////////
 
-		public function get_organisation_by_id($user_id, $org_id) {
-			$db = $this->get_db_connection();
-			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND organisation_id = ?';
-			$stmt = $db->prepare($stmt_string);
-			$stmt->bind_param('iis', $user_id, $org_id);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
 
-		public function get_organisations_by_nuts0($user_id, $nuts0) {
-			$db = $this->get_db_connection();
-			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND nuts0 = ?';
-			$stmt = $db->prepare($stmt_string);
-			$stmt->bind_param('is', $user_id, $nuts0);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+	public function get_all_organisations($user_id) {
+		$db = $this->get_db_connection();
+		$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ?';
+		$stmt = $db->prepare($stmt_string);
+		$stmt->bind_param('i', $user_id);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
 
-		public function get_organisations_by_nuts01($user_id, $nuts0, $nuts1) {
-			$db = $this->get_db_connection();
-			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND nuts0 = ? AND nuts1 = ?';
-			$stmt = $db->prepare($stmt_string);
-			$stmt->bind_param('iss', $user_id, $nuts0, $nuts1);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+	public function get_organisation_by_id($user_id, $org_id) {
+		$db = $this->get_db_connection();
+		$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND organisation_id = ?';
+		$stmt = $db->prepare($stmt_string);
+		$stmt->bind_param('iis', $user_id, $org_id);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
 
-		public function get_organisations_by_nuts012($user_id, $nuts0, $nuts1, $nuts2) {
-			$db = $this->get_db_connection();
-			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user
-			WHERE user_id = ?
-			AND nuts0 = ?
-			AND nuts1 = ?
-			AND nuts2 = ?';
-			$stmt = $db->prepare($stmt_string);
-			$stmt->bind_param('isss', $user_id, $nuts0, $nuts1, $nuts2);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+	public function get_organisations_by_nuts0($user_id, $nuts0) {
+		$db = $this->get_db_connection();
+		$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND nuts0 = ?';
+		$stmt = $db->prepare($stmt_string);
+		$stmt->bind_param('is', $user_id, $nuts0);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
 
-		public function get_organisations_by_nuts0123($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
-			$db = $this->get_db_connection();
-			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user
-			WHERE user_id = ?
-			AND nuts0 = ?
-			AND nuts1 = ?
-			AND nuts2 = ?
-			AND nuts3 = ?';
-			$stmt = $db->prepare($stmt_string);
-			$stmt->bind_param('issss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+	public function get_organisations_by_nuts01($user_id, $nuts0, $nuts1) {
+		$db = $this->get_db_connection();
+		$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND nuts0 = ? AND nuts1 = ?';
+		$stmt = $db->prepare($stmt_string);
+		$stmt->bind_param('iss', $user_id, $nuts0, $nuts1);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
 
-		public function get_organisations_by_nuts0123_type($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type) {
-			$db = $this->get_db_connection();
-			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user
+	public function get_organisations_by_nuts012($user_id, $nuts0, $nuts1, $nuts2) {
+		$db = $this->get_db_connection();
+		$stmt_string = 'SELECT * FROM view_organisation_visible_for_user
+		WHERE user_id = ?
+		AND nuts0 = ?
+		AND nuts1 = ?
+		AND nuts2 = ?';
+		$stmt = $db->prepare($stmt_string);
+		$stmt->bind_param('isss', $user_id, $nuts0, $nuts1, $nuts2);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
+	public function get_organisations_by_nuts0123($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
+		$db = $this->get_db_connection();
+		$stmt_string = 'SELECT * FROM view_organisation_visible_for_user
+		WHERE user_id = ?
+		AND nuts0 = ?
+		AND nuts1 = ?
+		AND nuts2 = ?
+		AND nuts3 = ?';
+		$stmt = $db->prepare($stmt_string);
+		$stmt->bind_param('issss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
+	public function get_organisations_by_nuts0123_type($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type) {
+		$db = $this->get_db_connection();
+		$stmt_string = 'SELECT * FROM view_organisation_visible_for_user
+		WHERE user_id = ?
+		AND nuts0 = ?
+		AND nuts1 = ?
+		AND nuts2 = ?
+		AND nuts3 = ?
+		AND type = ?';
+		$stmt = $db->prepare($stmt_string);
+		$stmt->bind_param('isssss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
+	public function get_organisations_by_nuts0123_type_name($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT * FROM view_organisation_visible_for_user
 			WHERE user_id = ?
 			AND nuts0 = ?
 			AND nuts1 = ?
 			AND nuts2 = ?
 			AND nuts3 = ?
-			AND type = ?';
-			$stmt = $db->prepare($stmt_string);
-			$stmt->bind_param('isssss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+			AND type = ?
+			AND name = ?'
+		);
+		$stmt->bind_param('issssss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
 
-		public function get_organisations_by_nuts0123_type_name($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
-			$db = $this->get_db_connection();
-			$stmt = $db->prepare(
-				'SELECT * FROM view_organisation_visible_for_user
-				WHERE user_id = ?
-				AND nuts0 = ?
-				AND nuts1 = ?
-				AND nuts2 = ?
-				AND nuts3 = ?
-				AND type = ?
-				AND name = ?'
-			);
-			$stmt->bind_param('issssss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+	public function get_all_types($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT DISTINCT type
+			FROM view_organisation_visible_for_user
+			WHERE user_id = ?
+			AND nuts0 = ?
+			AND nuts1 = ?
+			AND nuts2 = ?
+			AND nuts3 = ?'
+		);
+		$stmt->bind_param('issss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3);
 
-		public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
-			$db = $this->get_db_connection();
-			$stmt = $db->prepare(
-				'SELECT view_fields_visible_for_user.*
-				FROM view_fields_visible_for_user
-				JOIN view_organisations_and_fields
-					ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
-				WHERE view_fields_visible_for_user.user_id = ?
-				AND view_organisations_and_fields.organisation_id = ?
-				AND view_fields_visible_for_user.field_name = ?'
-			);
-			$stmt->bind_param('iis', $user_id, $org_id, $field_name);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
 
-		public function get_organisation_by_name($user_id, $type, $entity) {
-			$db = $this->get_db_connection();
-			$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND type = ? AND name = ?';
-			$param_string = 'iss';
-			$stmt = $db->prepare($stmt_string);
-			$stmt->bind_param($param_string, $user_id, $type, $entity);
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+	public function get_organisation_by_name($user_id, $type, $entity) {
+		$db = $this->get_db_connection();
+		$stmt_string = 'SELECT * FROM view_organisation_visible_for_user WHERE user_id = ? AND type = ? AND name = ?';
+		$param_string = 'iss';
+		$stmt = $db->prepare($stmt_string);
+		$stmt->bind_param($param_string, $user_id, $type, $entity);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
 
-		public function get_alterable_organisations_by_type($user_id, $org_type){
-			$db = $this->get_db_connection();
-			$stmt = $db->prepare(
-				'SELECT
-					organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
-				FROM view_organisation_visible_for_user
-				WHERE user_id = ? AND type = ? AND can_alter = 1');
-			$stmt->bind_param('is', $user_id, $org_type);
+	public function get_all_fields_from_organisation_by_id($user_id, $organisation_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				field_id, field_name, max_value, yellow_value, red_value, relational_flag, view_organisations_and_fields.priority, can_see_organisation.can_alter
+			FROM view_organisations_and_fields
+			JOIN can_see_organisation ON can_see_organisation.organisation_id = view_organisations_and_fields.organisation_id
+			WHERE can_see_organisation.user_id = ?
+			AND can_see_organisation.organisation_id = ?');
+		$stmt->bind_param('ii', $user_id, $organisation_id);
 
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
 
-		public function get_alterable_organisation_by_id($userid, $orgid){
-			#TODO: richtig?
-			$db = $this->get_db_connection();
-			$stmt = $db->prepare(
-				'SELECT
-					organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
-				FROM view_organisation_visible_for_user
-				WHERE user_id = ? AND organisation_id = ? AND can_alter = 1');
-			//$errors = $db->error_list;
-			$stmt->bind_param('ii', $user_id, $org_id);
+	public function get_alterable_organisation_by_id($userid, $orgid){
+		#TODO: richtig?
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
+			FROM view_organisation_visible_for_user
+			WHERE user_id = ? AND organisation_id = ? AND can_alter = 1');
+		//$errors = $db->error_list;
+		$stmt->bind_param('ii', $user_id, $org_id);
 
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
 
-		public function get_alterable_organisations_by_name($user_id, $org_name){
-			#TODO: richtig?
-			$db = $this->get_db_connection();
-			$stmt = $db->prepare(
-				'SELECT
-					organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
-				FROM view_organisation_visible_for_user
-				WHERE user_id = ? AND name = ? AND can_alter = 1');
-			//$errors = $db->error_list;
-			$stmt->bind_param('is', $user_id, $org_name);
+	public function get_alterable_organisations_by_name($user_id, $org_name){
+		#TODO: richtig?
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				organisation_id, name, type, description, contact, zipcode, nuts0, nuts1, nuts2, nuts3
+			FROM view_organisation_visible_for_user
+			WHERE user_id = ? AND name = ? AND can_alter = 1');
+		//$errors = $db->error_list;
+		$stmt->bind_param('is', $user_id, $org_name);
 
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
-
-		public function get_all_types($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
-			$db = $this->get_db_connection();
-			$stmt = $db->prepare(
-				'SELECT DISTINCT type
-				FROM view_organisation_visible_for_user
-				WHERE user_id = ?
-				AND nuts0 = ?
-				AND nuts1 = ?
-				AND nuts2 = ?
-				AND nuts3 = ?'
-			);
-			$stmt->bind_param('issss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3);
-
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
-
-		public function get_all_fields_from_organisation_by_id($user_id, $organisation_id) {
-			$db = $this->get_db_connection();
-			$stmt = $db->prepare(
-				'SELECT
-					field_id, field_name, max_value, yellow_value, red_value, relational_flag, view_organisations_and_fields.priority, can_see_organisation.can_alter
-				FROM view_organisations_and_fields
-				JOIN can_see_organisation ON can_see_organisation.organisation_id = view_organisations_and_fields.organisation_id
-				WHERE can_see_organisation.user_id = ?
-				AND can_see_organisation.organisation_id = ?');
-			$stmt->bind_param('ii', $user_id, $organisation_id);
-
-			$result = $this->execute_select_stmt($stmt);
-			$db->close();
-			return $result;
-		}
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
 
 
+
+	/////////////////////////////////////////
+	//		fields				  		  //
+	////////////////////////////////////////
+
+	public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT view_fields_visible_for_user.*
+			FROM view_fields_visible_for_user
+			JOIN view_organisations_and_fields
+				ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
+			WHERE view_fields_visible_for_user.user_id = ?
+			AND view_organisations_and_fields.organisation_id = ?
+			AND view_fields_visible_for_user.field_name = ?'
+		);
+		$stmt->bind_param('iis', $user_id, $org_id, $field_name);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
+
+
+	/////////////////////////////////////////
+	//		users				  	      //
+	////////////////////////////////////////
 
 
 	//returns a resultset containing the userdata for $user where $user is the username
@@ -348,53 +358,11 @@ class DatabaseOps {
 		#TODO:
 	}
 
-	public function get_all_data_types_for_user($user_id){
-		#TODO:
-		return $this->get_all_config_types_for_user($user_id);
-	}
 
-	public function get_all_types_for_user($user_id){
-		$db = new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
-		$stmt = $db->prepare('SELECT DISTINCT(type) FROM view_organisation_visible_for_user WHERE user_id = ?');
-		$stmt->bind_param('i', $user_id);
-		$stmt->execute();
-		$results = $stmt->get_result();
-		$stmt->close();
-		$db->close();
-		return $results;
-	}
+	/////////////////////////////////////////
+	//		NUTS 						  //
+	////////////////////////////////////////
 
-
-
-	public function get_all_config_organisations_for_user_for_type($userid, $type){
-		#TODO:
-		return get_all_data_organisations_for_user_for_type($userid, $type);
-	}
-
-	public function get_configfields_by_organisation_id($org_id){
-		$db = $this->get_db_connection();
-		$stmt_string = 'SELECT field_id, field_name, max_value, yellow_value, red_value, relational_flag, priority from view_organisations_and_fields WHERE organisation_id = ?';
-		$stmt = $db->prepare($stmt_string);
-		//$errors = $db->error_list;
-		$stmt->bind_param('i', $org_id);
-
-		$result = $this->execute_select_stmt($stmt);
-		$db->close();
-		return $result;
-	}
-
-
-	public function get_datafields_by_organisation_name($user_id, $org_name, $org_type){
-		$db = $this->get_db_connection();
-		$stmt_string = 'SELECT view_up_to_date_data_from_all_fields.field_id, view_organisations_and_fields.field_name, view_up_to_date_data_from_all_fields.field_value, view_up_to_date_data_from_all_fields.date FROM view_organisations_and_fields JOIN view_organisation_visible_for_user ON view_organisation_visible_for_user.organisation_id = view_organisations_and_fields.organisation_id JOIN view_up_to_date_data_from_all_fields ON view_up_to_date_data_from_all_fields.field_id = view_organisations_and_fields.field_id INNER JOIN (SELECT field_id , MAX(date) AS date FROM view_up_to_date_data_from_all_fields GROUP BY field_id) AS max_date ON max_date.field_id = view_up_to_date_data_from_all_fields.field_id AND view_up_to_date_data_from_all_fields.date = max_date.date where user_id = ? AND organisation_name = ? AND organisation_type = ?';
-		$stmt = $db->prepare($stmt_string);
-		//$errors = $db->error_list;
-		$stmt->bind_param('iss',$user_id , $org_name, $org_type);
-
-		$result = $this->execute_select_stmt($stmt);
-		$db->close();
-		return $result;
-	}
 
 	public function get_next_NUTS_codes($user_id, ...$args) {
 		$db = $this->get_db_connection();
@@ -417,23 +385,84 @@ class DatabaseOps {
 
 	public function get_all_NUTS_codes_for_user($user_id) {
 		$db = $this->get_db_connection();
-		$stmt_string =
-				'SELECT DISTINCT nuts0,nuts1,nuts2,nuts3
+		$stmt = $db->prepare(
+			'SELECT DISTINCT nuts0,nuts1,nuts2,nuts3
 				FROM view_nuts
-				WHERE user_id = ?)';
-		$stmt = $db->prepare($stmt_string);
+				WHERE user_id = ?'
+			);
 		$stmt->bind_param('i', $user_id);
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
 	}
 
-	function utf8_converter($array){
-	array_walk_recursive($array, function(&$item, $key){
-		$item = mb_convert_encoding($item, 'UTF-8');
-	});
 
-	return $array;
+	############################################################################################
+    //   _______       ___   .___________.    ___
+    //  |       \     /   \  |           |   /   \
+    //  |  .--.  |   /  ^  \ `---|  |----`  /  ^  \
+    //  |  |  |  |  /  /_\  \    |  |      /  /_\  \
+    //  |  '--'  | /  _____  \   |  |     /  _____  \
+    //  |_______/ /__/     \__\  |__|    /__/     \__\
+    //
+    #############################################################################################
+
+	public function get_data_by_field_name($user_id, $organisation_id, $field_name) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				data.field_id as field_id,
+				field_value,
+				realname,
+				date
+			FROM view_up_to_date_data_from_all_fields data
+			JOIN can_see_field ON data.field_id = can_see_field.field_id
+			JOIN view_organisations_and_fields ON view_organisations_and_fields.field_id = data.field_id
+			WHERE can_see_field.user_id = ?
+			AND view_organisations_and_fields.organisation_id = ?
+			AND view_organisations_and_fields.field_name = ?
+			ORDER BY date DESC'
+		);
+		$stmt->bind_param('iis', $user_id, $organisation_id, $field_name);
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
+	}
+
+	public function get_data_by_field_id($user_id, $organisation_id, $field_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				data.field_id as field_id,
+				field_value,
+				realname,
+				date
+			FROM view_up_to_date_data_from_all_fields data
+			JOIN can_see_field ON data.field_id = can_see_field.field_id
+			JOIN view_organisations_and_fields ON view_organisations_and_fields.field_id = data.field_id
+			WHERE can_see_field.user_id = ?
+			AND view_organisations_and_fields.organisation_id = ?
+			AND data.field_id = ?
+			ORDER BY date DESC'
+		);
+		$stmt->bind_param('iii', $user_id, $organisation_id, $field_id);
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
+	}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// HELPER functions
+
+
+	function utf8_converter($array){
+		array_walk_recursive($array, function(&$item, $key){
+			$item = mb_convert_encoding($item, 'UTF-8');
+		});
+
+		return $array;
 	}
 }
 

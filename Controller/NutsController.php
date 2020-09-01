@@ -27,7 +27,7 @@ class NUTSController extends AbstractController {
         return $query_result->fetch_all();
     }
 
-    protected function format_json($self_link, $query_result, $next_entity_type, $next_enities) {}
+    protected function format_json($self_link, $query_result, $next_entity_type = '', $next_enities = []) {}
 
 }
 

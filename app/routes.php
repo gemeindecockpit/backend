@@ -47,6 +47,7 @@ return function (App $app) {
     //   \______| \______/  |__| \__| |__|     |__|  \______|
     //
     ############################################################################################
+
     //GET-REQUESTS ##############################################################################################
     $app->get('/config', function (Request $request, Response $response) {
         $orgController = new OrganisationController();
@@ -108,12 +109,6 @@ return function (App $app) {
         }
         $response->getBody()->write(json_encode($orgController->get_config_for_field_by_name($_SESSION['user_id'], $org_id, $field_name)));
         return $response->withHeader('Content-type', 'application/json');
-    });
-
-    $app->get('/config/'. NUTS_FULL . '/{orgaType}/{entity}/{field}', function (Request $request, Response $response, $args) {
-      $orgController = new OrganisationController();
-      $response->getBody()->write(json_encode($orgController->get_config_for_field($_SESSION['user_id'], $args['entity'], $args['orgaType'], $args['field'])));
-      return $response->withHeader('Content-type', 'application/json');
     });
 
     //POST-REQUESTS ##############################################################################################
@@ -203,14 +198,30 @@ return function (App $app) {
     });
 
 
-    $app->group('/users', function (Group $group) {
-        $group->get('', ListUsersAction::class);
-        $group->get('/{id}', ViewUserAction::class);
-    });
+
 
     $app->get('/data[/ ' . NUTS0 . '[/' . NUTS1 . '[/' . NUTS2 . ']]]', function (Request $request, Response $response) {
         $response->getBody()->write('TODO: User NutsController to display correct available NUTZ');
         return $response;
+    });
+
+
+    $app->get('/data/{organisation_id:[0-9]+}/{field_id:[0-9]+}', function (Request $request, Response $response, $args_assoc) {
+        $data_controller = new DataController();
+        $json_array = $data_controller->get_latest_data_by_field_id(
+            $_SESSION['user_id'], $args_assoc['organisation_id'], $args_assoc['field_id']
+        );
+        $response->getBody()->write(json_encode($json_array));
+        return $response->withHeader('Content-type', 'application/json');
+    });
+
+    $app->get('/data/{organisation_id:[0-9]+}/{field_name}', function (Request $request, Response $response, $args_assoc) {
+        $data_controller = new DataController();
+        $json_array = $data_controller->get_latest_data_by_field_name(
+            $_SESSION['user_id'], $args_assoc['organisation_id'], $args_assoc['field_name']
+        );
+        $response->getBody()->write(json_encode($json_array));
+        return $response->withHeader('Content-type', 'application/json');
     });
 
 
@@ -220,6 +231,12 @@ return function (App $app) {
     //////////////////////////////////////////////////////////////////////////////////
     //                          LOGIN                                              //
     ////////////////////////////////////////////////////////////////////////////////
+
+
+    $app->group('/users', function (Group $group) {
+        $group->get('', ListUsersAction::class);
+        $group->get('/{id}', ViewUserAction::class);
+    });
 
     $app->post('/login', function(Request $request, Response $response) {
         $loginController = new LoginController();

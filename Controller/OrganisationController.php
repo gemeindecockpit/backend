@@ -22,8 +22,6 @@ class OrganisationController extends AbstractController {
 
     $self_link = $this->get_self_link('config');
     return $this->format_json($self_link, $query_result, 'nuts0', $next_nuts);
-
-    return $query_result;
   }
 
   public function get_one($user_id, ...$args){
@@ -133,46 +131,11 @@ class OrganisationController extends AbstractController {
       return $query_result;
   }
 
-  public function get_configfields_for_org($user_id, $entity, $org_type){
-
-    $db = new DatabaseOps();
-    //gettign id
-    $result = $db->get_organisation_by_name($user_id, $org_type, $entity);
-
-    $fields_array = [];
-    $ret = $result->fetch_assoc();
-    $orgid = $ret['organisation_id'];
-    $result = $db->get_configfields_by_organisation_id($orgid);
-    return $result;
-  }
-
-  public function get_all_organisations_by_type($user_id, $org_type){
-    $db = new DatabaseOps();
-    $result = $db->get_all_organisations($user_id);
-    $org_array = Array();
-    while($row = $result->fetch_assoc()){
-      if($row['type'] == $org_type){
-        $org_array[] = $row[0];
-      }
-    }
-    return $org_array;
-  }
-
-  public function get_all_types($user_id){
-    $db = new DatabaseOps();
-    $result = $db->get_all_types_for_user($user_id);
-    $org_array = Array();
-    while($row = $result->fetch_assoc()){
-      $org_array[] = $row['type'];
-    }
-    return $org_array;
-  }
-
   private function get_org_link($org) {
       return htmlspecialchars($_SERVER['SERVER_NAME'].'/config/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['type'].'/'.$org['name']);
   }
 
-  protected function format_json($self_link, $query_result, $next_entity_type, $next_entities) {
+  protected function format_json($self_link, $query_result, $next_entity_type = '', $next_entities = []) {
       $links['self'] = $self_link;
       foreach($query_result as $org) {
           $links['organisations'][$org['name']] = $this->get_org_link($org);
