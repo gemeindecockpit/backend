@@ -1,7 +1,7 @@
 <?php
 
 require_once("AbstractController.php");
-require_once("NUTSController.php");
+require_once("NutsController.php");
 require_once(__DIR__ . '/../app/db.php');
 class OrganisationController extends AbstractController {
 
