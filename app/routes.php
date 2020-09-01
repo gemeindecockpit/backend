@@ -285,28 +285,34 @@ return function (App $app) {
 
     $app->post('/login', function(Request $request, Response $response) {
         $loginController = new LoginController();
+				$status = 200;
         if(isset($_POST['username']) && isset($_POST['password'])){
 			if($loginController->login($_POST['username'],$_POST['password'])){
 				$header = "HTTP/1.0 200 Login Successfull";
+				$status = 200;
 			} else {
 				$header = "HTTP/1.0 403 Forbidden";
+				$status = 403;
 			}
 
 		} else {
 			$header = "HTTP/1.0 400 Bad Request - pass and name are required";
 		}
         $response->getBody()->write($header);
-        return $response->withHeader('Login-Response', $header); // TODO: Not sure how to correctly set the header here
+        return $response->withStatus($status, 'tert')->withHeader('Login-Response', $header);
     });
 
     $app->post('/logout', function(Request $request, Response $response) {
         $loginController = new LoginController();
+				$status = 200;
         if($loginController->logout()) {
             $header = "HTTP/1.0 200 Logout Successfull";
+						$status = 200;
         } else {
             $header = "HTTP/1.0 400 Bad Request - need to be logged in first";
+						$status = 400;
         }
         $response->getBody()->write($header);
-        return $response->withHeader('Login-Response', $header); // TODO: Not sure how to correctly set the header here
+        return $response->withStatus($status, 'test')->withHeader('Login-Response', $header);
     });
 };

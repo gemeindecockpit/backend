@@ -28,11 +28,15 @@ abstract class AbstractController {
     }
 
     protected function get_self_link(...$args) {
-        return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
+      //array_walk_recursive($args, [$this, 'encode_items_url']);
+      return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
     }
 
     abstract protected function format_json($self_link, $query_result, $next_entity_type = '', $next_entities = []);
 
+    function encode_items_url(&$item, $key){
+      $item = rawurlencode($item);
+    }
     function encode_items(&$item, $key){
        $item = utf8_encode($item);
      }
