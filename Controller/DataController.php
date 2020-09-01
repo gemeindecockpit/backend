@@ -46,17 +46,19 @@ class DataController extends AbstractController {
 
         return $this->format_json($self_link, $data);
     }
-/*
-    protected function format_query_result($query_result) {
-        $formatted_result = [];
-        while($row = $query_result->fetch_assoc()) {
-            $date = $row['date'];
-            unset($row['date']);
-            $formatted_result[$date] = $row;
+
+    public function insert_multiple_values_for_date($user_id, $field_values, $date) {
+        foreach ($field_values as $field_id => $field_value) {
+            $this->db_ops->insert_value_for_date($user_id, $field_id, $field_value, $date);
         }
-        return $formatted_result;
     }
-*/
+
+    public function insert_multiple_values_for_date_by_field_name($user_id, $organisation_id, $field_values, $date) {
+        foreach ($field_values as $field_name => $field_value) {
+            $this->db_ops->insert_value_for_date_by_field_name($user_id, $organisation_id, $field_name, $field_value, $date);
+        }
+    }
+
     protected function format_json($self_link, $query_result, $next_entity_type = '', $next_entities = []) {
         $json_array = $query_result;
         $json_array['links']['self'] = $self_link;

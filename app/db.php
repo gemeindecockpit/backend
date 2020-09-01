@@ -451,6 +451,40 @@ class DatabaseOps {
 		return $query_result;
 	}
 
+	public function insert_value_for_date($user_id, $field_id, $field_value, $date) {
+		$db = $this->get_db_connection();
+		$possible_fields_stmt = $db->prepare('SELECT DISTINCT field_id FROM can_insert_into_field WHERE user_id = ?');
+		$possible_fields_stmt->bind_param('i', $user_id);
+		$possible_fields_query_result = $this->execute_select_stmt($possible_fields_stmt);
+		$possible_fields = [];
+		while($row = $possible_fields_query_result->fetch_assoc()) {
+			$possible_fields[] = $row['field_id'];
+		}
+		if(!in_array($field_id, $possible_fields)) {
+			return false;
+		}
+		$stmt = $db->prepare(
+			'INSERT into field_values (field_id, user_id, field_value, date) VALUES (?,?,?,?)'
+		);
+		$stmt->bind_param('iiis',$field_id, $user_id, $field_value, $date);
+		$errno = $this->execute_insert_stmt($stmt);
+		$db->close();
+		return $errno;
+	}
+
+	public function insert_value_for_date_by_field_name($user_id, $organisation_id, $field_name, $field_value, $date) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare('SELECT field_id FROM view_organisations_and_fields WHERE organisation_id = ? AND field_name = ?');
+		$stmt->bind_param('is', $organisation_id, $field_name);
+		$query_result = $this->execute_select_stmt($stmt);
+		$field_id = -1;
+		if($row = $query_result->fetch_assoc()) {
+			$field_id = $row['field_id'];
+		}
+		$db->close();
+		return $this->insert_value_for_date($user_id, $field_id, $field_value, $date);
+	}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////

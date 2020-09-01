@@ -103,9 +103,9 @@ return function (App $app) {
         unset($args_assoc['field']);
         $args_indexed = assoc_array_to_indexed($args_assoc);
         $org = $orgController->get_config_for_organisations_by_nuts0123_type_name($_SESSION['user_id'], ...$args_indexed);
-        $orgs_id = -1;
-        if(isset($org[0])) {
-            $org_id = $org[0]['organisation_id'];
+        $org_id = -1;
+        if(isset($org['organisations'][0])) { // $org is already formatted as the json_array... (See "AbstractController::format_json")
+            $org_id = $org['organisations'][0]['organisation_id'];
         }
         $response->getBody()->write(json_encode($orgController->get_config_for_field_by_name($_SESSION['user_id'], $org_id, $field_name)));
         return $response->withHeader('Content-type', 'application/json');
@@ -197,8 +197,9 @@ return function (App $app) {
       return $response->withHeader('Content-type', 'application/json');
     });
 
-
-
+    ////////////////
+    ///// GET  /////
+    ////////////////
 
     $app->get('/data[/ ' . NUTS0 . '[/' . NUTS1 . '[/' . NUTS2 . ']]]', function (Request $request, Response $response) {
         $response->getBody()->write('TODO: User NutsController to display correct available NUTZ');
@@ -224,6 +225,50 @@ return function (App $app) {
         return $response->withHeader('Content-type', 'application/json');
     });
 
+
+
+    ////////////////
+    ///// POST /////
+    ////////////////
+
+    $app->post('/data/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{organisation_type}/{organisation_name}/{year:[1|2|3][0-9][0-9][0-9]}/{month:[0-9][0-9]}/{day:[0-9][0-9]}',
+        function (Request $request, Response $response, $args_assoc) {
+            $data_controller = new DataController();
+            if (!isset($_POST['fields'])) {
+                return $response->withHeader("HTTP/1.0 400 Bad Request - fields need to be set", '{error: No field values set}');
+            }
+            $field_values = json_decode($_POST['fields'], true);
+            $date = $args_assoc['year'] . '-' . $args_assoc['month'] . '-' . $args_assoc['day'];
+            $data_controller->insert_multiple_values_for_date($_SESSION['user_id'], $field_values, $date);
+            $response->getBody()->write($_POST['fields']);
+            return $response;
+        });
+
+        $app->post('/data/{year:[1|2|3][0-9][0-9][0-9]}/{month:[0-9][0-9]}/{day:[0-9][0-9]}',
+            function (Request $request, Response $response, $args_assoc) {
+                $data_controller = new DataController();
+                if (!isset($_POST['fields'])) {
+                    return $response->withHeader("HTTP/1.0 400 Bad Request - fields need to be set", '{error: No field values set}');
+                }
+                $field_values = json_decode($_POST['fields'], true);
+                $date = $args_assoc['year'] . '-' . $args_assoc['month'] . '-' . $args_assoc['day'];
+                $data_controller->insert_multiple_values_for_date($_SESSION['user_id'], $field_values, $date);
+                $response->getBody()->write($_POST['fields']);
+                return $response;
+            });
+
+        $app->post('/data/{organisation_id:[0-9]+}/{year:[1|2|3][0-9][0-9][0-9]}/{month:[0-9][0-9]}/{day:[0-9][0-9]}',
+            function (Request $request, Response $response, $args_assoc) {
+                $data_controller = new DataController();
+                if (!isset($_POST['fields'])) {
+                    return $response->withHeader("HTTP/1.0 400 Bad Request - fields need to be set", '{error: No field values set}');
+                }
+                $field_values = json_decode($_POST['fields'], true);
+                $date = $args_assoc['year'] . '-' . $args_assoc['month'] . '-' . $args_assoc['day'];
+                $data_controller->insert_multiple_values_for_date_by_field_name($_SESSION['user_id'], $args_assoc['organisation_id'], $field_values, $date);
+                $response->getBody()->write($_POST['fields']);
+                return $response;
+            });
 
 
 
