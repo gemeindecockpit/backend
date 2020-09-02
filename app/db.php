@@ -250,6 +250,20 @@ class DatabaseOps {
 	//		fields				  		  //
 	////////////////////////////////////////
 
+	public function get_all_fields($user_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+				'SELECT *
+				FROM view_fields_visible_for_user
+				WHERE user_id = ?'
+		);
+		$stmt->bind_param('i', $user_id);
+		$query_result = $this->execute_select_stmt($stmt);
+
+		$db->close();
+		return $query_result;
+	}
+
 	public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare(
@@ -262,6 +276,22 @@ class DatabaseOps {
 			AND view_fields_visible_for_user.field_name = ?'
 		);
 		$stmt->bind_param('iis', $user_id, $org_id, $field_name);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
+	public function get_config_for_fields_by_organisation_id($user_id, $org_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT view_fields_visible_for_user.*
+			FROM view_fields_visible_for_user
+			JOIN view_organisations_and_fields
+				ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
+			WHERE view_fields_visible_for_user.user_id = ?
+			AND view_organisations_and_fields.organisation_id = ?'
+		);
+		$stmt->bind_param('ii', $user_id, $org_id);
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
@@ -429,6 +459,36 @@ class DatabaseOps {
 
 		$db->close();
 		return $this->get_latest_data_by_field_id($user_id, $field_id);
+	}
+
+	public function get_latest_data_by_full_organisation_link($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
+		$db = $this->get_db_connection();
+		$args = func_get_args();
+		$stmt = $db->prepare(
+			'SELECT
+				can_see_organisation.organisation_id as organisation_id
+			FROM can_see_organisation
+			JOIN organisation
+				ON can_see_organisation.organisation_id = organisation.id
+			JOIN view_nuts
+				ON organisation.zipcode = view_nuts.zipcode
+			WHERE can_see_organisation.user_id = ?
+			AND view_nuts.nuts0 = ?
+			AND view_nuts.nuts1 = ?
+			AND view_nuts.nuts2 = ?
+			AND view_nuts.nuts3 = ?
+			AND organisation.type = ?
+			AND organisation.name = ?'
+		);
+		$stmt->bind_param('issssss', ...$args);
+		$query_result = $this->execute_select_stmt($stmt);
+
+		$organisation_id = -1;
+		if($row = $query_result->fetch_assoc()) {
+			$organisation_id = $row['organisation_id'];
+		}
+
+		$db->close();
 	}
 
 	public function get_latest_data_by_field_id($user_id, $field_id) {

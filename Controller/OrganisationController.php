@@ -203,12 +203,6 @@ class OrganisationController extends AbstractController {
       return $this->format_json($self_link, $query_result, 'fields', $next_entities);
   }
 
-  public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
-      $query_result = $this->db_ops->get_config_for_field_by_name($user_id, $org_id, $field_name);
-      $query_result = $this->format_query_result($query_result);
-      return $query_result;
-  }
-
   private function get_org_link($org) {
       return htmlspecialchars($_SERVER['SERVER_NAME'].'/config/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['type'].'/'.$org['name']);
   }
