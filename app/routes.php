@@ -49,6 +49,9 @@ return function (App $app) {
     ############################################################################################
 
     //GET-REQUESTS ##############################################################################################
+
+
+
     $app->get('/config', function (Request $request, Response $response) {
         $orgController = new OrganisationController();
         $response->getBody()->write(json_encode($orgController->get_all($_SESSION['user_id'])));
