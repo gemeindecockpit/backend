@@ -327,8 +327,9 @@ return function (App $app) {
     $app->post('/login', function(Request $request, Response $response) {
         $loginController = new LoginController();
 				$status = 200;
-        if(isset($_POST['username']) && isset($_POST['password'])){
-			if($loginController->login($_POST['username'],$_POST['password'])){
+        if(isset($_SERVER['PHP_AUTH_USER']) && $_SERVER['PHP_AUTH_USER'] !== ''
+		&& isset($_SERVER['PHP_AUTH_PW']) && $_SERVER['PHP_AUTH_PW'] !== ''){
+			if($loginController->login($_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW'])){
 				$header = "HTTP/1.0 200 Login Successfull";
 				$status = 200;
 			} else {
@@ -340,7 +341,7 @@ return function (App $app) {
 			$header = "HTTP/1.0 400 Bad Request - 'username' and 'password' are required";
 		}
         $response->getBody()->write($header);
-        return $response->withStatus($status, 'tert')->withHeader('Login-Response', $header);
+        return $response->withStatus($status, 'test')->withHeader('Login-Response', $header);
     });
 
     $app->post('/logout', function(Request $request, Response $response) {
