@@ -40,45 +40,63 @@ class DataRouteController extends RouteController {
    }
 
    public function get_nuts_0 ($request, $response, $args) {
-       $orgController = new OrganisationController();
+       $org_controller = new OrganisationController();
        $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts0($_SESSION['user_id'], ...$args_indexed)));
+       $response->getBody()->write(json_encode($org_controller->get_data_for_organisations_by_nuts0($_SESSION['user_id'], ...$args_indexed)));
        return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_nuts_01 ($request, $response, $args) {
-       $orgController = new OrganisationController();
+       $org_controller = new OrganisationController();
        $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts01($_SESSION['user_id'], ...$args_indexed)));
+       $response->getBody()->write(json_encode($org_controller->get_data_for_organisations_by_nuts01($_SESSION['user_id'], ...$args_indexed)));
        return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_nuts_012 ($request, $response, $args) {
-       $orgController = new OrganisationController();
+       $org_controller = new OrganisationController();
        $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts012($_SESSION['user_id'], ...$args_indexed)));
+       $response->getBody()->write(json_encode($org_controller->get_data_for_organisations_by_nuts012($_SESSION['user_id'], ...$args_indexed)));
        return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_nuts_full ($request, $response, $args) {
-       $orgController = new OrganisationController();
+       $org_controller = new OrganisationController();
        $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts0123($_SESSION['user_id'], ...$args_indexed)));
+       $json_array = $org_controller->get_data_for_organisations_by_nuts0123($_SESSION['user_id'], ...$args_indexed);
+       $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_nuts_full_org_type ($request, $response, $args) {
-       $response->getBody()->write('In Progress');
-       return $response;
+       $org_controller = new OrganisationController();
+       $args_indexed = assoc_array_to_indexed($args);
+       $json_array= $org_controller->get_data_for_organisations_by_nuts0123_type($_SESSION['user_id'], ...$args_indexed);
+       $response->getBody()->write(json_encode($json_array));
+       return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_org_full_link ($request, $response, $args) {
-       $response->getBody()->write('In Progress');
-       return $response;
+       $data_controller = new DataController();
+       $query_parameters = $request->getQueryParams();
+       $args_indexed = assoc_array_to_indexed($args);
+       $json_array;
+       if(isset($query_parameters['last'])) {
+           $args_indexed[] = $query_parameters['last'];
+           $json_array = $data_controller->get_data_from_past_x_days_by_org_full_link($_SESSION['user_id'], ...$args_indexed);
+       } else {
+           $json_array = $data_controller->get_latest_data_by_org_full_link($_SESSION['user_id'], ...$args_indexed);
+       }
+       $response->getBody()->write(json_encode($json_array));
+       return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_org_full_link_year ($request, $response, $args) {
-       $response->getBody()->write('In Progress');
+       $data_controller = new DataController();
+       $args_indexed = assoc_array_to_indexed($args);
+       $json_array = $data_controller->get_data_org_full_link_year($_SESSION['user_id'], ...$args_indexed);
+
+       $response->getBody()->write(json_encode($json_array));
        return $response;
    }
 
@@ -93,8 +111,23 @@ class DataRouteController extends RouteController {
    }
 
    public function get_org_full_link_field_name ($request, $response, $args) {
-       $response->getBody()->write('In Progress');
-       return $response;
+       $data_controller = new DataController();
+       $query_parameters = $request->getQueryParams();
+       $args_indexed = assoc_array_to_indexed($args);
+       $json_array;
+       if(isset($query_parameters['last'])) {
+           $args_indexed[] = $query_parameters['last'];
+           if($query_parameters['last'] === 'all') {
+               $json_array = $data_controller->get_all_data_by_org_full_link_field_name($_SESSION['user_id'], ...$args_indexed);
+           } else {
+               $json_array = $data_controller->get_data_from_past_x_days_by_org_full_link_field_name($_SESSION['user_id'], ...$args_indexed);
+           }
+       } else {
+           $json_array = $data_controller->get_latest_data_by_org_full_link_field_name($_SESSION['user_id'], ...$args_indexed);
+       }
+
+       $response->getBody()->write(json_encode($json_array));
+       return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_org_full_link_field_name_year ($request, $response, $args) {

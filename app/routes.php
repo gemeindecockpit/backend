@@ -90,7 +90,7 @@ return function (App $app) {
     $app->get('/data' . ORG_FULL_LINK . YEAR . MONTH,
         \DataRouteController::class . ':get_org_full_link_year_month');
     $app->get('/data' . ORG_FULL_LINK . DATE_FULL,
-        \DataRouteController::class . ':get_org_full_link_year_month_day');
+        \DataRouteController::class . ':get_org_full_link_date_full');
 
 
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME,
@@ -100,7 +100,7 @@ return function (App $app) {
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . YEAR . MONTH,
         \DataRouteController::class . ':get_org_full_link_field_name_year_month');
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
-        \DataRouteController::class . ':get_org_full_link_field_name_year_month_day');
+        \DataRouteController::class . ':get_org_full_link_field_name_date_full');
 
 
     $app->post('/data' . ORG_FULL_LINK . DATE_FULL,

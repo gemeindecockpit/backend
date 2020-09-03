@@ -185,6 +185,14 @@ class OrganisationController extends AbstractController {
       return $this->format_json($self_link, $query_result, 'organisations', $next_entities);
   }
 
+  public function get_data_for_organisations_by_nuts0123_type($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type) {
+      $json_array = $this->get_config_for_organisations_by_nuts0123_type($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type);
+      array_walk_recursive($json_array, function(&$value, $key){
+          $value = str_replace('config', 'data', $value);
+      });
+      return $json_array;
+  }
+
   public function get_config_for_organisations_by_nuts0123_type_name($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
       $args = func_get_args();
       $query_result = $this->db_ops->get_organisations_by_nuts0123_type_name(...$args);
