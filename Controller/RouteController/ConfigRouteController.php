@@ -67,8 +67,8 @@ class ConfigRouteController extends RouteController {
        $args_indexed = assoc_array_to_indexed($args);
        $org = $orgController->get_config_for_organisations_by_nuts0123_type_name($_SESSION['user_id'], ...$args_indexed);
        $org_id = -1;
-       if(isset($org['organisations'][0])) { // $org is already formatted as the json_array... (See "OrganisationController::format_json")
-           $org_id = $org['organisations'][0]['organisation_id'];
+       if(isset($org['organisation_id'])) { // $org is already formatted as the json_array... (See "OrganisationController::format_json")
+           $org_id = $org['organisation_id'];
        }
        $response->getBody()->write(json_encode($fieldController->get_config_for_field_by_name($_SESSION['user_id'], $org_id, $field_name)));
        return $response->withHeader('Content-type', 'application/json');

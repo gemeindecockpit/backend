@@ -283,7 +283,15 @@ class DatabaseOps {
 	public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare(
-			'SELECT view_fields_visible_for_user.*
+			'SELECT
+				view_fields_visible_for_user.user_id AS user_id,
+				view_fields_visible_for_user.field_id AS field_id,
+				view_fields_visible_for_user.field_name AS field_name,
+				view_fields_visible_for_user.max_value AS max_value,
+				view_fields_visible_for_user.yellow_value AS yellow_value,
+				view_fields_visible_for_user.red_value AS red_value,
+				view_fields_visible_for_user.relational_flag AS relational_flag,
+				view_fields_visible_for_user.can_alter AS can_alter
 			FROM view_fields_visible_for_user
 			JOIN view_organisations_and_fields
 				ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
