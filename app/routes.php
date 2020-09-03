@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use App\Application\Actions\User\ListUsersAction;
@@ -7,9 +8,13 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
+
 require_once(__DIR__ . '/../app/db.php');
 
-foreach(glob(__DIR__ . "/../Controller/*.php") as $filename) {
+foreach (glob(__DIR__ . '/../Controller/RouteController/*.php') as $filename) {
+    require_once($filename);
+}
+foreach(glob(__DIR__ . "/../../Controller/*.php") as $filename) {
 	require_once($filename);
 }
 
@@ -18,13 +23,6 @@ session_start();
 // TODO: Delete before pushing to production!
 $_SESSION['user_id'] = 4;
 
-function assoc_array_to_indexed($assoc_array) {
-    $indexed_array = [];
-    foreach($assoc_array as $value) {
-        $indexed_array[] = $value;
-    }
-    return $indexed_array;
-}
 
 return function (App $app) {
     $app->options('/{routes:.*}', function (Request $request, Response $response) {
@@ -32,322 +30,99 @@ return function (App $app) {
         return $response;
     });
 
-    $app->get('/', function (Request $request, Response $response) {
-        $response->getBody()->write(json_encode(array('data' => 'http://litwinow.xyz/data', 'config' => 'http://litwinow.xyz/config', 'user' => 'http://litwinow.xyz/user', 'login' => 'http://litwinow.xyz/login', 'logout' => 'http://litwinow.xyz/logout')));
-        return $response->withHeader('Content-type', 'application/json');
-    });
+    $app->get('/', \RouteController::class . ':home');
+
+    $app->get('/config',
+        \ConfigRouteController::class . ':home');
+    $app->get('/config' . NUTS_0,
+        \ConfigRouteController::class . ':get_nuts_0');
+    $app->get('/config' . NUTS_01,
+        \ConfigRouteController::class . ':get_nuts_01');
+    $app->get('/config' . NUTS_012,
+        \ConfigRouteController::class . ':get_nuts_012');
+    $app->get('/config' . NUTS_FULL,
+        \ConfigRouteController::class . ':get_nuts_full');
+    $app->get('/config' . NUTS_FULL . ORG_TYPE,
+        \ConfigRouteController::class . ':get_nuts_full_org_type');
+    $app->get('/config' . ORG_FULL_LINK,
+        \ConfigRouteController::class . ':get_org_full_link');
+    $app->get('/config' . ORG_FULL_LINK . FIELD_NAME,
+        \ConfigRouteController::class . ':get_org_full_link_field_name');
 
 
-    ############################################################################################
-    //    ______   ______   .__   __.  _______  __    _______
-    //   /      | /  __  \  |  \ |  | |   ____||  |  /  _____|
-    //  |  ,----'|  |  |  | |   \|  | |  |__   |  | |  |  __
-    //  |  |     |  |  |  | |  . `  | |   __|  |  | |  | |_ |
-    //  |  `----.|  `--'  | |  |\   | |  |     |  | |  |__| |
-    //   \______| \______/  |__| \__| |__|     |__|  \______|
-    //
-    ############################################################################################
+    $app->post('/config' . ORG_FULL_LINK,
+        \ConfigRouteController::class . ':post_org_full_link');
+    $app->post('/config' . ORG_FULL_LINK . FIELD_NAME,
+        \ConfigRouteController::class . ':post_org_full_link_field_name');
 
-    //GET-REQUESTS ##############################################################################################
+    $app->put('/config' . ORG_FULL_LINK,
+        \ConfigRouteController::class . ':put_org_full_link');
+    $app->put('/config' . ORG_FULL_LINK . FIELD_NAME,
+        \ConfigRouteController::class . ':put_org_full_link_field_name');
 
-
-
-    $app->get('/config', function (Request $request, Response $response) {
-        $orgController = new OrganisationController();
-        $response->getBody()->write(json_encode($orgController->get_all($_SESSION['user_id'])));
-        return $response->withHeader('Content-type', 'application/json');
-    });
-
-    $app->get('/config/{nuts0}', function (Request $request, Response $response, $args_assoc) {
-        $orgController = new OrganisationController();
-        $args_indexed = assoc_array_to_indexed($args_assoc);
-        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0($_SESSION['user_id'], ...$args_indexed)));
-        return $response->withHeader('Content-type', 'application/json');
-    });
-
-    $app->get('/config/{nuts0}/{nuts1}', function (Request $request, Response $response, $args_assoc) {
-        $orgController = new OrganisationController();
-        $args_indexed = assoc_array_to_indexed($args_assoc);
-        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts01($_SESSION['user_id'], ...$args_indexed)));
-        return $response->withHeader('Content-type', 'application/json');
-    });
-
-    $app->get('/config/{nuts0}/{nuts1}/{nuts2}', function (Request $request, Response $response, $args_assoc) {
-        $orgController = new OrganisationController();
-        $args_indexed = assoc_array_to_indexed($args_assoc);
-        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts012($_SESSION['user_id'], ...$args_indexed)));
-        return $response->withHeader('Content-type', 'application/json');
-    });
-
-    $app->get('/config/{nuts0}/{nuts1}/{nuts2}/{nuts3}', function (Request $request, Response $response, $args_assoc) {
-        $orgController = new OrganisationController();
-        $args_indexed = assoc_array_to_indexed($args_assoc);
-        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0123($_SESSION['user_id'], ...$args_indexed)));
-        return $response->withHeader('Content-type', 'application/json');
-    });
-
-    $app->get('/config/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{type}', function (Request $request, Response $response, $args_assoc) {
-        $orgController = new OrganisationController();
-        $args_indexed = assoc_array_to_indexed($args_assoc);
-        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0123_type($_SESSION['user_id'], ...$args_indexed)));
-        return $response->withHeader('Content-type', 'application/json');
-    });
-
-    $app->get('/config/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{type}/{name}', function (Request $request, Response $response, $args_assoc) {
-        $orgController = new OrganisationController();
-        $args_indexed = assoc_array_to_indexed($args_assoc);
-        $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0123_type_name($_SESSION['user_id'], ...$args_indexed)));
-        return $response->withHeader('Content-type', 'application/json');
-    });
-
-    $app->get('/config/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{type}/{name}/{field}', function (Request $request, Response $response, $args_assoc) {
-        $orgController = new OrganisationController();
-		$fieldController = new FieldController();
-        $field_name = $args_assoc['field'];
-        unset($args_assoc['field']);
-        $args_indexed = assoc_array_to_indexed($args_assoc);
-        $org = $orgController->get_config_for_organisations_by_nuts0123_type_name($_SESSION['user_id'], ...$args_indexed);
-        $org_id = -1;
-        if(isset($org['organisations'][0])) { // $org is already formatted as the json_array... (See "AbstractController::format_json")
-            $org_id = $org['organisations'][0]['organisation_id'];
-        }
-        $response->getBody()->write(json_encode($fieldController->get_config_for_field_by_name($_SESSION['user_id'], $org_id, $field_name)));
-        return $response->withHeader('Content-type', 'application/json');
-    });
-
-    //POST-REQUESTS ##############################################################################################
-
-    $app->post('/config/'. NUTS_FULL . '/{orgaType}/{entity}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write('POST – erzeugt neue entität und rekursiv orgatype falls nicht vorhanden ');
-        return $response->withStatus(302); //TODO: Richtigen code zurück schicken
-    });
-
-    $app->post('/config/'. NUTS_FULL . '/{orgaType}/{entity}/{field}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write('TODO: POST – erzeugt ein neues Field für die Entity ');
-        return $response->withStatus(302); //TODO: Richtigen code zurück schicken
-    });
-
-    //PUT-Requests ##############################################################################################
-    $app->put('/config/'. NUTS_FULL . '/{orgaType}/{entity}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write('TODO: PUT - Verändert die Configdaten zu einer Entität ');
-        return $response->withStatus(302); //TODO: Richtigen code zurück schicken
-    });
-
-    $app->put('/config/'. NUTS_FULL . '/{orgaType}/{entity}/{field}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write('TODO: PUT - ändert die config eines Feld einer Entity ');
-        return $response->withStatus(302); //TODO: Richtigen code zurück schicken
-    });
-
-    //DELETE-Requests ##############################################################################################
-    $app->delete('/config/'. NUTS_FULL . '/{orgaType}/{entity}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write('TODO: DELTE – Makiert eine Entity als inaktiv ');
-        return $response->withStatus(302); //TODO: Richtigen code zurück schicken
-    });
-
-    $app->delete('/config/'. NUTS_FULL . '/{orgaType}/{entity}/{field}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write('TODO: DELETE – makiert das Field als nicht mehr notwendig ');
-        return $response->withStatus(302); //TODO: Richtigen code zurück schicken
-    });
-
-    ############################################################################################
-    //   _______       ___   .___________.    ___
-    //  |       \     /   \  |           |   /   \
-    //  |  .--.  |   /  ^  \ `---|  |----`  /  ^  \
-    //  |  |  |  |  /  /_\  \    |  |      /  /_\  \
-    //  |  '--'  | /  _____  \   |  |     /  _____  \
-    //  |_______/ /__/     \__\  |__|    /__/     \__\
-    //
-    ############################################################################################
-    //GET-REQUESTS #############################################################################
-
-
-    ////////////////
-    ///// GET  /////
-    ////////////////
-
-	$app->get('/data', function (Request $request, Response $response) {
-		$data_controller = new DataController();
-		$json_array = $data_controller->get_organisation_and_field_ids($_SESSION['user_id']);
-		$response->getBody()->write(json_encode($json_array));
-        return $response->withHeader('Content-type', 'application/json');
-	});
-
-    $app->get('/data/field/{field_id:[0-9]+}', function (Request $request, Response $response, $args_assoc) {
-        $data_controller = new DataController();
-        $query_parameters = $request->getQueryParams();
-        $json_array;
-        if(isset($query_parameters['last'])) {
-            $json_array = $data_controller->get_data_from_past_x_days_by_field_id($_SESSION['user_id'], $args_assoc['field_id'], $query_parameters['last']);
-        } else {
-            $json_array = $data_controller->get_latest_data_by_field_id($_SESSION['user_id'], $args_assoc['field_id']);
-        }
-
-        $response->getBody()->write(json_encode($json_array));
-        return $response->withHeader('Content-type', 'application/json');
-    });
-
-	$app->get('/data/organisation/{organisation_id:[0-9]+}', function (Request $request, Response $response, $args_assoc) {
-		$data_controller = new DataController();
-		$json_array = $data_controller->get_fields_by_organisation_id($_SESSION['user_id'], $args_assoc['organisation_id']);
-		$response->getBody()->write(json_encode($json_array));
-        return $response->withHeader('Content-type', 'application/json');
-	});
-
-    $app->get('/data/organisation/{organisation_id:[0-9]+}/{field_name}', function (Request $request, Response $response, $args_assoc) {
-        $data_controller = new DataController();
-        $query_parameters = $request->getQueryParams();
-        if(isset($query_parameters['last'])) {
-            $json_array = $data_controller->get_data_from_past_x_days_by_field_name(
-                $_SESSION['user_id'], $args_assoc['organisation_id'], $args_assoc['field_name'], $query_parameters['last']
-            );
-        } else {
-            $json_array = $data_controller->get_latest_data_by_field_name(
-                $_SESSION['user_id'], $args_assoc['organisation_id'], $args_assoc['field_name']
-            );
-        }
-
-        $response->getBody()->write(json_encode($json_array));
-        return $response->withHeader('Content-type', 'application/json');
-    });
-/*
-	$app->get('/data/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{type}/{name}', function (Request $request, Response $response, $args_assoc) {
-		$data_controller = new DataController();
-        $query_parameters = $request->getQueryParams();
-		$args_indexed = assoc_array_to_indexed($args_assoc);
-		if(isset($query_parameters['last'])) {
-			$args_indexed[] = $query_parameters['last'];
-            $json_array = $data_controller->get_data_from_past_x_days_by_full_organisation_link($_SESSION['user_id'], ...$args_indexed);
-        } else {
-        }
-
-		return $response;
-	});
-
-
-	$app->get('/data', function (Request $request, Response $response) {
-		$orgController = new OrganisationController();
-		$response->getBody()->write(json_encode($orgController->get_all_data($_SESSION['user_id'])));
-		return $response->withHeader('Content-type', 'application/json');
-	});
-*/
-
-	$app->get('/data/{nuts0}', function (Request $request, Response $response, $args_assoc) {
-		$orgController = new OrganisationController();
-		$args_indexed = assoc_array_to_indexed($args_assoc);
-		$response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts0($_SESSION['user_id'], ...$args_indexed)));
-		return $response->withHeader('Content-type', 'application/json');
-	});
-
-	$app->get('/data/{nuts0}/{nuts1}', function (Request $request, Response $response, $args_assoc) {
-		$orgController = new OrganisationController();
-		$args_indexed = assoc_array_to_indexed($args_assoc);
-		$response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts01($_SESSION['user_id'], ...$args_indexed)));
-		return $response->withHeader('Content-type', 'application/json');
-	});
-
-	$app->get('/data/{nuts0}/{nuts1}/{nuts2}', function (Request $request, Response $response, $args_assoc) {
-		$orgController = new OrganisationController();
-		$args_indexed = assoc_array_to_indexed($args_assoc);
-		$response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts012($_SESSION['user_id'], ...$args_indexed)));
-		return $response->withHeader('Content-type', 'application/json');
-	});
-
-	$app->get('/data/{nuts0}/{nuts1}/{nuts2}/{nuts3}', function (Request $request, Response $response, $args_assoc) {
-		$orgController = new OrganisationController();
-		$args_indexed = assoc_array_to_indexed($args_assoc);
-		$response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts0123($_SESSION['user_id'], ...$args_indexed)));
-		return $response->withHeader('Content-type', 'application/json');
-		});
+    $app->delete('/config' . ORG_FULL_LINK,
+        \ConfigRouteController::class . ':delete_org_full_link');
+    $app->delete('/config' . ORG_FULL_LINK . FIELD_NAME,
+        \ConfigRouteController::class . ':delete_org_full_link_field_name');
 
 
 
-    ////////////////
-    ///// POST /////
-    ////////////////
-
-    $app->post('/data/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{organisation_type}/{organisation_name}/{year:[1|2|3][0-9][0-9][0-9]}/{month:[0-9][0-9]}/{day:[0-9][0-9]}',
-        function (Request $request, Response $response, $args_assoc) {
-            $data_controller = new DataController();
-            if (!isset($_POST['fields'])) {
-                return $response->withHeader("HTTP/1.0 400 Bad Request - fields need to be set", '{error: No field values set}');
-            }
-            $field_values = json_decode($_POST['fields'], true);
-            $date = $args_assoc['year'] . '-' . $args_assoc['month'] . '-' . $args_assoc['day'];
-            $data_controller->insert_multiple_values_for_date($_SESSION['user_id'], $field_values, $date);
-            $response->getBody()->write($_POST['fields']);
-            return $response;
-        });
-
-        $app->post('/data/{year:[1|2|3][0-9][0-9][0-9]}/{month:[0-9][0-9]}/{day:[0-9][0-9]}',
-            function (Request $request, Response $response, $args_assoc) {
-                $data_controller = new DataController();
-                if (!isset($_POST['fields'])) {
-                    return $response->withHeader("HTTP/1.0 400 Bad Request - fields need to be set", '{error: No field values set}');
-                }
-                $field_values = json_decode($_POST['fields'], true);
-                $date = $args_assoc['year'] . '-' . $args_assoc['month'] . '-' . $args_assoc['day'];
-                $data_controller->insert_multiple_values_for_date($_SESSION['user_id'], $field_values, $date);
-                $response->getBody()->write($_POST['fields']);
-                return $response;
-            });
-
-        $app->post('/data/{organisation_id:[0-9]+}/{year:[1|2|3][0-9][0-9][0-9]}/{month:[0-9][0-9]}/{day:[0-9][0-9]}',
-            function (Request $request, Response $response, $args_assoc) {
-                $data_controller = new DataController();
-                if (!isset($_POST['fields'])) {
-                    return $response->withHeader("HTTP/1.0 400 Bad Request - fields need to be set", '{error: No field values set}');
-                }
-                $field_values = json_decode($_POST['fields'], true);
-                $date = $args_assoc['year'] . '-' . $args_assoc['month'] . '-' . $args_assoc['day'];
-                $data_controller->insert_multiple_values_for_date_by_field_name($_SESSION['user_id'], $args_assoc['organisation_id'], $field_values, $date);
-                $response->getBody()->write($_POST['fields']);
-                return $response;
-            });
+    $app->get('/data',
+        \DataRouteController::class . ':home');
+    $app->get('/data/field',
+        \DataRouteController::class . ':get_field');
+    $app->get('/data/field/{field_id:[0-9]+}',
+        \DataRouteController::class . ':get_field_field_id');
+    $app->get('/data' . NUTS_0,
+        \DataRouteController::class . ':get_nuts_0');
+    $app->get('/data' . NUTS_01,
+        \DataRouteController::class . ':get_nuts_01');
+    $app->get('/data' . NUTS_012,
+        \DataRouteController::class . ':get_nuts_012');
+    $app->get('/data' . NUTS_FULL,
+        \DataRouteController::class . ':get_nuts_full');
+    $app->get('/data' . NUTS_FULL . ORG_TYPE,
+        \DataRouteController::class . ':get_nuts_full_org_type');
+    $app->get('/data' . ORG_FULL_LINK,
+        \DataRouteController::class . ':get_org_full_link');
+    $app->get('/data' . ORG_FULL_LINK . YEAR,
+        \DataRouteController::class . ':get_org_full_link_year');
+    $app->get('/data' . ORG_FULL_LINK . YEAR . MONTH,
+        \DataRouteController::class . ':get_org_full_link_year_month');
+    $app->get('/data' . ORG_FULL_LINK . DATE_FULL,
+        \DataRouteController::class . ':get_org_full_link_year_month_day');
 
 
+    $app->get('/data' . ORG_FULL_LINK . FIELD_NAME,
+        \DataRouteController::class . ':get_org_full_link_field_name');
+    $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . YEAR,
+        \DataRouteController::class . ':get_org_full_link_field_name_year');
+    $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . YEAR . MONTH,
+        \DataRouteController::class . ':get_org_full_link_field_name_year_month');
+    $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
+        \DataRouteController::class . ':get_org_full_link_field_name_year_month_day');
 
 
-    //////////////////////////////////////////////////////////////////////////////////
-    //                          LOGIN                                              //
-    ////////////////////////////////////////////////////////////////////////////////
+    $app->post('/data' . ORG_FULL_LINK . DATE_FULL,
+        \DataRouteController::class . ':post_org_full_link');
+    $app->post('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
+        \DataRouteController::class . ':post_org_full_link_field_name');
 
+    $app->put('/data' . ORG_FULL_LINK . DATE_FULL,
+        \DataRouteController::class . ':put_org_full_link');
+    $app->put('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
+        \DataRouteController::class . ':put_org_full_link_field_name');
 
-    $app->group('/users', function (Group $group) {
-        $group->get('', ListUsersAction::class);
-        $group->get('/{id}', ViewUserAction::class);
-    });
+    $app->get('/user', \UserRouteController::class . '/get_home');
+    $app->post('/user', \UserRouteController::class . '/post_home');
 
-    $app->post('/login', function(Request $request, Response $response) {
-        $loginController = new LoginController();
-				$status = 200;
-        if(isset($_SERVER['PHP_AUTH_USER']) && $_SERVER['PHP_AUTH_USER'] !== ''
-		&& isset($_SERVER['PHP_AUTH_PW']) && $_SERVER['PHP_AUTH_PW'] !== ''){
-			if($loginController->login($_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW'])){
-				$header = "HTTP/1.0 200 Login Successfull";
-				$status = 200;
-			} else {
-				$header = "HTTP/1.0 403 Forbidden";
-				$status = 403;
-			}
+    $app->get('/user/{id:[0-9]+}', \UserRouteController::class . '/get_user_id');
+    $app->post('/user/{id:[0-9]+}', \UserRouteController::class . '/post_user_id');
+    $app->put('/user/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
+    $app->delete('/user/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
 
-		} else {
-			$header = "HTTP/1.0 400 Bad Request - 'username' and 'password' are required";
-		}
-        $response->getBody()->write($header);
-        return $response->withStatus($status, 'test')->withHeader('Login-Response', $header);
-    });
+    $app->post('login', \LoginRouteController::class . ':login');
+    $app->post('logout', \LoginRouteController::class . ':logout');
 
-    $app->post('/logout', function(Request $request, Response $response) {
-        $loginController = new LoginController();
-				$status = 200;
-        if($loginController->logout()) {
-            $header = "HTTP/1.0 200 Logout Successfull";
-						$status = 200;
-        } else {
-            $header = "HTTP/1.0 400 Bad Request - need to be logged in first";
-						$status = 400;
-        }
-        $response->getBody()->write($header);
-        return $response->withStatus($status, 'test')->withHeader('Login-Response', $header);
-    });
-};
+}
+?>

@@ -63,7 +63,7 @@ class DataController extends AbstractController {
         }
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('data/organisation', $organisation_id, $field_name);
+        $self_link = $this->get_self_link('data', 'organisation', $organisation_id, $field_name);
 
         return $this->format_json($self_link, $query_result);
     }
@@ -75,7 +75,7 @@ class DataController extends AbstractController {
         }
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('data/field', $field_id);
+        $self_link = $this->get_self_link('data', 'field', $field_id);
 
         return $this->format_json($self_link, $query_result);
     }
@@ -101,7 +101,7 @@ class DataController extends AbstractController {
         }
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('data/field_id', $field_id) . '?last=' . $lastX;
+        $self_link = $this->get_self_link('data', 'field_id', $field_id) . '?last=' . $lastX;
 
         return $this->format_json($self_link, $query_result);
     }
