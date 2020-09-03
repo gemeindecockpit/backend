@@ -64,6 +64,10 @@ class DataRouteController extends RouteController {
        $org_controller = new OrganisationController();
        $args_indexed = assoc_array_to_indexed($args);
        $json_array = $org_controller->get_data_for_organisations_by_nuts0123($_SESSION['user_id'], ...$args_indexed);
+       array_walk_recursive($json_array, function(&$value, $key){
+         error_log(json_encode($value));
+           $value = str_replace('/config/', '/data/', $value);
+       });
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }

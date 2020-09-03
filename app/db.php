@@ -625,7 +625,6 @@ class DatabaseOps {
 				data.field_id as field_id,
 				field.name as field_name,
 				field_value,
-				realname,
 				date
 			FROM view_up_to_date_data_from_all_fields data
 			JOIN can_see_field ON data.field_id = can_see_field.field_id

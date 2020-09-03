@@ -158,13 +158,13 @@ class OrganisationController extends AbstractController {
       $next_entities_query_result = $this->db_ops->get_all_types(...$args);
       $next_entities = [];
       while($row = $next_entities_query_result->fetch_array()) {
+
           array_walk_recursive($row, [$this, 'encode_items']);
           $next_entities[] = $row[0];
       }
 
       unset($args[0]);
-      $self_link = $this->get_self_link('config', ...$args);
-
+      $self_link = $this->get_self_link('data', ...$args);
       return $this->format_json($self_link, $query_result, 'orgatype', $next_entities);
   }
 
