@@ -1,12 +1,78 @@
 <?php
 
 require_once("AbstractController.php");
+require_once("OrganisationController.php");
+require_once("FieldController.php");
 require_once(__DIR__ . '/../app/db.php');
 
 class DataController extends AbstractController {
 
     public function __construct() {
         parent::__construct();
+    }
+
+    public function get_organisation_and_field_ids($user_id) {
+        $org_controller = new OrganisationController();
+        $organisations = $org_controller->get_all($user_id)['organisations'];
+        $org_ids = [];
+        foreach ($organisations AS $org) {
+            $org_ids[] = $org['organisation_id'];
+        }
+
+        $query_result = $this->db_ops->get_all_fields($user_id);
+        $query_result = $this->format_query_result($query_result);
+        $field_ids = [];
+        foreach ($query_result AS $row) {
+            $field_ids[] = $row['field_id'];
+        }
+
+        $self_link = $this->get_self_link('data');
+        $links['self'] = $self_link;
+        $links['organisation_id'] = [];
+        $links['field_id'] = [];
+        foreach ($org_ids as $id) {
+            $links['organisation_id'][] = $self_link . '/organisation/' . $id;
+        }
+        foreach ($field_ids as $id) {
+            $links['field_id'][] = $self_link . '/field/' . $id;
+        }
+        $json_array = array('links' => $links);
+
+        return $json_array;
+    }
+
+    public function get_fields_by_organisation_id($user_id, $org_id) {
+        $field_controller = new FieldController();
+        $fields = $field_controller->get_config_for_fields_by_organisation_id($user_id, $org_id);
+
+        $self_link = $this->get_self_link('data/organisation', $org_id);
+        $links['self'] = $self_link;
+        $links['field_name'] = [];
+        foreach ($fields['fields'] as  $field) {
+            $links['field_name'][] = $self_link . '/' . $field['field_name'];
+        }
+
+        $json_array = array('links' => $links);
+        return $json_array;
+    }
+
+    public function get_all_data_by_org_full_link_field_name($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
+        $args = func_get_args();
+        unset($args[sizeof($args) - 1]);
+        $query_result_field_id = $this->db_ops->get_field_id_by_org_full_link_field_name(...$args);
+        $data = [];
+        if($row = $query_result_field_id->fetch_assoc()) {
+            $query_result = $this->db_ops->get_all_data_by_field_id($user_id, $row['field_id']);
+            while($entry = $query_result->fetch_assoc()) {
+                array_walk_recursive($entry, [$this, 'encode_items_url']);
+                $data[] = $entry;
+            }
+        }
+        unset($args[sizeof($args) - 1]);
+        unset($args[0]);
+        $self_link = $this->get_self_link('data', ...$args) . '?last=all';
+
+        return $this->format_json($self_link, $data);
     }
 
     public function get_latest_data_by_field_name($user_id, $organisation_id, $field_name) {
@@ -16,7 +82,7 @@ class DataController extends AbstractController {
         }
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('data/organisation', $organisation_id, $field_name);
+        $self_link = $this->get_self_link('data', 'organisation', $organisation_id, $field_name);
 
         return $this->format_json($self_link, $query_result);
     }
@@ -28,9 +94,44 @@ class DataController extends AbstractController {
         }
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('data/field', $field_id);
+        $self_link = $this->get_self_link('data', 'field', $field_id);
 
         return $this->format_json($self_link, $query_result);
+    }
+
+    public function get_latest_data_by_org_full_link($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
+        $args = func_get_args();
+        $query_result_field_ids = $this->db_ops->get_field_ids_by_org_full_link(...$args);
+        $data = [];
+        while ($row = $query_result_field_ids->fetch_assoc()) {
+            $query_result = $this->db_ops->get_latest_data_by_field_id($user_id, $row['field_id']);
+            $data_array = $query_result->fetch_assoc();
+            array_walk_recursive($data_array, [$this, 'encode_items_url']);
+            $data[] = $data_array;
+        }
+
+        unset($args[0]);
+        $self_link = $this->get_self_link('data', ...$args);
+
+        return $this->format_json($self_link, $data);
+    }
+
+    public function get_latest_data_by_org_full_link_field_name($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $field_name) {
+        $args = func_get_args();
+        $query_result_field_id = $this->db_ops->get_field_id_by_org_full_link_field_name(...$args);
+        $data = [];
+        if($row = $query_result_field_id->fetch_assoc()) {
+            $query_result = $this->db_ops->get_latest_data_by_field_id($user_id, $row['field_id']);
+            if($entry = $query_result->fetch_assoc()) {
+                array_walk_recursive($entry, [$this, 'encode_items_url']);
+                $data = $entry;
+            }
+        }
+
+        unset($args[0]);
+        $self_link = $this->get_self_link('data', ...$args);
+
+        return $this->format_json($self_link, $data);
     }
 
     public function get_data_from_past_x_days_by_field_id($user_id, $field_id, $lastX) {
@@ -40,7 +141,7 @@ class DataController extends AbstractController {
         }
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('data/field_id', $field_id) . '?last=' . $lastX;
+        $self_link = $this->get_self_link('data', 'field_id', $field_id) . '?last=' . $lastX;
 
         return $this->format_json($self_link, $query_result);
     }
@@ -52,9 +153,86 @@ class DataController extends AbstractController {
         }
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('data/organisation', $organisation_id, $field_name) . '?last=' . $lastX;
+        $self_link = $this->get_self_link('data', 'organisation', $organisation_id, $field_name) . '?last=' . $lastX;
 
         return $this->format_json($self_link, $query_result);
+    }
+
+    public function get_data_from_past_x_days_by_org_full_link($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $lastX) {
+        $args = func_get_args();
+        $query_result = $this->db_ops->get_data_from_past_x_days_by_org_full_link(...$args);
+        if($query_result->num_rows == 0) {
+            return false;
+        }
+        $query_result = $this->format_query_result($query_result);
+        unset($args[sizeof($args) - 1]);
+        unset($args[0]);
+        $self_link = $this->get_self_link('data', ...$args) . '?last=' . $lastX;
+
+        return $this->format_json($self_link, $query_result);
+    }
+
+    public function get_data_from_past_x_days_by_org_full_link_field_name($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $field_name, $lastX) {
+        $args = func_get_args();
+        unset($args[sizeof($args) - 1]);
+        $query_result_field_id = $this->db_ops->get_field_id_by_org_full_link_field_name(...$args);
+        $data = [];
+        if($row = $query_result_field_id->fetch_assoc()) {
+            $query_result = $this->db_ops->get_data_from_past_x_days_by_field_id($user_id, $row['field_id'], $lastX);
+            while($entry = $query_result->fetch_assoc()) {
+                array_walk_recursive($entry, [$this, 'encode_items_url']);
+                $data[] = $entry;
+            }
+
+        }
+
+        unset($args[0]);
+        $self_link = $this->get_self_link('data', ...$args);
+
+        return $this->format_json($self_link, $data);
+    }
+
+    public function get_data_org_full_link_year($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $year) {
+        $args = func_get_args();
+        unset($args[sizeof($args) - 1]);
+        $query_result_field_ids = $this->db_ops->get_field_ids_by_org_full_link(...$args);
+        $data = [];
+        $date = $year . '-01-01';
+        while($row = $query_result_field_ids->fetch_assoc()) {
+            $query_result = $this->db_ops->get_data_field_id_year($user_id, $row['field_id'], $date);
+            while($entry = $query_result->fetch_assoc()) {
+                array_walk_recursive($entry, [$this, 'encode_items_url']);
+                $data[] = $entry;
+            }
+        }
+
+        unset($args[0]);
+        $args[] = $year;
+        $self_link = $this->get_self_link('data', ...$args);
+
+        return $this->format_json($self_link, $data);
+    }
+
+    public function get_data_org_full_link_year_month($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $year, $month) {
+        $args = func_get_args();
+        unset($args[sizeof($args) - 1]);
+        $query_result_field_ids = $this->db_ops->get_field_ids_by_org_full_link(...$args);
+        $data = [];
+        $date = $year . '-' . $month . '-01';
+        while($row = $query_result_field_ids->fetch_assoc()) {
+            $query_result = $this->db_ops->get_data_field_id_month($user_id, $row['field_id'], $date);
+            while($entry = $query_result->fetch_assoc()) {
+                array_walk_recursive($entry, [$this, 'encode_items_url']);
+                $data[] = $entry;
+            }
+        }
+
+        unset($args[0]);
+        $args[] = $year;
+        $args[] = $month;
+        $self_link = $this->get_self_link('data', ...$args);
+
+        return $this->format_json($self_link, $data);
     }
 
     public function insert_multiple_values_for_date($user_id, $field_values, $date) {

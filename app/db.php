@@ -266,6 +266,20 @@ class DatabaseOps {
 	//		fields				  		  //
 	////////////////////////////////////////
 
+	public function get_all_fields($user_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+				'SELECT *
+				FROM view_fields_visible_for_user
+				WHERE user_id = ?'
+		);
+		$stmt->bind_param('i', $user_id);
+		$query_result = $this->execute_select_stmt($stmt);
+
+		$db->close();
+		return $query_result;
+	}
+
 	public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare(
@@ -281,6 +295,63 @@ class DatabaseOps {
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
+	}
+
+	public function get_config_for_fields_by_organisation_id($user_id, $org_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT view_fields_visible_for_user.*
+			FROM view_fields_visible_for_user
+			JOIN view_organisations_and_fields
+				ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
+			WHERE view_fields_visible_for_user.user_id = ?
+			AND view_organisations_and_fields.organisation_id = ?'
+		);
+		$stmt->bind_param('ii', $user_id, $org_id);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
+	public function get_field_ids_by_org_full_link($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT DISTINCT field_id
+			FROM view_fields_visible_for_user
+			WHERE user_id = ?
+			AND nuts0 = ?
+			AND nuts1 = ?
+			AND nuts2 = ?
+			AND nuts3 = ?
+			AND organisation_type = ?
+			AND organisation_name = ?
+			ORDER BY field_id'
+		);
+		$stmt->bind_param('issssss', $user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name);
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
+	}
+
+	public function get_field_id_by_org_full_link_field_name($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $field_name) {
+		$args = func_get_args();
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT DISTINCT field_id
+			FROM view_fields_visible_for_user
+			WHERE user_id = ?
+			AND nuts0 = ?
+			AND nuts1 = ?
+			AND nuts2 = ?
+			AND nuts3 = ?
+			AND organisation_type = ?
+			AND organisation_name = ?
+			AND field_name = ?'
+		);
+		$stmt->bind_param('isssssss', ...$args);
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
 	}
 
 
@@ -423,6 +494,82 @@ class DatabaseOps {
     //
     #############################################################################################
 
+	public function get_all_data_by_field_id($user_id, $field_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				data.field_id as field_id,
+				field.name as field_name,
+				field_value,
+				realname,
+				date
+			FROM view_up_to_date_data_from_all_fields data
+			JOIN can_see_field ON data.field_id = can_see_field.field_id
+			JOIN view_organisations_and_fields ON view_organisations_and_fields.field_id = data.field_id
+			JOIN field ON field.id = data.field_id
+			WHERE can_see_field.user_id = ?
+			AND data.field_id = ?
+			ORDER BY date DESC'
+		);
+		$stmt->bind_param('ii', $user_id, $field_id);
+
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
+	}
+
+	public function get_data_field_id_year($user_id, $field_id, $year) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				data.field_id as field_id,
+				field.name as field_name,
+				field_value,
+				realname,
+				date
+			FROM view_up_to_date_data_from_all_fields data
+			JOIN can_see_field ON data.field_id = can_see_field.field_id
+			JOIN view_organisations_and_fields ON view_organisations_and_fields.field_id = data.field_id
+			JOIN field ON field.id = data.field_id
+			WHERE can_see_field.user_id = ?
+			AND data.field_id = ?
+			AND date >= ?
+			AND date < date_add(?, INTERVAL 1 YEAR)
+			ORDER BY date DESC'
+		);
+		$stmt->bind_param('iiss', $user_id, $field_id, $year, $year);
+
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
+	}
+
+	public function get_data_field_id_month($user_id, $field_id, $month) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				data.field_id as field_id,
+				field.name as field_name,
+				field_value,
+				realname,
+				date
+			FROM view_up_to_date_data_from_all_fields data
+			JOIN can_see_field ON data.field_id = can_see_field.field_id
+			JOIN view_organisations_and_fields ON view_organisations_and_fields.field_id = data.field_id
+			JOIN field ON field.id = data.field_id
+			WHERE can_see_field.user_id = ?
+			AND data.field_id = ?
+			AND date >= ?
+			AND date < date_add(?, INTERVAL 1 MONTH)
+			ORDER BY date DESC'
+		);
+		$stmt->bind_param('iiss', $user_id, $field_id, $month, $month);
+
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
+	}
+
 	public function get_latest_data_by_field_name($user_id, $organisation_id, $field_name) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare(
@@ -445,6 +592,30 @@ class DatabaseOps {
 
 		$db->close();
 		return $this->get_latest_data_by_field_id($user_id, $field_id);
+	}
+
+	public function get_latest_data_by_full_organisation_link($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
+		$db = $this->get_db_connection();
+		$args = func_get_args();
+		$stmt_get_field_ids = $db->prepare(
+			'SELECT
+				field_id,
+			FROM view_fields_visible_for_user
+			WHERE user_id = ?
+			AND nuts0 = ?
+			AND nuts1 = ?
+			AND nuts2 = ?
+			AND nuts3 = ?
+			AND type = ?
+			AND name = ?'
+		);
+		$stmt->bind_param('issssss', ...$args);
+		$query_result_field_ids = $this->execute_select_stmt($stmt_get_field_ids);
+
+
+
+		$db->close();
+		return $query_result;
 	}
 
 	public function get_latest_data_by_field_id($user_id, $field_id) {
@@ -514,6 +685,41 @@ class DatabaseOps {
 			ORDER BY date DESC'
 		);
 		$stmt->bind_param('iii', $user_id, $field_id, $lastX);
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
+	}
+
+	public function get_data_from_past_x_days_by_org_full_link($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $lastX) {
+		$args = func_get_args();
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				data.field_id as field_id,
+				field.name as field_name,
+				field_value,
+				realname,
+				date
+			FROM view_up_to_date_data_from_all_fields data
+			JOIN can_see_field
+				ON data.field_id = can_see_field.field_id
+			JOIN view_organisations_and_fields
+				ON view_organisations_and_fields.field_id = data.field_id
+			JOIN field
+				ON field.id = data.field_id
+			JOIN view_organisations_and_nuts
+				ON view_organisations_and_fields.organisation_id = view_organisations_and_nuts.id
+			WHERE can_see_field.user_id = ?
+			AND nuts0 = ?
+			AND nuts1 = ?
+			AND nuts2 = ?
+			AND nuts3 = ?
+			AND view_organisations_and_nuts.type = ?
+			AND view_organisations_and_nuts.name = ?
+			AND date >= (date_add(curdate(), INTERVAL -? DAY))
+			ORDER BY date DESC'
+		);
+		$stmt->bind_param('issssssi', ...$args);
 		$query_result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $query_result;
