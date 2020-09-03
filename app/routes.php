@@ -195,7 +195,7 @@ return function (App $app) {
     $app->get('/data/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{orgaType}', function (Request $request, Response $response, $args_assoc) {
 			$orgController = new OrganisationController();
 			$args_indexed = assoc_array_to_indexed($args_assoc);
-			$response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts0123_type($_SESSION['user_id'], ...$args_indexed)));
+			$response->getBody()->write(json_encode(/*TODO:*/));
 			return $response->withHeader('Content-type', 'application/json');
     });
 
