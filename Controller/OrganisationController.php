@@ -223,9 +223,10 @@ class OrganisationController extends AbstractController {
   public function get_data_for_organisations_by_nuts0123_type_name($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
       $args = func_get_args();
       $query_result = $this->db_ops->get_organisations_by_nuts0123_type_name(...$args);
+      $dataCon = new DataController();
       $next_entities_query_result = $this->db_ops->get_all_fields_from_organisation_by_name($user_id, $name);
       $next_entities_query_result_copy = $next_entities_query_result;
-      $query_result = $this->format_query_result_datafields($query_result, $next_entities_query_result_copy);
+      $query_result = $this->format_query_result_datafields($user_id, $query_result, $next_entities_query_result_copy);
 
 
       $next_entities = [];
@@ -279,15 +280,16 @@ class OrganisationController extends AbstractController {
       $json_array = array('organisations'=>$query_result, 'links'=>$links);
       return $json_array;
   }
-  //TODO: format_jason needs to be less hardcoded and more felxible, this is a temporary solution
+  //TODO: remove according to refractor guideline
   protected function format_json_temp($self_link, $query_result, $next_entity_type = '', $next_entities = []) {
     //error_log(json_encode($query_result));
     $links['self'] = $self_link;
     foreach($query_result as $org) {
 
         $links['organisations'][$org['name']] = $this->get_org_link($org);
-        foreach($org['fields'] as $fld){
-          error_log(json_encode($fld['field_name']));
+        error_log(json_encode($org));
+        foreach($org['fields']['data'] as $fld){
+          error_log(json_encode($fld));
           $links['fields'][$fld['field_name']] = $self_link . '/' . rawurlencode($fld['field_name']);
         }
 

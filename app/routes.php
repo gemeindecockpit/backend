@@ -201,8 +201,9 @@ return function (App $app) {
 
     $app->get('/data/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{orgaType}/{entity}', function (Request $request, Response $response, $args_assoc) {
 			$orgController = new OrganisationController();
+			$dataController = new DataController();
 			$args_indexed = assoc_array_to_indexed($args_assoc);
-			$response->getBody()->write(json_encode($orgController->get_data_for_organisations_by_nuts0123_type_name($_SESSION['user_id'], ...$args_indexed)));
+		$response->getBody()->write(json_encode(/*TODO:*/));
 			//Moglichen Parameter
       //Last={all | x} liefert den gesamten Verlauf bzw. Den der letzten x Tage
       return $response->withHeader('Content-type', 'application/json');

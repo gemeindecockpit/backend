@@ -27,18 +27,20 @@ abstract class AbstractController {
         return $result;
     }
 
-    protected function format_query_result_datafields($org, $fields_array) {
+    protected function format_query_result_datafields($user_id, $org, $fields_array) {
         $result = [];
         //foreach($query_results as $ar){
           //$result_temp = [];
-
+          $dataCon = new DataController();
             $row = $org->fetch_assoc();
             $fields = [];
               array_walk_recursive($row, [$this, 'encode_items']);
+
               while ($row2 = $fields_array->fetch_assoc()){
-                array_walk_recursive($row2, [$this, 'encode_items']);
-                $fields[] = $row2;
+
+                $fields[] = $dataCon->get_latest_data_by_field_id($user_id, $row2['field_id']);
               }
+              array_walk_recursive($fields, [$this, 'encode_items']);
               $row['fields'] = $fields;
               array_push($result, $row);
 
