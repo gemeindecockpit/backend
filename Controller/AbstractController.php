@@ -27,8 +27,29 @@ abstract class AbstractController {
         return $result;
     }
 
+    protected function format_query_result_datafields($org, $fields_array) {
+        $result = [];
+        //foreach($query_results as $ar){
+          //$result_temp = [];
+
+            $row = $org->fetch_assoc();
+            $fields = [];
+              array_walk_recursive($row, [$this, 'encode_items']);
+              while ($row2 = $fields_array->fetch_assoc()){
+                array_walk_recursive($row2, [$this, 'encode_items']);
+                $fields[] = $row2;
+              }
+              $row['fields'] = $fields;
+              array_push($result, $row);
+
+          //$result[] = $result_temp;
+        //}
+
+        return $result;
+    }
+
     protected function get_self_link(...$args) {
-      //array_walk_recursive($args, [$this, 'encode_items_url']);
+      array_walk_recursive($args, [$this, 'encode_items_url']);
       return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
     }
 

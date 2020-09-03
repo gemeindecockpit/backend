@@ -212,6 +212,22 @@ class DatabaseOps {
 		return $result;
 	}
 
+	public function get_all_fields_from_organisation_by_name($user_id, $organisation_name) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				field_id, field_name, max_value, yellow_value, red_value, relational_flag, view_organisations_and_fields.priority, can_see_organisation.can_alter
+			FROM view_organisations_and_fields
+			JOIN can_see_organisation ON can_see_organisation.organisation_id = view_organisations_and_fields.organisation_id
+			WHERE can_see_organisation.user_id = ?
+			AND view_organisations_and_fields.organisation_name = ?');
+		$stmt->bind_param('is', $user_id, $organisation_name);
+
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
 	public function get_alterable_organisation_by_id($userid, $orgid){
 		#TODO: richtig?
 		$db = $this->get_db_connection();

@@ -163,9 +163,9 @@ class OrganisationController extends AbstractController {
       }
 
       unset($args[0]);
-      $self_link = $this->get_self_link('config', ...$args);
+      $self_link = $this->get_self_link('data', ...$args);
 
-      return $this->format_json($self_link, $query_result, 'orgatype', $next_entities);
+      return $this->format_json_data($self_link, $query_result, 'orgatype', $next_entities);
   }
 
   public function get_config_for_organisations_by_nuts0123_type($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type) {
@@ -181,6 +181,23 @@ class OrganisationController extends AbstractController {
 
       unset($args[0]);
       $self_link = $this->get_self_link('config', ...$args);
+
+      return $this->format_json($self_link, $query_result, 'organisations', $next_entities);
+  }
+
+  public function get_data_for_organisations_by_nuts0123_type($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type) {
+      $args = func_get_args();
+      $query_result = $this->db_ops->get_organisations_by_nuts0123_type(...$args);
+      $query_result = $this->format_query_result($query_result);
+
+      $next_entities = [];
+      foreach ($query_result as $row) {
+          array_walk_recursive($row, [$this, 'encode_items']);
+          $next_entities[] = $row['name'];
+      }
+
+      unset($args[0]);
+      $self_link = $this->get_self_link('data', ...$args);
 
       return $this->format_json($self_link, $query_result, 'organisations', $next_entities);
   }
@@ -203,6 +220,28 @@ class OrganisationController extends AbstractController {
       return $this->format_json($self_link, $query_result, 'fields', $next_entities);
   }
 
+  public function get_data_for_organisations_by_nuts0123_type_name($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
+      $args = func_get_args();
+      $query_result = $this->db_ops->get_organisations_by_nuts0123_type_name(...$args);
+      $next_entities_query_result = $this->db_ops->get_all_fields_from_organisation_by_name($user_id, $name);
+      $next_entities_query_result_copy = $next_entities_query_result;
+      $query_result = $this->format_query_result_datafields($query_result, $next_entities_query_result_copy);
+
+
+      $next_entities = [];
+      $field_values = [];
+      while($row = $next_entities_query_result->fetch_assoc()) {
+          array_walk_recursive($row, [$this, 'encode_items']);
+          $next_entities[] = $row['field_name'];
+
+      }
+
+      unset($args[0]);
+      $self_link = $this->get_self_link('data', ...$args);
+
+      return $this->format_json_temp($self_link, $query_result, 'fields', $next_entities);
+  }
+
   public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
       $query_result = $this->db_ops->get_config_for_field_by_name($user_id, $org_id, $field_name);
       $query_result = $this->format_query_result($query_result);
@@ -210,11 +249,12 @@ class OrganisationController extends AbstractController {
   }
 
   private function get_org_link($org) {
-      return htmlspecialchars($_SERVER['SERVER_NAME'].'/config/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['type'].'/'.$org['name']);
+    return htmlspecialchars($_SERVER['SERVER_NAME'].'/config/'.rawurlencode($org['nuts0']).'/'.rawurlencode($org['nuts1']).'/'.rawurlencode($org['nuts2']).'/'.rawurlencode($org['nuts3']).'/'.rawurlencode($org['type']).'/'.rawurlencode($org['name']));
   }
   private function get_org_link_data($org) {
-      return htmlspecialchars($_SERVER['SERVER_NAME'].'/data/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['type'].'/'.$org['name']);
+      return htmlspecialchars($_SERVER['SERVER_NAME'].'/data/'.rawurlencode($org['nuts0']).'/'.rawurlencode($org['nuts1']).'/'.rawurlencode($org['nuts2']).'/'.rawurlencode($org['nuts3']).'/'.rawurlencode($org['type']).'/'.rawurlencode($org['name']));
   }
+
 
   protected function format_json($self_link, $query_result, $next_entity_type = '', $next_entities = []) {
       $links['self'] = $self_link;
@@ -222,7 +262,7 @@ class OrganisationController extends AbstractController {
           $links['organisations'][$org['name']] = $this->get_org_link($org);
       }
       foreach ($next_entities as $value) {
-          $links[$next_entity_type][$value] = $self_link . '/' . $value;
+          $links[$next_entity_type][$value] = $self_link . '/' . rawurlencode($value);
       }
       $json_array = array('organisations'=>$query_result, 'links'=>$links);
       return $json_array;
@@ -234,10 +274,37 @@ class OrganisationController extends AbstractController {
           $links['organisations'][$org['name']] = $this->get_org_link_data($org);
       }
       foreach ($next_entities as $value) {
-          $links[$next_entity_type][$value] = $self_link . '/' . $value;
+          $links[$next_entity_type][$value] = $self_link . '/' . rawurlencode($value);
       }
       $json_array = array('organisations'=>$query_result, 'links'=>$links);
       return $json_array;
+  }
+  //TODO: format_jason needs to be less hardcoded and more felxible, this is a temporary solution
+  protected function format_json_temp($self_link, $query_result, $next_entity_type = '', $next_entities = []) {
+    //error_log(json_encode($query_result));
+    $links['self'] = $self_link;
+    foreach($query_result as $org) {
+
+        $links['organisations'][$org['name']] = $this->get_org_link($org);
+        foreach($org['fields'] as $fld){
+          error_log(json_encode($fld['field_name']));
+          $links['fields'][$fld['field_name']] = $self_link . '/' . rawurlencode($fld['field_name']);
+        }
+
+
+
+
+    }
+    /*
+    foreach($query_result as $org) {
+        $links['fields'][$org['field_name']] = $self_link . '/' . $org['field_name'];
+    }
+    */
+    foreach ($next_entities as $value) {
+        $links[$next_entity_type][$value] = $self_link . '/' . $value;
+    }
+    $json_array = array('organisations'=>$query_result, 'links'=>$links);
+    return $json_array;
   }
 
 }
