@@ -578,6 +578,30 @@ class DatabaseOps {
 		return $query_result;
 	}
 
+	public function get_data_field_id_date($user_id, $field_id, $date) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				data.field_id as field_id,
+				field.name as field_name,
+				field_value,
+				realname,
+				date
+			FROM view_up_to_date_data_from_all_fields data
+			JOIN can_see_field ON data.field_id = can_see_field.field_id
+			JOIN view_organisations_and_fields ON view_organisations_and_fields.field_id = data.field_id
+			JOIN field ON field.id = data.field_id
+			WHERE can_see_field.user_id = ?
+			AND data.field_id = ?
+			AND date = ?'
+		);
+		$stmt->bind_param('iis', $user_id, $field_id, $date);
+
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
+	}
+
 	public function get_latest_data_by_field_name($user_id, $organisation_id, $field_name) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare(

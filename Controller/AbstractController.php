@@ -55,7 +55,7 @@ abstract class AbstractController {
       return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
     }
 
-    abstract protected function format_json($self_link, $query_result, $next_entity_type = '', $next_entities = []);
+    abstract protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []);
 
     function encode_items_url(&$item, $key){
       $item = rawurlencode($item);
