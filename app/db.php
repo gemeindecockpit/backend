@@ -212,6 +212,22 @@ class DatabaseOps {
 		return $result;
 	}
 
+	public function get_all_fields_from_organisation_by_name($user_id, $organisation_name) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				field_id, field_name, max_value, yellow_value, red_value, relational_flag, view_organisations_and_fields.priority, can_see_organisation.can_alter
+			FROM view_organisations_and_fields
+			JOIN can_see_organisation ON can_see_organisation.organisation_id = view_organisations_and_fields.organisation_id
+			WHERE can_see_organisation.user_id = ?
+			AND view_organisations_and_fields.organisation_name = ?');
+		$stmt->bind_param('is', $user_id, $organisation_name);
+
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
 	public function get_alterable_organisation_by_id($userid, $orgid){
 		#TODO: richtig?
 		$db = $this->get_db_connection();
@@ -250,51 +266,32 @@ class DatabaseOps {
 	//		fields				  		  //
 	////////////////////////////////////////
 
-	public function get_all_fields($user_id) {
+	public function get_field_ids($user_id, ...$args) {
+		$fields;
+		switch (sizeof($args)) {
+			case 0:
+				$fields = $this->get_all_field_ids($user_id);
+				break;
+			case 6:
+				$fields = $this->get_field_ids_by_org_full_link($user_id, ...$args);
+				break;
+			case 7:
+				$fields = $this->get_field_ids_by_org_full_link_field_name($user_id, ...$args);
+				break;
+			default:
+				$fields = null;
+				break;
+		}
+		return $result;
+	}
+
+	private function get_all_field_ids($user_id) {
 		$db = $this->get_db_connection();
-		$stmt = $db->prepare(
-				'SELECT *
-				FROM view_fields_visible_for_user
-				WHERE user_id = ?'
-		);
+		$stmt = $db->prepare('SELECT field_id from can_see_field WHERE user_id = ?');
 		$stmt->bind_param('i', $user_id);
 		$query_result = $this->execute_select_stmt($stmt);
-
 		$db->close();
 		return $query_result;
-	}
-
-	public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
-		$db = $this->get_db_connection();
-		$stmt = $db->prepare(
-			'SELECT view_fields_visible_for_user.*
-			FROM view_fields_visible_for_user
-			JOIN view_organisations_and_fields
-				ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
-			WHERE view_fields_visible_for_user.user_id = ?
-			AND view_organisations_and_fields.organisation_id = ?
-			AND view_fields_visible_for_user.field_name = ?'
-		);
-		$stmt->bind_param('iis', $user_id, $org_id, $field_name);
-		$result = $this->execute_select_stmt($stmt);
-		$db->close();
-		return $result;
-	}
-
-	public function get_config_for_fields_by_organisation_id($user_id, $org_id) {
-		$db = $this->get_db_connection();
-		$stmt = $db->prepare(
-			'SELECT view_fields_visible_for_user.*
-			FROM view_fields_visible_for_user
-			JOIN view_organisations_and_fields
-				ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
-			WHERE view_fields_visible_for_user.user_id = ?
-			AND view_organisations_and_fields.organisation_id = ?'
-		);
-		$stmt->bind_param('ii', $user_id, $org_id);
-		$result = $this->execute_select_stmt($stmt);
-		$db->close();
-		return $result;
 	}
 
 	public function get_field_ids_by_org_full_link($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type, $name) {
@@ -337,6 +334,103 @@ class DatabaseOps {
 		$db->close();
 		return $query_result;
 	}
+
+	public function get_config_all_fields($user_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+				'SELECT
+					user_id,
+					field_id,
+					field_name,
+					max_value,
+					yellow_value,
+					red_value,
+					relational_flag,
+					can_alter
+				FROM view_fields_visible_for_user
+				WHERE user_id = ?'
+		);
+		$stmt->bind_param('i', $user_id);
+		$query_result = $this->execute_select_stmt($stmt);
+
+		$db->close();
+		return $query_result;
+	}
+
+	public function get_config_for_field_by_field_id($user_id, $field_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+				'SELECT
+					user_id,
+					field_id,
+					field_name,
+					max_value,
+					yellow_value,
+					red_value,
+					relational_flag,
+					can_alter
+				FROM view_fields_visible_for_user
+				WHERE user_id = ?
+				AND field_id = ?'
+		);
+		$stmt->bind_param('ii', $user_id, $field_id);
+		$query_result = $this->execute_select_stmt($stmt);
+
+		$db->close();
+		return $query_result;
+	}
+
+	public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				view_fields_visible_for_user.user_id AS user_id,
+				view_fields_visible_for_user.field_id AS field_id,
+				view_fields_visible_for_user.field_name AS field_name,
+				view_fields_visible_for_user.max_value AS max_value,
+				view_fields_visible_for_user.yellow_value AS yellow_value,
+				view_fields_visible_for_user.red_value AS red_value,
+				view_fields_visible_for_user.relational_flag AS relational_flag,
+				view_fields_visible_for_user.can_alter AS can_alter
+			FROM view_fields_visible_for_user
+			JOIN view_organisations_and_fields
+				ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
+			WHERE view_fields_visible_for_user.user_id = ?
+			AND view_organisations_and_fields.organisation_id = ?
+			AND view_fields_visible_for_user.field_name = ?'
+		);
+		$stmt->bind_param('iis', $user_id, $org_id, $field_name);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
+	public function get_config_for_fields_by_organisation_id($user_id, $org_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				view_fields_visible_for_user.user_id AS user_id,
+				view_fields_visible_for_user.field_id AS field_id,
+				view_fields_visible_for_user.field_name AS field_name,
+				view_fields_visible_for_user.max_value AS max_value,
+				view_fields_visible_for_user.yellow_value AS yellow_value,
+				view_fields_visible_for_user.red_value AS red_value,
+				view_fields_visible_for_user.relational_flag AS relational_flag,
+				view_fields_visible_for_user.can_alter AS can_alter
+			FROM view_fields_visible_for_user
+			JOIN view_organisations_and_fields
+				ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
+			WHERE view_fields_visible_for_user.user_id = ?
+			AND view_organisations_and_fields.organisation_id = ?'
+		);
+		$stmt->bind_param('ii', $user_id, $org_id);
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result;
+	}
+
+
+
 
 
 
@@ -554,6 +648,30 @@ class DatabaseOps {
 		return $query_result;
 	}
 
+	public function get_data_field_id_date($user_id, $field_id, $date) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT
+				data.field_id as field_id,
+				field.name as field_name,
+				field_value,
+				realname,
+				date
+			FROM view_up_to_date_data_from_all_fields data
+			JOIN can_see_field ON data.field_id = can_see_field.field_id
+			JOIN view_organisations_and_fields ON view_organisations_and_fields.field_id = data.field_id
+			JOIN field ON field.id = data.field_id
+			WHERE can_see_field.user_id = ?
+			AND data.field_id = ?
+			AND date = ?'
+		);
+		$stmt->bind_param('iis', $user_id, $field_id, $date);
+
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
+	}
+
 	public function get_latest_data_by_field_name($user_id, $organisation_id, $field_name) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare(
@@ -609,7 +727,6 @@ class DatabaseOps {
 				data.field_id as field_id,
 				field.name as field_name,
 				field_value,
-				realname,
 				date
 			FROM view_up_to_date_data_from_all_fields data
 			JOIN can_see_field ON data.field_id = can_see_field.field_id

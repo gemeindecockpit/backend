@@ -31,7 +31,7 @@ class UserController extends AbstractController {
         return $user_array;
     }
 
-    protected function format_json($self_link, $query_result, $next_entity_type = '', $next_entities = []) {}
+    protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {}
 }
 
 ?>
