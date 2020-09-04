@@ -33,19 +33,19 @@ return function (App $app) {
     $app->get('/', \RouteController::class . ':home');
 
     $app->get('/config',
-        \ConfigRouteController::class . ':home');
+        \ConfigRouteController::class . ':get_organisation_config');
     $app->get('/config' . NUTS_0,
-        \ConfigRouteController::class . ':get_nuts_0');
+        \ConfigRouteController::class . ':get_organisation_config');
     $app->get('/config' . NUTS_01,
-        \ConfigRouteController::class . ':get_nuts_01');
+        \ConfigRouteController::class . ':get_organisation_config');
     $app->get('/config' . NUTS_012,
-        \ConfigRouteController::class . ':get_nuts_012');
+        \ConfigRouteController::class . ':get_organisation_config');
     $app->get('/config' . NUTS_FULL,
-        \ConfigRouteController::class . ':get_nuts_full');
+        \ConfigRouteController::class . ':get_organisation_config');
     $app->get('/config' . NUTS_FULL . ORG_TYPE,
-        \ConfigRouteController::class . ':get_nuts_full_org_type');
+        \ConfigRouteController::class . ':get_organisation_config');
     $app->get('/config' . ORG_FULL_LINK,
-        \ConfigRouteController::class . ':get_org_full_link');
+        \ConfigRouteController::class . ':get_organisation_config');
     $app->get('/config' . ORG_FULL_LINK . FIELD_NAME,
         \ConfigRouteController::class . ':get_org_full_link_field_name');
 

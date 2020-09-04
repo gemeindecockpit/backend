@@ -13,7 +13,7 @@ class DataController extends AbstractController {
 
     public function get_organisation_and_field_ids($user_id) {
         $org_controller = new OrganisationController();
-        $organisations = $org_controller->get_all($user_id)['organisations'];
+        $organisations = $org_controller->get_organisation_config($user_id)['organisations'];
         $org_ids = [];
         foreach ($organisations AS $org) {
             $org_ids[] = 'organisation/' . $org['organisation_id'];

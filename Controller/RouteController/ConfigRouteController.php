@@ -11,9 +11,16 @@ class ConfigRouteController extends RouteController {
        parent::__construct($container);
    }
 
+   public function get_organisation_config($request, $response, $args) {
+       $orgController = new OrganisationController();
+       $args_indexed = assoc_array_to_indexed($args);
+       $response->getBody()->write(json_encode($orgController->get_organisation_config($_SESSION['user_id'], ...$args_indexed)));
+       return $response->withHeader('Content-type', 'application/json');
+   }
+
    public function home($request, $response, $args) {
        $orgController = new OrganisationController();
-       $response->getBody()->write(json_encode($orgController->get_all($_SESSION['user_id'])));
+       $response->getBody()->write(json_encode($orgController->get_organisation_config($_SESSION['user_id'])));
        return $response->withHeader('Content-type', 'application/json');
    }
 
