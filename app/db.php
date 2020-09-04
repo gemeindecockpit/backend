@@ -282,7 +282,7 @@ class DatabaseOps {
 				$fields = null;
 				break;
 		}
-		return $result;
+		return $fields;
 	}
 
 	private function get_all_field_ids($user_id) {
