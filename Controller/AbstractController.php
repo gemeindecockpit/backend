@@ -27,29 +27,6 @@ abstract class AbstractController {
         return $result;
     }
 
-    protected function format_query_result_datafields($user_id, $org, $fields_array) {
-        $result = [];
-        //foreach($query_results as $ar){
-          //$result_temp = [];
-          $dataCon = new DataController();
-            $row = $org->fetch_assoc();
-            $fields = [];
-              array_walk_recursive($row, [$this, 'encode_items']);
-
-              while ($row2 = $fields_array->fetch_assoc()){
-
-                $fields[] = $dataCon->get_latest_data_by_field_id($user_id, $row2['field_id']);
-              }
-              array_walk_recursive($fields, [$this, 'encode_items']);
-              $row['fields'] = $fields;
-              array_push($result, $row);
-
-          //$result[] = $result_temp;
-        //}
-
-        return $result;
-    }
-
     protected function get_self_link(...$args) {
       array_walk_recursive($args, [$this, 'encode_items_url']);
       return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
@@ -63,26 +40,6 @@ abstract class AbstractController {
     function encode_items(&$item, $key){
        $item = utf8_encode($item);
      }
-/*
-  //needed for GET-Requests
-  //returns one entity
-  abstract public function get_one($user_id, ...$args);
-  //returns all entities of this type
-  abstract public function get_all($user_id);
-
-
-  //needed for POST-Requests
-  //creates a new Entity and saves it to the DB
-  abstract public function createNew($user_id, $array);
-
-  //needed for PUT-Requests
-  //edits one entity
-  abstract public function edit($user_id, $id);
-
-  //needed for DELETE-Requests
-  //sets one entity to inactive
-  abstract public function delete($user_id, $id);
-*/
 }
 
 

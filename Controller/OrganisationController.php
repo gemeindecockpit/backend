@@ -67,6 +67,23 @@ class OrganisationController extends AbstractController {
         return $this->format_json($self_link, $query_result, $next_entity_types, $next_entity_array);
     }
 
+    public function put_org_config($user_id, ...$args) {
+        if(!$this->db_ops->user_can_modify_organisation($user_id, $args[0])) {
+            return 'Forbidden'; // TODO: implement fail case
+        }
+        $errno = $this->db_ops->update_organisation_by_id(...$args);
+        return $errno;
+    }
+
+    public function get_org_ids($user_id, ...$args) {
+        $query_result = $this->db_ops->get_org_ids($user_id, ...$args);
+        $org_ids = [];
+        while ($row = $query_result->fetch_assoc()) {
+            $org_ids[] = $row['organisation_id'];
+        }
+        return $org_ids;
+    }
+
     private function get_org_links($endpoint_type, $orgs) {
       $organisation_links = [];
       foreach ($orgs as $org) {
@@ -75,11 +92,6 @@ class OrganisationController extends AbstractController {
       }
 
       return $organisation_links;
-    }
-
-    private function get_org_data_link($org) {
-      array_walk_recursive($org, [$this, 'encode_items_url']);
-      return $_SERVER['SERVER_NAME'].'/data/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['type'].'/'.$org['name'];
     }
 
     protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {

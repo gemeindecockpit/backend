@@ -41,7 +41,7 @@ class DatabaseOps {
 		return $results;
 	}
 
-	private function execute_insert_stmt($stmt) {
+	private function execute_stmt_without_result($stmt) {
 		$stmt->execute();
 		$errno = $stmt->errno;
 		//$stmt->close();
@@ -150,6 +150,25 @@ class DatabaseOps {
 		return $query_result;
 	}
 
+	public function get_org_ids($user_id, ...$args) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT organisation_id
+			FROM view_organisation_visible_for_user
+			WHERE user_id = ?
+			AND nuts0 = ?
+			AND nuts1 = ?
+			AND nuts2 = ?
+			AND nuts3 = ?
+			AND type = ?
+			AND name = ?'
+		);
+		$stmt->bind_param('issssss', $user_id, ...$args);
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result;
+	}
+
 	public function get_all_types($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare(
@@ -179,10 +198,10 @@ class DatabaseOps {
 				ON view_organisations_and_fields.field_id = can_see_field.field_id
 				AND view_organisation_visible_for_user.user_id = can_see_field.user_id
 			WHERE view_organisation_visible_for_user.user_id = ?
-			AND nuts0 = ?
-			AND nuts1 = ?
-			AND nuts2 = ?
-			AND nuts3 = ?
+			AND view_organisation_visible_for_user.nuts0 = ?
+			AND view_organisation_visible_for_user.nuts1 = ?
+			AND view_organisation_visible_for_user.nuts2 = ?
+			AND view_organisation_visible_for_user.nuts3 = ?
 			AND organisation_type = ?
 			AND organisation_name = ?'
 		);
@@ -254,6 +273,42 @@ class DatabaseOps {
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;
+	}
+
+	/**
+	 * Updates the organisation of the passed id with the new values.
+	 * @param $id
+	 * @param $name
+	 * @param $description
+	 * @param $type
+	 * @param $contact
+	 * @param $zipcode
+	 * @param $active
+	 * @return mixed
+	 */
+	public function update_organisation_by_id($id, $name, $description, $type, $contact, $zipcode, $active) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare('UPDATE organisation
+									SET name = ?, description = ?, type = ?, contact = ?, zipcode = ?, active = ?
+									WHERE id = ?');
+		$stmt->bind_param('ssssiii',$name, $description, $type, $contact, $zipcode, $active, $id);
+		$errno = $this->execute_stmt_without_result($stmt);
+		return $errno;
+	}
+
+	public function user_can_modify_organisation($user_id, $organisation_id) { // TODO wrong plcae for this method?
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT *
+			FROM can_see_organisation
+			WHERE user_id = ?
+			AND organisation_id = ?
+			AND can_alter = 1'
+		);
+		$stmt->bind_param('ii', $user_id, $organisation_id);
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result->num_rows > 0;
 	}
 
 
@@ -409,6 +464,62 @@ class DatabaseOps {
 		return $result;
 	}
 
+	/**
+	 * Updates the field of the delivered sid if the valid_to attribute is null and set it to the current timestamp.
+	 * @param $sid
+	 * @return mixed
+	 */
+	private function update_field_valid_to_by_sid($sid) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare('UPDATE field
+									SET valid_to = CURRENT_TIMESTAMP
+									WHERE (sid=? AND valid_to IS NULL)');
+		$stmt->bind_param('s', $sid);
+		$errno = $this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+	}
+
+	/**
+	 * Inserts a new field of the passed values and sets the valid_to timestamp of currently active field to now.
+	 * @param $sid
+	 * @param $name
+	 * @param $max_value
+	 * @param $yellow_value
+	 * @param $red_value
+	 * @param $relational_flag
+	 * @return mixed|void
+	 */
+	public function insert_field_by_sid($sid, $name, $max_value, $yellow_value, $red_value, $relational_flag) {
+		$errno = $this->update_field_valid_to_by_sid($sid);
+		if ($errno) {
+			return; // TODO
+		}
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'INSERT INTO field (sid,name,max_value,yellow_value,red_value,relational_flag,valid_from)
+			VALUES (?,?,?,?,?,?,CURRENT_TIMESTAMP)');
+		$stmt->bind_param('ssiiii', $sid, $name, $max_value, $yellow_value, $red_value, $relational_flag);
+		$errno = $this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+	}
+
+	public function user_can_modify_field($user_id, $field_id) { // TODO wrong plcae for this method?
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT *
+			FROM can_see_field
+			WHERE user_id = ?
+			AND field_id = ?
+			AND can_alter = 1'
+		);
+		$stmt->bind_param('ii', $user_id, $field_id);
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result->num_rows > 0;
+	}
+
 
 
 
@@ -446,7 +557,7 @@ class DatabaseOps {
 		$stmt = $db->prepare('INSERT INTO user (username, userpassword, email, realname, salt) VALUES (?, ?, ?, ?, ?)');
 		//$errors = $db->error_list;
 		$stmt->bind_param('sssss', $username, $userpassword, $email, $realname, $salt);
-		$error = $this->execute_insert_stmt($stmt);
+		$error = $this->execute_stmt_without_result($stmt);
 		$db->close();
 
 		return $error;
@@ -700,7 +811,7 @@ class DatabaseOps {
 			'INSERT into field_values (field_id, user_id, field_value, date) VALUES (?,?,?,?)'
 		);
 		$stmt->bind_param('iiis',$field_id, $user_id, $field_value, $date);
-		$errno = $this->execute_insert_stmt($stmt);
+		$errno = $this->execute_stmt_without_result($stmt);
 		$db->close();
 		return $errno;
 	}
