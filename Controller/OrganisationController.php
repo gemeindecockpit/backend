@@ -10,16 +10,24 @@ class OrganisationController extends AbstractController {
     }
 
     public function get_organisation_config($user_id, ...$args) {
+        return $this->get_organisation_json($user_id, 'config', ...$args);
+    }
+
+    public function get_organisation_data($user_id, ...$args) {
+        return $this->get_organisation_json($user_id, 'data', ...$args);
+    }
+
+    private function get_organisation_json($user_id, $request_type, ...$args) {
         $query_result = $this->db_ops->get_organisation_config($user_id, ...$args);
         if($query_result === null) {
             return array("error");
         }
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('config', ...$args);
+        $self_link = $this->get_self_link($request_type, ...$args);
 
         $next_entity_types = ['organisations'];
-        $organisation_links = $this->get_org_links('config', $query_result);
+        $organisation_links = $this->get_org_links($request_type, $query_result);
         $next_entity_array = array($organisation_links);
         $next_entities_query_result = null;
         switch (sizeof($args)) {
@@ -56,116 +64,7 @@ class OrganisationController extends AbstractController {
         }
         $next_entity_array[] = $next_entities;
 
-
-
         return $this->format_json($self_link, $query_result, $next_entity_types, $next_entity_array);
-    }
-
-    public function get_all_data($user_id){
-    $query_result = $this->db_ops->get_organisation_config($user_id);
-    $query_result = $this->format_query_result($query_result);
-
-    $next_nuts_query_result = $this->db_ops->get_next_NUTS_codes($user_id);
-    $next_nuts = [];
-    while($row = $next_nuts_query_result->fetch_array()) {
-        array_walk_recursive($row, [$this, 'encode_items']);
-        $next_nuts[] = $row[0];
-    }
-
-    $organisation_links = $this->get_org_links('data', $query_result);
-    $self_link = $this->get_self_link('data');
-    return $this->format_json($self_link, $query_result, array('organisations', 'nuts0'), array($organisation_links, $next_nuts));
-    }
-
-    public function get_one($user_id, ...$args){
-    }
-
-    public function get_data_for_organisations_by_nuts0($user_id, $nuts0) {
-      $query_result = $this->db_ops->get_organisations_by_nuts0($user_id, $nuts0);
-      $query_result = $this->format_query_result($query_result);
-
-      $next_nuts_query_result = $this->db_ops->get_next_NUTS_codes($user_id, $nuts0);
-      $next_nuts = [];
-      while($row = $next_nuts_query_result->fetch_array()) {
-          array_walk_recursive($row, [$this, 'encode_items']);
-          $next_nuts[] = $row[0];
-      }
-
-      $organisation_links = $this->get_org_links('data', $query_result);
-
-      $self_link = $this->get_self_link('data', $nuts0);
-      return $this->format_json($self_link, $query_result, array('organisations', 'nuts1'), array($organisation_links, $next_nuts));
-    }
-
-
-    //TODO: maybe combine this function with the one above by outsourcing the last part with the 'config'
-    public function get_data_for_organisations_by_nuts01($user_id, $nuts0, $nuts1) {
-      $query_result = $this->db_ops->get_organisations_by_nuts01($user_id, $nuts0, $nuts1);
-      $query_result = $this->format_query_result($query_result);
-
-      $next_nuts_query_result = $this->db_ops->get_next_NUTS_codes($user_id, $nuts0, $nuts1);
-      $next_nuts = [];
-      while($row = $next_nuts_query_result->fetch_array()) {
-          array_walk_recursive($row, [$this, 'encode_items']);
-          $next_nuts[] = $row[0];
-      }
-
-      $organisation_links = $this->get_org_links('data', $query_result);
-
-      $self_link = $this->get_self_link('data', $nuts0, $nuts1);
-      return $this->format_json($self_link, $query_result, array('organisations', 'nuts2'), array($organisation_links, $next_nuts));
-    }
-
-
-    public function get_data_for_organisations_by_nuts012($user_id, $nuts0, $nuts1, $nuts2) {
-      $query_result = $this->db_ops->get_organisations_by_nuts012($user_id, $nuts0, $nuts1, $nuts2);
-      $query_result = $this->format_query_result($query_result);
-
-      $next_nuts_query_result = $this->db_ops->get_next_NUTS_codes($user_id, $nuts0, $nuts1, $nuts2);
-      $next_nuts = [];
-      while($row = $next_nuts_query_result->fetch_array()) {
-          array_walk_recursive($row, [$this, 'encode_items']);
-          $next_nuts[] = $row[0];
-      }
-
-      $organisation_links = $this->get_org_links('data', $query_result);
-
-      $self_link = $this->get_self_link('data', $nuts0, $nuts1, $nuts2);
-      return $this->format_json($self_link, $query_result, array('organisations', 'nuts3'), array($organisation_links, $next_nuts));
-    }
-
-
-    public function get_data_for_organisations_by_nuts0123($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
-      $args = func_get_args();
-      $query_result = $this->db_ops->get_organisations_by_nuts0123(...$args);
-      $query_result = $this->format_query_result($query_result);
-
-      $next_entities_query_result = $this->db_ops->get_all_types(...$args);
-      $next_entities = [];
-      while($row = $next_entities_query_result->fetch_array()) {
-
-          array_walk_recursive($row, [$this, 'encode_items']);
-          $next_entities[] = $row[0];
-      }
-
-      $organisation_links = $this->get_org_links('data', $query_result);
-
-      unset($args[0]);
-      $self_link = $this->get_self_link('data', ...$args);
-      return $this->format_json($self_link, $query_result, array('organisations', 'organisation_type'), array($organisation_links, $next_entities));
-    }
-
-    public function get_data_for_organisations_by_nuts0123_type($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $type) {
-        $args = func_get_args();
-        $query_result = $this->db_ops->get_organisations_by_nuts0123_type(...$args);
-        $query_result = $this->format_query_result($query_result);
-
-        $organisation_links = $this->get_org_links('data', $query_result);
-
-        unset($args[0]);
-        $self_link = $this->get_self_link('data', ...$args);
-
-        return $this->format_json($self_link, $query_result, array('organisations'), array($organisation_links));
     }
 
     private function get_org_links($endpoint_type, $orgs) {

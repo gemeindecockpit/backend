@@ -22,6 +22,11 @@ class FieldController extends AbstractController {
         return $this->format_json($self_link, $query_result, 'fields', $field_ids);
     }
 
+    public function get_field_ids($user_id, ...$args) {
+        $query_result = $this->db_ops->get_field_ids($user_id, ...$args);
+        return $this->format_query_result($query_result);
+    }
+
     public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
         $query_result = $this->db_ops->get_config_for_field_by_name($user_id, $org_id, $field_name);
         $query_result = $this->format_query_result($query_result);

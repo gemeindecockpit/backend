@@ -18,54 +18,6 @@ class ConfigRouteController extends RouteController {
        return $response->withHeader('Content-type', 'application/json');
    }
 
-   public function home($request, $response, $args) {
-       $orgController = new OrganisationController();
-       $response->getBody()->write(json_encode($orgController->get_organisation_config($_SESSION['user_id'])));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-   public function get_nuts_0($request, $response, $args) {
-       $orgController = new OrganisationController();
-       $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0($_SESSION['user_id'], ...$args_indexed)));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-   public function get_nuts_01($request, $response, $args) {
-       $orgController = new OrganisationController();
-       $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts01($_SESSION['user_id'], ...$args_indexed)));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-   public function get_nuts_012($request, $response, $args) {
-       $orgController = new OrganisationController();
-       $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts012($_SESSION['user_id'], ...$args_indexed)));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-   public function get_nuts_full($request, $response, $args) {
-       $orgController = new OrganisationController();
-       $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0123($_SESSION['user_id'], ...$args_indexed)));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-   public function get_nuts_full_org_type($request, $response, $args) {
-       $orgController = new OrganisationController();
-       $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0123_type($_SESSION['user_id'], ...$args_indexed)));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-   public function get_org_full_link($request, $response, $args) {
-       $orgController = new OrganisationController();
-       $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($orgController->get_config_for_organisations_by_nuts0123_type_name($_SESSION['user_id'], ...$args_indexed)));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
    public function get_org_full_link_field_name($request, $response, $args) {
        $orgController = new OrganisationController();
        $fieldController = new FieldController();

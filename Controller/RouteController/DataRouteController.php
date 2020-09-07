@@ -42,28 +42,28 @@ class DataRouteController extends RouteController {
    public function get_nuts_0 ($request, $response, $args) {
        $org_controller = new OrganisationController();
        $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($org_controller->get_data_for_organisations_by_nuts0($_SESSION['user_id'], ...$args_indexed)));
+       $response->getBody()->write(json_encode($org_controller->get_organisation_data($_SESSION['user_id'], ...$args_indexed)));
        return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_nuts_01 ($request, $response, $args) {
        $org_controller = new OrganisationController();
        $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($org_controller->get_data_for_organisations_by_nuts01($_SESSION['user_id'], ...$args_indexed)));
+       $response->getBody()->write(json_encode($org_controller->get_organisation_data($_SESSION['user_id'], ...$args_indexed)));
        return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_nuts_012 ($request, $response, $args) {
        $org_controller = new OrganisationController();
        $args_indexed = assoc_array_to_indexed($args);
-       $response->getBody()->write(json_encode($org_controller->get_data_for_organisations_by_nuts012($_SESSION['user_id'], ...$args_indexed)));
+       $response->getBody()->write(json_encode($org_controller->get_organisation_data($_SESSION['user_id'], ...$args_indexed)));
        return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_nuts_full ($request, $response, $args) {
        $org_controller = new OrganisationController();
        $args_indexed = assoc_array_to_indexed($args);
-       $json_array = $org_controller->get_data_for_organisations_by_nuts0123($_SESSION['user_id'], ...$args_indexed);
+       $json_array = $org_controller->get_organisation_data($_SESSION['user_id'], ...$args_indexed);
        array_walk_recursive($json_array, function(&$value, $key){
          error_log(json_encode($value));
            $value = str_replace('/config/', '/data/', $value);
@@ -75,22 +75,23 @@ class DataRouteController extends RouteController {
    public function get_nuts_full_org_type ($request, $response, $args) {
        $org_controller = new OrganisationController();
        $args_indexed = assoc_array_to_indexed($args);
-       $json_array= $org_controller->get_data_for_organisations_by_nuts0123_type($_SESSION['user_id'], ...$args_indexed);
+       $json_array= $org_controller->get_organisation_data($_SESSION['user_id'], ...$args_indexed);
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_org_full_link ($request, $response, $args) {
        $data_controller = new DataController();
-       $query_parameters = $request->getQueryParams();
        $args_indexed = assoc_array_to_indexed($args);
-       $json_array;
+
+       $query_parameters = $request->getQueryParams();
        if(isset($query_parameters['last'])) {
-           $args_indexed[] = $query_parameters['last'];
-           $json_array = $data_controller->get_data_from_past_x_days_by_org_full_link($_SESSION['user_id'], ...$args_indexed);
+           $last = $query_parameters['last'];
        } else {
-           $json_array = $data_controller->get_latest_data_by_org_full_link($_SESSION['user_id'], ...$args_indexed);
+           $last = 'latest';
        }
+
+       $json_array = $data_controller->get_data_by_org($_SESSION['user_id'], $last, ...$args_indexed);
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
