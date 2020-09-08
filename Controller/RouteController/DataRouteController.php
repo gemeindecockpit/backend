@@ -67,38 +67,33 @@ class DataRouteController extends RouteController {
        }
 
        $json_array = $data_controller->get_data_by_org($_SESSION['user_id'], $last, ...$args_indexed);
-       
+
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
 
-   public function get_org_full_link_year($request, $response, $args) {
+   public function get_org_full_link_date($request, $response, $args) {
        $data_controller = new DataController();
-       $args_indexed = assoc_array_to_indexed($args);
 
-       $json_array = $data_controller->get_data_org_full_link_year($_SESSION['user_id'], ...$args_indexed);
+       $args_indexed = [$args['nuts0'], $args['nuts1'], $args['nuts2'], $args['nuts3'], $args['org_type'], $args['org_name']];
+
+       if(isset($args['day'])) {
+           $args_indexed[] = 'day';
+           $args_indexed[] = $args['year'];
+           $args_indexed[] = $args['month'];
+           $args_indexed[] = $args['day'];
+       } else if (isset($args['month'])) {
+           $args_indexed[] = 'month';
+           $args_indexed[] = $args['year'];
+           $args_indexed[] = $args['month'];
+       } else {
+           $args_indexed[] = 'year';
+           $args_indexed[] = $args['year'];
+       }
+       $json_array = $data_controller->get_data_org_full_link_date($_SESSION['user_id'], ...$args_indexed);
 
        $response->getBody()->write(json_encode($json_array));
-       return $response;
-   }
-
-   public function get_org_full_link_year_month($request, $response, $args) {
-       $data_controller = new DataController();
-       $args_indexed = assoc_array_to_indexed($args);
-       $json_array = $data_controller->get_data_org_full_link_month($_SESSION['user_id'], ...$args_indexed);
-
-       $response->getBody()->write(json_encode($json_array));
-       return $response;
-   }
-
-   public function get_org_full_link_date_full($request, $response, $args) {
-       $data_controller = new DataController();
-       $args_indexed = assoc_array_to_indexed($args);
-
-       $json_array = $data_controller->get_data_org_full_link_date_full($_SESSION['user_id'], ...$args_indexed);
-
-       $response->getBody()->write(json_encode($json_array));
-       return $response;
+       return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_org_full_link_field_name($request, $response, $args) {
@@ -118,27 +113,24 @@ class DataRouteController extends RouteController {
        return $response->withHeader('Content-type', 'application/json');
    }
 
-   public function get_org_full_link_field_name_year($request, $response, $args) {
+   public function get_org_full_link_field_name_date($request, $response, $args) {
        $data_controller = new DataController();
-       $args_indexed = assoc_array_to_indexed($args);
-       $json_array = $data_controller->get_data_org_full_link_field_name_year($_SESSION['user_id'], ...$args_indexed);
 
-       $response->getBody()->write(json_encode($json_array));
-       return $response->withHeader('Content-type', 'application/json');
-   }
+       $args_indexed = [$args['nuts0'], $args['nuts1'], $args['nuts2'], $args['nuts3'], $args['org_type'], $args['org_name'], $args['field_name']];
 
-   public function get_org_full_link_field_name_year_month($request, $response, $args) {
-       $data_controller = new DataController();
-       $args_indexed = assoc_array_to_indexed($args);
-       $json_array = $data_controller->get_data_org_full_link_field_name_month($_SESSION['user_id'], ...$args_indexed);
-
-       $response->getBody()->write(json_encode($json_array));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-   public function get_org_full_link_field_name_date_full($request, $response, $args) {
-       $data_controller = new DataController();
-       $args_indexed = assoc_array_to_indexed($args);
+       if(isset($args['day'])) {
+           $args_indexed[] = 'day';
+           $args_indexed[] = $args['year'];
+           $args_indexed[] = $args['month'];
+           $args_indexed[] = $args['day'];
+       } else if (isset($args['month'])) {
+           $args_indexed[] = 'month';
+           $args_indexed[] = $args['year'];
+           $args_indexed[] = $args['month'];
+       } else {
+           $args_indexed[] = 'year';
+           $args_indexed[] = $args['year'];
+       }
        $json_array = $data_controller->get_data_org_full_link_field_name_date($_SESSION['user_id'], ...$args_indexed);
 
        $response->getBody()->write(json_encode($json_array));

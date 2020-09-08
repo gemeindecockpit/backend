@@ -86,21 +86,21 @@ return function (App $app) {
     $app->get('/data' . ORG_FULL_LINK,
         \DataRouteController::class . ':get_org_full_link'); //TESTED, TODO: add links for data/.../field_name
     $app->get('/data' . ORG_FULL_LINK . YEAR,
-        \DataRouteController::class . ':get_org_full_link_year'); //TESTED, verified for working
+        \DataRouteController::class . ':get_org_full_link_date'); 
     $app->get('/data' . ORG_FULL_LINK . YEAR . MONTH,
-        \DataRouteController::class . ':get_org_full_link_year_month'); //TESTED, verified for working
+        \DataRouteController::class . ':get_org_full_link_date');
     $app->get('/data' . ORG_FULL_LINK . DATE_FULL,
-        \DataRouteController::class . ':get_org_full_link_date_full'); //TESTED, verified for working
+        \DataRouteController::class . ':get_org_full_link_date');
 
 
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME,
         \DataRouteController::class . ':get_org_full_link_field_name'); //TESTED, verified for working
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . YEAR,
-        \DataRouteController::class . ':get_org_full_link_field_name_year'); //TESTED, verified for working
+        \DataRouteController::class . ':get_org_full_link_field_name_date');
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . YEAR . MONTH,
-        \DataRouteController::class . ':get_org_full_link_field_name_year_month'); //TESTED, verified for working
+        \DataRouteController::class . ':get_org_full_link_field_name_date');
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
-        \DataRouteController::class . ':get_org_full_link_field_name_date_full'); //TESTED, verified for working
+        \DataRouteController::class . ':get_org_full_link_field_name_date');
 
 
     $app->post('/data' . ORG_FULL_LINK . DATE_FULL,
