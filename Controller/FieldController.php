@@ -13,7 +13,7 @@ class FieldController extends AbstractController {
         $query_result = $this->db_ops->get_config_all_fields($user_id);
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('data', 'field');
+        $self_link = $this->get_link('data', 'field');
         $field_ids = [];
         foreach ($query_result as $field) {
             $field_ids[] = $field['field_id'];
@@ -31,22 +31,24 @@ class FieldController extends AbstractController {
         return $field_ids;
     }
 
-    public function get_config_for_field_by_name($user_id, $org_id, $field_name) {
-        $query_result = $this->db_ops->get_config_for_field_by_name($user_id, $org_id, $field_name);
+    public function get_config_for_field_by_full_link($user_id, ...$args) {
+        $query_result = $this->db_ops->get_config_for_field_by_full_link($user_id, ...$args);
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('data', 'field', $org_id, $field_name);
+        $self_link = $this->get_link('config', ...$args);
+        $data_link = $this->get_link('data', ...$args);
 
-        return $this->format_json($self_link, $query_result);
+        $next_entity_types = ['data'];
+        $next_entities = array($data_link);
+
+        return $this->format_json($self_link, $query_result, $next_entity_types, $next_entities);
     }
-
-    public function function_get_config_for_field_by_full_link($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $field_name) {}
 
     public function get_config_for_fields_by_organisation_id($user_id, $org_id) {
         $query_result = $this->db_ops->get_config_for_fields_by_organisation_id($user_id, $org_id);
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link('data', 'field', $org_id);
+        $self_link = $this->get_link('data', 'field', $org_id);
 
         return $this->format_json($self_link, $query_result);
     }
@@ -66,22 +68,15 @@ class FieldController extends AbstractController {
 
     protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {
         $links['self'] = $self_link;
+
         for($i = 0; $i < sizeof($next_entity_types); $i++) {
-            $links[$next_entity_types[$i]] = [];
-            foreach ($next_entities[$i] as $entity) {
-                $links[$next_entity_types[$i]][] = $self_link . '/' . $entity;
+            if($next_entity_types[$i] === 'data' || $next_entity_types[$i] === 'config') {
+                $links[$next_entity_types[$i]] = $next_entities[$i];
+            } else {
+                foreach($next_entities[$i] as $entity) {
+                    $links[$next_entity_types[$i]] = $self_link . '/' . $entity;
+                }
             }
-        }
-
-        $json_array = array('fields'=>$query_result, 'links'=>$links);
-        return $json_array;
-    }
-
-    protected function format_config_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {
-        $links['self'] = $self_link;
-
-        foreach ($next_entities as $value) {
-            $links[$next_entity_type][$value] = $self_link . '/' . $value;
         }
         $json_array = array('fields'=>$query_result, 'links'=>$links);
         return $json_array;

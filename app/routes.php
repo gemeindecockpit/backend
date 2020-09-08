@@ -33,27 +33,27 @@ return function (App $app) {
     $app->get('/', \RouteController::class . ':home');
 
     $app->get('/config',
-        \ConfigRouteController::class . ':get_organisation_config');
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
     $app->get('/config' . NUTS_0,
-        \ConfigRouteController::class . ':get_organisation_config');
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
     $app->get('/config' . NUTS_01,
-        \ConfigRouteController::class . ':get_organisation_config');
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
     $app->get('/config' . NUTS_012,
-        \ConfigRouteController::class . ':get_organisation_config');
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
     $app->get('/config' . NUTS_FULL,
-        \ConfigRouteController::class . ':get_organisation_config');
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
     $app->get('/config' . NUTS_FULL . ORG_TYPE,
-        \ConfigRouteController::class . ':get_organisation_config');
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
     $app->get('/config' . ORG_FULL_LINK,
-        \ConfigRouteController::class . ':get_organisation_config');
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
     $app->get('/config' . ORG_FULL_LINK . FIELD_NAME,
-        \ConfigRouteController::class . ':get_org_full_link_field_name');
+        \ConfigRouteController::class . ':get_org_full_link_field_name'); //TESTED, verified for working
 
 
     $app->post('/config' . ORG_FULL_LINK,
-        \ConfigRouteController::class . ':post_org_full_link');
+        \ConfigRouteController::class . ':post_org_full_link'); // TODO
     $app->post('/config' . ORG_FULL_LINK . FIELD_NAME,
-        \ConfigRouteController::class . ':post_org_full_link_field_name');
+        \ConfigRouteController::class . ':post_org_full_link_field_name'); // TODO
 
     $app->put('/config' . ORG_FULL_LINK,
         \ConfigRouteController::class . ':put_org_full_link');
@@ -61,46 +61,46 @@ return function (App $app) {
         \ConfigRouteController::class . ':put_org_full_link_field_name');
 
     $app->delete('/config' . ORG_FULL_LINK,
-        \ConfigRouteController::class . ':delete_org_full_link');
+        \ConfigRouteController::class . ':delete_org_full_link'); // TODO
     $app->delete('/config' . ORG_FULL_LINK . FIELD_NAME,
-        \ConfigRouteController::class . ':delete_org_full_link_field_name');
+        \ConfigRouteController::class . ':delete_org_full_link_field_name'); // TODO
 
 
 
     $app->get('/data',
-        \DataRouteController::class . ':home');
+        \DataRouteController::class . ':home'); //TESTED, verified for working
     $app->get('/data/field',
-        \DataRouteController::class . ':get_field');
+        \DataRouteController::class . ':get_field'); // TODO: NOT WORKING
     $app->get('/data/field/{field_id:[0-9]+}',
-        \DataRouteController::class . ':get_field_field_id');
+        \DataRouteController::class . ':get_field_field_id'); // TODO: NOT WORKING
     $app->get('/data' . NUTS_0,
-        \DataRouteController::class . ':get_nuts_0');
+        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
     $app->get('/data' . NUTS_01,
-        \DataRouteController::class . ':get_nuts_01');
+        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
     $app->get('/data' . NUTS_012,
-        \DataRouteController::class . ':get_nuts_012');
+        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
     $app->get('/data' . NUTS_FULL,
-        \DataRouteController::class . ':get_nuts_full');
+        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
     $app->get('/data' . NUTS_FULL . ORG_TYPE,
-        \DataRouteController::class . ':get_nuts_full_org_type');
+        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
     $app->get('/data' . ORG_FULL_LINK,
-        \DataRouteController::class . ':get_org_full_link');
+        \DataRouteController::class . ':get_org_full_link'); //TESTED, TODO: add links for data/.../field_name
     $app->get('/data' . ORG_FULL_LINK . YEAR,
-        \DataRouteController::class . ':get_org_full_link_year');
+        \DataRouteController::class . ':get_org_full_link_year'); //TESTED, verified for working
     $app->get('/data' . ORG_FULL_LINK . YEAR . MONTH,
-        \DataRouteController::class . ':get_org_full_link_year_month');
+        \DataRouteController::class . ':get_org_full_link_year_month'); //TESTED, verified for working
     $app->get('/data' . ORG_FULL_LINK . DATE_FULL,
-        \DataRouteController::class . ':get_org_full_link_date_full');
+        \DataRouteController::class . ':get_org_full_link_date_full'); //TESTED, verified for working
 
 
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME,
-        \DataRouteController::class . ':get_org_full_link_field_name');
+        \DataRouteController::class . ':get_org_full_link_field_name'); //TESTED, verified for working
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . YEAR,
-        \DataRouteController::class . ':get_org_full_link_field_name_year');
+        \DataRouteController::class . ':get_org_full_link_field_name_year'); //TESTED, verified for working
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . YEAR . MONTH,
-        \DataRouteController::class . ':get_org_full_link_field_name_year_month');
+        \DataRouteController::class . ':get_org_full_link_field_name_year_month'); //TESTED, verified for working
     $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
-        \DataRouteController::class . ':get_org_full_link_field_name_date_full');
+        \DataRouteController::class . ':get_org_full_link_field_name_date_full'); //TESTED, verified for working
 
 
     $app->post('/data' . ORG_FULL_LINK . DATE_FULL,

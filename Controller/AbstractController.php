@@ -27,7 +27,7 @@ abstract class AbstractController {
         return $result;
     }
 
-    protected function get_self_link(...$args) {
+    protected function get_link(...$args) {
       array_walk_recursive($args, [$this, 'encode_items_url']);
       return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
     }

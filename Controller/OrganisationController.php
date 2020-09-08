@@ -24,11 +24,23 @@ class OrganisationController extends AbstractController {
         }
         $query_result = $this->format_query_result($query_result);
 
-        $self_link = $this->get_self_link($request_type, ...$args);
+        $next_entity_types = [];
+        $next_entity_array = [];
 
-        $next_entity_types = ['organisations'];
+        $self_link = $this->get_link($request_type, ...$args);
+        if($request_type === 'data') {
+            $next_entity_types[] = 'config';
+            $next_entity_array[] = $this->get_link('config', ...$args);
+        } else {
+            $next_entity_types[] = 'data';
+            $next_entity_array[] = $this->get_link('data', ...$args);
+        }
+
+        $next_entity_types[] = 'organisations';
         $organisation_links = $this->get_org_links($request_type, $query_result);
-        $next_entity_array = array($organisation_links);
+        $next_entity_array[] = $organisation_links;
+
+
         $next_entities_query_result = null;
         switch (sizeof($args)) {
             case 0:
@@ -49,14 +61,15 @@ class OrganisationController extends AbstractController {
                 break;
             case 6:
                 // There are no "next organisations", so the links have to be reset
-                $next_entity_types = ['fields'];
-                $next_entity_array = [];
+                $next_entity_types = array($next_entity_types[0], 'fields');
+                $next_entity_array = array($next_entity_array[0]);
                 $next_entities_query_result = $this->db_ops->get_field_names($user_id, ...$args);
                 break;
             default: // TODO: implement fail case
                 return null;
                 break;
         }
+
         $next_entities = [];
         while(!is_null($next_entities_query_result) && $row = $next_entities_query_result->fetch_array()) {
             array_walk_recursive($row, [$this, 'encode_items']);
@@ -96,18 +109,15 @@ class OrganisationController extends AbstractController {
 
     protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {
       $links['self'] = $self_link;
-
       $json_array;
-      if($next_entity_types[0] == 'fields') {
+      if($next_entity_types[1] === 'fields') {
           $json_array = $query_result[0];
-          $links['data'] = str_replace('config','data',$self_link);
       } else {
           $json_array = array('organisations' => $query_result);
       }
-
       for($i = 0; $i < sizeof($next_entity_types); $i++) {
-          if($next_entity_types[$i] === 'organisations') {
-              $links['organisations'] = $next_entities[$i];
+          if($next_entity_types[$i] === 'data' || $next_entity_types[$i] === 'config' || $next_entity_types[$i] === 'organisations') {
+              $links[$next_entity_types[$i]] = $next_entities[$i];
           } else {
               $links[$next_entity_types[$i]] = [];
               foreach ($next_entities[$i] as $entity) {
@@ -115,7 +125,6 @@ class OrganisationController extends AbstractController {
               }
           }
       }
-
       $json_array['links'] = $links;
       return $json_array;
     }
