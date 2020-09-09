@@ -32,6 +32,17 @@ abstract class AbstractController {
       return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
     }
 
+    /**
+    * Creates the array that is latter encoded as a JSON
+    * @param $self_link
+    *   The link to the current resource
+    * @param $query_result
+    *   The current resource
+    * @param $next_entity_types
+    *   The types of resources that are linked in the JSON
+    * @param $next_entities
+    *   The resources that are linked in the JSON
+    */
     abstract protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []);
 
     function encode_items_url(&$item, $key){
