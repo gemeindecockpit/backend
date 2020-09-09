@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use App\Application\Actions\User\ListUsersAction;
@@ -7,8 +8,21 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
+
 require_once(__DIR__ . '/../app/db.php');
+
+foreach (glob(__DIR__ . '/../Controller/RouteController/*.php') as $filename) {
+    require_once($filename);
+}
+foreach(glob(__DIR__ . "/../../Controller/*.php") as $filename) {
+	require_once($filename);
+}
+
 session_start();
+
+// TODO: Delete before pushing to production!
+$_SESSION['user_id'] = 4;
+
 
 return function (App $app) {
     $app->options('/{routes:.*}', function (Request $request, Response $response) {
@@ -16,67 +30,99 @@ return function (App $app) {
         return $response;
     });
 
-    $app->get('/', function (Request $request, Response $response) {
-        $response->getBody()->write('Hello world!');
-        return $response;
-    });
+    $app->get('/', \RouteController::class . ':home');
+
+    $app->get('/config',
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
+    $app->get('/config' . NUTS_0,
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
+    $app->get('/config' . NUTS_01,
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
+    $app->get('/config' . NUTS_012,
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
+    $app->get('/config' . NUTS_FULL,
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
+    $app->get('/config' . NUTS_FULL . ORG_TYPE,
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
+    $app->get('/config' . ORG_FULL_LINK,
+        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
+    $app->get('/config' . ORG_FULL_LINK . FIELD_NAME,
+        \ConfigRouteController::class . ':get_org_full_link_field_name'); //TESTED, verified for working
 
 
-    ############################################################################################
+    $app->post('/config' . ORG_FULL_LINK,
+        \ConfigRouteController::class . ':post_org_full_link'); // TODO
+    $app->post('/config' . ORG_FULL_LINK . FIELD_NAME,
+        \ConfigRouteController::class . ':post_org_full_link_field_name'); // TODO
 
-    //config route
-    $app->get('/config', function (Request $request, Response $response) {
-        $response->getBody()->write('Hello world config!');
-        return $response;
-    });
+    $app->put('/config' . ORG_FULL_LINK,
+        \ConfigRouteController::class . ':put_org_full_link');
+    $app->put('/config' . ORG_FULL_LINK . FIELD_NAME,
+        \ConfigRouteController::class . ':put_org_full_link_field_name');
 
-    $app->get('/config/'. NUTS_FULL, function (Request $request, Response $response) {
-        $response->getBody()->write(echo_json_all_types_for_user());
-        return $response->withHeader('Content-type', 'application/json');
-    });
-
-    $app->get('/config/'. NUTS_FULL . '/{orgaType}', function (Request $request, Response $response, $args) {
-        $response->getBody()->write(json_encode(get_all_orgs_for_user_for_type($args['orgaType'])));
-        return $response->withHeader('Content-type', 'application/json');
-    });
+    $app->delete('/config' . ORG_FULL_LINK,
+        \ConfigRouteController::class . ':delete_org_full_link'); // TODO
+    $app->delete('/config' . ORG_FULL_LINK . FIELD_NAME,
+        \ConfigRouteController::class . ':delete_org_full_link_field_name'); // TODO
 
 
 
+    $app->get('/data',
+        \DataRouteController::class . ':home'); //TESTED, verified for working
+    $app->get('/data/field',
+        \DataRouteController::class . ':get_field'); // TODO: NOT WORKING
+    $app->get('/data/field/{field_id:[0-9]+}',
+        \DataRouteController::class . ':get_field_field_id'); // TODO: NOT WORKING
+    $app->get('/data' . NUTS_0,
+        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
+    $app->get('/data' . NUTS_01,
+        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
+    $app->get('/data' . NUTS_012,
+        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
+    $app->get('/data' . NUTS_FULL,
+        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
+    $app->get('/data' . NUTS_FULL . ORG_TYPE,
+        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
+    $app->get('/data' . ORG_FULL_LINK,
+        \DataRouteController::class . ':get_org_full_link'); //TESTED, TODO: add links for data/.../field_name
+    $app->get('/data' . ORG_FULL_LINK . YEAR,
+        \DataRouteController::class . ':get_org_full_link_date'); 
+    $app->get('/data' . ORG_FULL_LINK . YEAR . MONTH,
+        \DataRouteController::class . ':get_org_full_link_date');
+    $app->get('/data' . ORG_FULL_LINK . DATE_FULL,
+        \DataRouteController::class . ':get_org_full_link_date');
 
-    ############################################################################################
-    //Data route
-    $app->get('/data', function (Request $request, Response $response) {
-        $response->getBody()->write('Hello world data!');
-        return $response;
-    });
 
-    $app->group('/users', function (Group $group) {
-        $group->get('', ListUsersAction::class);
-        $group->get('/{id}', ViewUserAction::class);
-    });
-};
+    $app->get('/data' . ORG_FULL_LINK . FIELD_NAME,
+        \DataRouteController::class . ':get_org_full_link_field_name'); //TESTED, verified for working
+    $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . YEAR,
+        \DataRouteController::class . ':get_org_full_link_field_name_date');
+    $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . YEAR . MONTH,
+        \DataRouteController::class . ':get_org_full_link_field_name_date');
+    $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
+        \DataRouteController::class . ':get_org_full_link_field_name_date');
 
-function echo_json_all_types_for_user() {
-	$data_operation = new DatabaseOps();
-	$result =  $data_operation->get_all_config_types_for_user(4); //TODO: $_SESSION['userid'] nutzen und keine hardcode 4 lmao
-	$typearray = Array();
-	while($row = $result->fetch_assoc()) {
-		array_push($typearray, $row['type']);
-	}
-  return json_encode($typearray);
-	 //$data_out->add_keyvalue_to_links_array('types', $typearray_links);
-	//header('Content-type: application/json');
-	//echo  $data_out->output_as_json($typearray);
+
+    $app->post('/data' . ORG_FULL_LINK . DATE_FULL,
+        \DataRouteController::class . ':post_org_full_link');
+    $app->post('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
+        \DataRouteController::class . ':post_org_full_link_field_name');
+
+    $app->put('/data' . ORG_FULL_LINK . DATE_FULL,
+        \DataRouteController::class . ':put_org_full_link');
+    $app->put('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
+        \DataRouteController::class . ':put_org_full_link_field_name');
+
+    $app->get('/user', \UserRouteController::class . '/get_home');
+    $app->post('/user', \UserRouteController::class . '/post_home');
+
+    $app->get('/user/{id:[0-9]+}', \UserRouteController::class . '/get_user_id');
+    $app->post('/user/{id:[0-9]+}', \UserRouteController::class . '/post_user_id');
+    $app->put('/user/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
+    $app->delete('/user/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
+
+    $app->post('login', \LoginRouteController::class . ':login');
+    $app->post('logout', \LoginRouteController::class . ':logout');
+
 }
-
-function get_all_orgs_for_user_for_type($type) {
-
-  $data_operation = new DatabaseOps();
-	$result =  $data_operation->get_all_data_organizations_for_user_for_type(4, $type);//TODO: $_SESSION['userid'] nutzen und keine hardcode 4 lmao
-	$typearray = Array();
-	while($row = $result->fetch_assoc()) {
-		array_push($typearray, $row['name']);
-	}
-	return $typearray;
-
-}
+?>
