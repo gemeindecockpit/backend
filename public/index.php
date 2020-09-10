@@ -68,6 +68,8 @@ $app->addRoutingMiddleware();
 //$errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, false, false);
 //$errorMiddleware->setDefaultErrorHandler($errorHandler);
 
+//Use default behaviour of sessions
+session_start();
 // Run App & Emit Response
 $response = $app->handle($request);
 $responseEmitter = new ResponseEmitter();

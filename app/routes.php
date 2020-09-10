@@ -18,11 +18,6 @@ foreach(glob(__DIR__ . "/../../Controller/*.php") as $filename) {
 	require_once($filename);
 }
 
-session_start();
-
-// TODO: Delete before pushing to production!
-$_SESSION['user_id'] = 4;
-
 
 return function (App $app) {
     $app->options('/{routes:.*}', function (Request $request, Response $response) {
@@ -30,6 +25,17 @@ return function (App $app) {
         return $response;
     });
 
+    $app->group('/data', function (RouteCollectorProxy $group) {
+      $group->any('', function ($request, $response, $args) {
+        if(!isset($_SESSION['user_id'])){
+          // redirect the user to the login page and do not proceed.
+          $response = $response->withRedirect('/login');
+        } else {
+          $response = $next($request, $response);
+        }
+        return $response;
+      });
+    });
     $app->get('/', \RouteController::class . ':home');
 
     $app->get('/config',
@@ -121,8 +127,19 @@ return function (App $app) {
     $app->put('/user/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
     $app->delete('/user/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
 
-    $app->post('login', \LoginRouteController::class . ':login');
-    $app->post('logout', \LoginRouteController::class . ':logout');
+    $app->get('/test', function ($request, $response, $args) {
+      if(isset($_SESSION['user_id'])){
+        $response->getBody()->write('User id: ' . $_SESSION['user_id']);
+      } else {
+        $response->getBody()->write('not logged in');
+      }
+
+      return $response;
+    });
+
+    $app->post('/login', \LoginRouteController::class . ':login');
+    $app->post('/logout', \LoginRouteController::class . ':logout');
+
 
 }
 ?>
