@@ -1,8 +1,10 @@
 <?php
 
 require_once("AbstractController.php");
-require_once(__DIR__ . '/../app/db.php');
 
+/*
+* To be renamed and refactored as a model
+*/
 class FieldController extends AbstractController {
 
     public function __construct() {

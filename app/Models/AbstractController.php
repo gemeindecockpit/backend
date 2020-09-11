@@ -1,7 +1,10 @@
 <?php
 
-require_once(__DIR__ . "/../app/db.php");
+require_once('DatabaseOps.php');
 
+/*
+* To be renamed and refactored as a model
+*/
 abstract class AbstractController {
 
     protected $db_ops;

@@ -9,13 +9,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 
-require_once(__DIR__ . '/../app/db.php');
-
-foreach (glob(__DIR__ . '/../Controller/RouteController/*.php') as $filename) {
+foreach (glob(__DIR__ . '/../Controller/*.php') as $filename) {
     require_once($filename);
-}
-foreach(glob(__DIR__ . "/../../Controller/*.php") as $filename) {
-	require_once($filename);
 }
 
 session_start();

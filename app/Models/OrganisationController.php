@@ -2,7 +2,10 @@
 
 require_once("AbstractController.php");
 require_once("NutsController.php");
-require_once(__DIR__ . '/../app/db.php');
+
+/*
+* To be renamed and refactored as a model
+*/
 class OrganisationController extends AbstractController {
 
     public function __construct() {

@@ -9,7 +9,7 @@ use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
-require_once(__DIR__ . '/../app/config.php');
+require_once(__DIR__ . '/../config/config.php');
 
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
@@ -39,11 +39,11 @@ $app = AppFactory::create();
 $callableResolver = $app->getCallableResolver();
 
 // Register middleware
-$middleware = require __DIR__ . '/../app/middleware.php';
+$middleware = require __DIR__ . '/../app/Middleware/middleware.php';
 $middleware($app);
 
 // Register routes
-$routes = require __DIR__ . '/../app/routes.php';
+$routes = require __DIR__ . '/../app/Routes/routes.php';
 $routes($app);
 
 /** @var bool $displayErrorDetails */

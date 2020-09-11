@@ -3,8 +3,10 @@
 require_once("AbstractController.php");
 require_once("OrganisationController.php");
 require_once("FieldController.php");
-require_once(__DIR__ . '/../app/db.php');
 
+/*
+* To be renamed and refactored as a model
+*/
 class DataController extends AbstractController {
 
     public function __construct() {

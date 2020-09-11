@@ -2,6 +2,10 @@
 
 require_once("AbstractController.php");
 
+
+/*
+* To be renamed and refactored as a model
+*/
 class NUTSController extends AbstractController {
 
     public function __construct() {
