@@ -1,7 +1,10 @@
 <?php
 
-require_once(__DIR__ . "/../app/db.php");
+require_once('DatabaseOps.php');
 
+/*
+* To be renamed and refactored as a model
+*/
 abstract class AbstractController {
 
     protected $db_ops;
@@ -27,34 +30,22 @@ abstract class AbstractController {
         return $result;
     }
 
-    protected function format_query_result_datafields($user_id, $org, $fields_array) {
-        $result = [];
-        //foreach($query_results as $ar){
-          //$result_temp = [];
-          $dataCon = new DataController();
-            $row = $org->fetch_assoc();
-            $fields = [];
-              array_walk_recursive($row, [$this, 'encode_items']);
-
-              while ($row2 = $fields_array->fetch_assoc()){
-
-                $fields[] = $dataCon->get_latest_data_by_field_id($user_id, $row2['field_id']);
-              }
-              array_walk_recursive($fields, [$this, 'encode_items']);
-              $row['fields'] = $fields;
-              array_push($result, $row);
-
-          //$result[] = $result_temp;
-        //}
-
-        return $result;
-    }
-
-    protected function get_self_link(...$args) {
+    protected function get_link(...$args) {
       array_walk_recursive($args, [$this, 'encode_items_url']);
       return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
     }
 
+    /**
+    * Creates the array that is latter encoded as a JSON
+    * @param $self_link
+    *   The link to the current resource
+    * @param $query_result
+    *   The current resource
+    * @param $next_entity_types
+    *   The types of resources that are linked in the JSON
+    * @param $next_entities
+    *   The resources that are linked in the JSON
+    */
     abstract protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []);
 
     function encode_items_url(&$item, $key){

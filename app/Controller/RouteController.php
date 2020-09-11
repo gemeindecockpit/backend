@@ -2,7 +2,7 @@
 
 use Psr\Container\ContainerInterface;
 
-foreach(glob(__DIR__ . "/../*.php") as $filename) {
+foreach(glob(__DIR__ . "/../Models/*.php") as $filename) {
 	require_once($filename);
 }
 
