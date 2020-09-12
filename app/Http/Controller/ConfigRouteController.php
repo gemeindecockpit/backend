@@ -51,22 +51,21 @@ class ConfigRouteController extends RouteController {
     }
 
     public function post_org($request, $response, $args) {
-       $response->getBody()->write('post/'.implode('/', $args));
        $user_controller = new UserController();
-       if(!$user_controller->can_create_org($_SESSION['user_id'])) {    
+       if(!$user_controller->can_create_organisation($_SESSION['user_id'])) {
             return $response->getBody()->write('not allowed!');
        }
-       
-       $entity = $request->getParsedBody();
+
+       $entity = json_decode($request->getBody(), true);
 
        if (!isset($entity['name'])
        || !isset($entity['type'])
        || !isset($entity['description'])
        || !isset($entity['contact'])
        || !isset($entity['zipcode'])) {
-       $response->getBody()->write("key in organisation json is missing");
-       return $response->withStatus(500);
-   }    
+           $response->getBody()->write("key in organisation json is missing");
+           return $response->withStatus(500);
+   }
        $org_controller = new OrganisationController();
        $errno = $org_controller->insert_organisation($entity);
        if ($errno) {

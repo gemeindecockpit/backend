@@ -15,7 +15,6 @@ use Slim\Factory\ServerRequestCreatorFactory;
 require __DIR__ . '/../vendor/autoload.php';
 require_once(__DIR__ . '/../config/config.php');
 
-$_SESSION['user_id'] = 4;
 
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
@@ -77,6 +76,7 @@ $errorMiddleware->setDefaultErrorHandler($errorHandler);
 
 //Use default behaviour of sessions
 session_start();
+$_SESSION['user_id'] = 4;
 // Run App & Emit Response
 $response = $app->handle($request);
 $responseEmitter = new ResponseEmitter();
