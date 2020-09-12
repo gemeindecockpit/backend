@@ -50,7 +50,7 @@ class ConfigRouteController extends RouteController {
        return $response->withHeader('Content-type', 'application/json');
     }
 
-    public function post_org_full_link($request, $response, $args) {
+    public function post_org($request, $response, $args) {
        $response->getBody()->write('post/'.implode('/', $args));
        return $response;
     }
