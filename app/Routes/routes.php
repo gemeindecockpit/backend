@@ -94,8 +94,8 @@ return function (App $app) {
     $app->put('/user/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
     $app->delete('/user/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
 
-    $app->post('login', \LoginRouteController::class . ':login');
-    $app->post('logout', \LoginRouteController::class . ':logout');
+    $app->post('/login', \LoginRouteController::class . ':login');
+    $app->post('/logout', \LoginRouteController::class . ':logout');
 
 }
 ?>
