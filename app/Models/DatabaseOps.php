@@ -44,7 +44,7 @@ class DatabaseOps {
 	private function execute_stmt_without_result($stmt) {
 		$stmt->execute();
 		$errno = $stmt->errno;
-		//$stmt->close();
+		$stmt->close();
 		return $errno;
 	}
 
