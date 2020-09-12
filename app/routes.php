@@ -25,21 +25,10 @@ return function (App $app) {
         return $response;
     });
 
-    $app->group('/data', function (RouteCollectorProxy $group) {
-      $group->any('', function ($request, $response, $args) {
-        if(!isset($_SESSION['user_id'])){
-          // redirect the user to the login page and do not proceed.
-          $response = $response->withRedirect('/login');
-        } else {
-          $response = $next($request, $response);
-        }
-        return $response;
-      });
-    });
     $app->get('/', \RouteController::class . ':home');
 
     $app->get('/config',
-        \ConfigRouteController::class . ':get_organisation_config');
+        \ConfigRouteController::class . ':get_organisation_config')->setName('conf');
     $app->get('/config' . NUTS_0,
         \ConfigRouteController::class . ':get_organisation_config');
     $app->get('/config' . NUTS_01,
@@ -119,13 +108,13 @@ return function (App $app) {
     $app->put('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
         \DataRouteController::class . ':put_org_full_link_field_name');
 
-    $app->get('/user', \UserRouteController::class . '/get_home');
-    $app->post('/user', \UserRouteController::class . '/post_home');
+    $app->get('/users', \UserRouteController::class . '/get_home');
+    $app->post('/users', \UserRouteController::class . '/post_home');
 
-    $app->get('/user/{id:[0-9]+}', \UserRouteController::class . '/get_user_id');
-    $app->post('/user/{id:[0-9]+}', \UserRouteController::class . '/post_user_id');
-    $app->put('/user/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
-    $app->delete('/user/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
+    $app->get('/users/{id:[0-9]+}', \UserRouteController::class . '/get_user_id');
+    $app->post('/users/{id:[0-9]+}', \UserRouteController::class . '/post_user_id');
+    $app->put('/users/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
+    $app->delete('/users/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
 
     $app->get('/test', function ($request, $response, $args) {
       if(isset($_SESSION['user_id'])){
@@ -137,8 +126,8 @@ return function (App $app) {
       return $response;
     });
 
-    $app->post('/login', \LoginRouteController::class . ':login');
-    $app->post('/logout', \LoginRouteController::class . ':logout');
+    $app->post('/login', \LoginRouteController::class . ':login')->setName('login');
+    $app->post('/logout', \LoginRouteController::class . ':logout')->setName('logout');
 
 
 }

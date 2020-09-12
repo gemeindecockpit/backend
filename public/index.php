@@ -65,8 +65,8 @@ register_shutdown_function($shutdownHandler);
 $app->addRoutingMiddleware();
 
 // Add Error Middleware
-//$errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, false, false);
-//$errorMiddleware->setDefaultErrorHandler($errorHandler);
+$errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, false, false);
+$errorMiddleware->setDefaultErrorHandler($errorHandler);
 
 //Use default behaviour of sessions
 session_start();
