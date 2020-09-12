@@ -23,7 +23,7 @@ class OrganisationController extends AbstractController {
     public function get_organisation_config($user_id, ...$args) {
         return $this->get_organisation_json($user_id, 'config', ...$args);
     }
-
+    
     /**
     * Delegates the call to the get_organisation_json method with the $request_type 'data'
     * @param $user_id
@@ -197,6 +197,15 @@ class OrganisationController extends AbstractController {
       }
       $json_array['links'] = $links;
       return $json_array;
+    }
+
+    public function insert_organisation($organisation) {
+        $db_ops = new DatabaseOps();
+        $db_connection = $db_ops->get_db_connection();
+        $stmt = $db_connection->prepare('INSERT INTO organisation(name, type, description, contact, zipcode) VALUES(?, ?, ?, ?, ?)');
+        $errno = $db_ops->execute_stmt_without_result();
+        $db_connection->close();
+        return $errno;
     }
 
 }

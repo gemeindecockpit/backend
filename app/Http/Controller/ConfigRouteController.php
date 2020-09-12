@@ -52,8 +52,30 @@ class ConfigRouteController extends RouteController {
 
     public function post_org($request, $response, $args) {
        $response->getBody()->write('post/'.implode('/', $args));
-       return $response;
+       $user_controller = new UserController();
+       if(!$user_controller->can_create_org($_SESSION['user_id'])) {    
+            return $response->getBody()->write('not allowed!');
+       }
+       
+       $entity = $request->getParsedBody();
+
+       if (!isset($entity['name'])
+       || !isset($entity['type'])
+       || !isset($entity['description'])
+       || !isset($entity['contact'])
+       || !isset($entity['zipcode'])) {
+       $response->getBody()->write("key in organisation json is missing");
+       return $response->withStatus(500);
+   }    
+       $org_controller = new OrganisationController();
+       $errno = $org_controller->insert_organisation($entity);
+       if ($errno) {
+        $response->getBody()->write(json_encode($errno));
+        return $response->withStatus(500);
+    } else {
+        return $response->withStatus(200);
     }
+}
 
     public function post_org_full_link_field_name($request, $response, $args) {
        $response->getBody()->write('post/'.implode('/', $args));

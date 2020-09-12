@@ -30,18 +30,18 @@ class DatabaseOps {
 
 
 	// Helper functions to tidy up the other functions
-	private function get_db_connection() {
+	public function get_db_connection() {
 		return new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 	}
 
-	private function execute_select_stmt($stmt) {
+	public function execute_select_stmt($stmt) {
 		$stmt->execute();
 		$results = $stmt->get_result();
 		$stmt->close();
 		return $results;
 	}
 
-	private function execute_stmt_without_result($stmt) {
+	public function execute_stmt_without_result($stmt) {
 		$stmt->execute();
 		$errno = $stmt->errno;
 		$stmt->close();

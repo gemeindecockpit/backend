@@ -12,6 +12,17 @@ class UserController extends AbstractController {
         parent::__construct();
     }
 
+    public function can_create_organistation($user_id) {
+        
+        $db_ops = new DatabaseOps();
+        $db_connection = $db_ops->get_db_connection();
+        $stmt = $db_connection->prepare('SELECT * FROM can_create_organisation WHERE user_id = ?');
+        $stmt->bind_param("i", $user_id);
+        $query_result = $db_ops->execute_select_stmt($stmt);
+        $db_connection->close();
+        return $query_result->num_rows > 0;    
+    }
+
     public function get_one($user_id, ...$args) {
         $query_result;
         $arg = $args[0];
