@@ -4,9 +4,9 @@
 
 declare(strict_types=1);
 
-use App\Exeptions\HttpErrorHandler;
+use App\Exceptions\HttpErrorHandler;
+use App\Exceptions\ShutdownHandler;
 use App\Http\Middleware\SessionMiddleware;
-use App\Exeptions\ShutdownHandler;
 use App\Http\ResponseEmitter;
 use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
@@ -56,6 +56,7 @@ $displayErrorDetails = $container->get('settings')['displayErrorDetails'];
 $serverRequestCreator = ServerRequestCreatorFactory::create();
 $request = $serverRequestCreator->createServerRequestFromGlobals();
 
+
 // Create Error Handler
 $responseFactory = $app->getResponseFactory();
 $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
@@ -63,6 +64,7 @@ $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
 // Create Shutdown Handler
 $shutdownHandler = new ShutdownHandler($request, $errorHandler, $displayErrorDetails);
 register_shutdown_function($shutdownHandler);
+
 
 // Add Routing Middleware
 $app->addRoutingMiddleware();
