@@ -20,7 +20,7 @@ class LoginRouteController extends RouteController {
        //geting all post parameter
        $allPostVars = $request->getParsedBody();
        //are the correct post parameter set?
-       if(isset($allPostVars['name']) && isset($allPostVars)) {
+       if(isset($allPostVars['name']) && isset($allPostVars['pass'])) {
          $postName = utf8_encode($allPostVars['name']);
          $postPass = utf8_encode($allPostVars['pass']);
          //setting the Session Parameter is done in the LoginController

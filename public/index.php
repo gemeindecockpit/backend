@@ -15,6 +15,8 @@ use Slim\Factory\ServerRequestCreatorFactory;
 require __DIR__ . '/../vendor/autoload.php';
 require_once(__DIR__ . '/../config/config.php');
 
+$_SESSION['user_id'] = 4;
+
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
 
