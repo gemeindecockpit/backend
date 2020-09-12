@@ -2,9 +2,11 @@
 // can be deleted
 declare(strict_types=1);
 
-use SessionMiddleware;
+use App\Application\Middleware\SessionMiddleware;
+use App\Application\Middleware\LoginMiddleware;
 use Slim\App;
 
 return function (App $app) {
     $app->add(SessionMiddleware::class);
+    $app->add(LoginMiddleware::class);
 };

@@ -13,11 +13,6 @@ foreach (glob('./../app/http/Controller/*.php') as $filename) {
     require_once($filename);
 }
 
-session_start();
-
-// TODO: Delete before pushing to production!
-$_SESSION['user_id'] = 4;
-
 
 return function (App $app) {
     $app->options('/{routes:.*}', function (Request $request, Response $response) {
@@ -28,7 +23,7 @@ return function (App $app) {
     $app->get('/', \RouteController::class . ':home');
 
     $app->get('/config[/{nuts0}[/{nuts1}[/{nuts2}[/{nuts3}[/{org_type}[/{org_name}]]]]]]',
-        \ConfigRouteController::class . ':get_organisation_config'); //TESTED, verified for working
+        \ConfigRouteController::class . ':get_organisation_config')->setName('conf'); //TESTED, verified for working
 
     $app->get('/config' . ORG_FULL_LINK . FIELD_NAME,
         \ConfigRouteController::class . ':get_org_full_link_field_name'); //TESTED, verified for working
@@ -86,16 +81,26 @@ return function (App $app) {
     $app->put('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
         \DataRouteController::class . ':put_org_full_link_field_name');
 
-    $app->get('/user', \UserRouteController::class . '/get_home');
-    $app->post('/user', \UserRouteController::class . '/post_home');
+    $app->get('/users', \UserRouteController::class . '/get_home');
+    $app->post('/users', \UserRouteController::class . '/post_home');
 
-    $app->get('/user/{id:[0-9]+}', \UserRouteController::class . '/get_user_id');
-    $app->post('/user/{id:[0-9]+}', \UserRouteController::class . '/post_user_id');
-    $app->put('/user/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
-    $app->delete('/user/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
+    $app->get('/users/{id:[0-9]+}', \UserRouteController::class . '/get_user_id');
+    $app->post('/users/{id:[0-9]+}', \UserRouteController::class . '/post_user_id');
+    $app->put('/users/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
+    $app->delete('/users/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
 
-    $app->post('/login', \LoginRouteController::class . ':login');
-    $app->post('/logout', \LoginRouteController::class . ':logout');
+    $app->get('/test', function ($request, $response, $args) {
+      if(isset($_SESSION['user_id'])){
+        $response->getBody()->write('User id: ' . $_SESSION['user_id']);
+      } else {
+        $response->getBody()->write('not logged in');
+      }
+
+      return $response;
+    });
+
+    $app->post('/login', \LoginRouteController::class . ':login')->setName('login');
+    $app->post('/logout', \LoginRouteController::class . ':logout')->setName('logout');
 
 }
 ?>

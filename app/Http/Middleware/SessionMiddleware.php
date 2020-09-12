@@ -16,9 +16,6 @@ class SessionMiddleware implements Middleware
     public function process(Request $request, RequestHandler $handler): Response
     {
         if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            session_start();
-            #TODO: remove and make a proper session manager
-            $_SESSION['userid'] = 4;
             $request = $request->withAttribute('session', $_SESSION);
         }
 

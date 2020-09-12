@@ -7,6 +7,8 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Slim\Factory\AppFactory;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -23,6 +25,15 @@ return function (ContainerBuilder $containerBuilder) {
             $logger->pushHandler($handler);
 
             return $logger;
+        },
+        ResponseFactoryInterface::class => function (ContainerInterface $container) {
+            return $container->get(App::class)->getResponseFactory();
+        },
+
+        App::class => function (ContainerInterface $container) {
+            AppFactory::setContainer($container);
+
+            return AppFactory::create();
         },
     ]);
 };
