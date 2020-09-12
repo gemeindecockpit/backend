@@ -1,9 +1,13 @@
 <?php
+
+//all of this should be put in a seperate file under bootstrap
+
 declare(strict_types=1);
 
-use App\Application\Handlers\HttpErrorHandler;
-use App\Application\Handlers\ShutdownHandler;
-use App\Application\ResponseEmitter\ResponseEmitter;
+use App\Exceptions\HttpErrorHandler;
+use App\Exceptions\ShutdownHandler;
+use App\Http\Middleware\SessionMiddleware;
+use App\Http\ResponseEmitter;
 use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
@@ -39,11 +43,10 @@ $app = AppFactory::create();
 $callableResolver = $app->getCallableResolver();
 
 // Register middleware
-$middleware = require __DIR__ . '/../app/Middleware/middleware.php';
-$middleware($app);
+$app->add(SessionMiddleware::class);
 
 // Register routes
-$routes = require __DIR__ . '/../app/Routes/routes.php';
+$routes = require __DIR__ . '/../routes/routes.php';
 $routes($app);
 
 /** @var bool $displayErrorDetails */
@@ -53,6 +56,7 @@ $displayErrorDetails = $container->get('settings')['displayErrorDetails'];
 $serverRequestCreator = ServerRequestCreatorFactory::create();
 $request = $serverRequestCreator->createServerRequestFromGlobals();
 
+
 // Create Error Handler
 $responseFactory = $app->getResponseFactory();
 $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
@@ -60,6 +64,7 @@ $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
 // Create Shutdown Handler
 $shutdownHandler = new ShutdownHandler($request, $errorHandler, $displayErrorDetails);
 register_shutdown_function($shutdownHandler);
+
 
 // Add Routing Middleware
 $app->addRoutingMiddleware();
