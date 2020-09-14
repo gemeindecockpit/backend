@@ -30,18 +30,18 @@ class DatabaseOps {
 
 
 	// Helper functions to tidy up the other functions
-	private function get_db_connection() {
+	public function get_db_connection() {
 		return new mysqli($this->db_host, $this->db_user, $this->db_user_password, $this->db_name);
 	}
 
-	private function execute_select_stmt($stmt) {
+	public function execute_select_stmt($stmt) {
 		$stmt->execute();
 		$results = $stmt->get_result();
 		$stmt->close();
 		return $results;
 	}
 
-	private function execute_stmt_without_result($stmt) {
+	public function execute_stmt_without_result($stmt) {
 		$stmt->execute();
 		$errno = $stmt->errno;
 		$stmt->close();
@@ -122,7 +122,7 @@ class DatabaseOps {
 					AND nuts1 = ?
 					AND nuts2 = ?
 					AND nuts3 = ?
-					AND type = ?'
+					AND organisation_type = ?'
 				);
 				$parameter_types = 'isssss';
 				break;
@@ -134,8 +134,8 @@ class DatabaseOps {
 					AND nuts1 = ?
 					AND nuts2 = ?
 					AND nuts3 = ?
-					AND type = ?
-					AND name = ?'
+					AND organisation_type = ?
+					AND organisation_name = ?'
 				);
 				$parameter_types = 'issssss';
 				break;
@@ -160,8 +160,8 @@ class DatabaseOps {
 			AND nuts1 = ?
 			AND nuts2 = ?
 			AND nuts3 = ?
-			AND type = ?
-			AND name = ?'
+			AND organisation_type = ?
+			AND organisation_name = ?'
 		);
 		$stmt->bind_param('issssss', $user_id, ...$args);
 		$query_result = $this->execute_select_stmt($stmt);
@@ -222,12 +222,12 @@ class DatabaseOps {
 	 * @param $active
 	 * @return mixed
 	 */
-	public function update_organisation_by_id($id, $name, $description, $type, $contact, $zipcode, $active) {
+	public function update_organisation_by_id($id, $name, $description, $org_unit_id, $contact, $zipcode, $active) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('UPDATE organisation
-									SET name = ?, description = ?, type = ?, contact = ?, zipcode = ?, active = ?
-									WHERE id = ?');
-		$stmt->bind_param('ssssiii',$name, $description, $type, $contact, $zipcode, $active, $id);
+									SET name = ?, description = ?, organisation_unit_id = ?, contact = ?, zipcode = ?, active = ?
+									WHERE id_organisation = ?');
+		$stmt->bind_param('ssssiii',$name, $description, $org_unit_id, $contact, $zipcode, $active, $id);
 		$errno = $this->execute_stmt_without_result($stmt);
 		return $errno;
 	}
@@ -386,15 +386,15 @@ class DatabaseOps {
 	 * @param $relational_flag
 	 * @return mixed|void
 	 */
-	public function insert_field_by_sid($sid, $name, $max_value, $yellow_value, $red_value, $relational_flag) {
+	public function insert_field_by_sid($sid, $name, $reference_value, $yellow_limit, $red_limit, $relational_flag) {
 		$errno = $this->update_field_valid_to_by_sid($sid);
 		if ($errno) {
 			return; // TODO
 		}
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare(
-			'INSERT INTO field (sid,name,max_value,yellow_value,red_value,relational_flag,valid_from)
-			VALUES (?,?,?,?,?,?,CURRENT_TIMESTAMP)');
+			'INSERT INTO field (sid,name,reference_value,yellow_limit,red_limit,relational_flag)
+			VALUES (?,?,?,?,?,?)');
 		$stmt->bind_param('ssiiii', $sid, $name, $max_value, $yellow_value, $red_value, $relational_flag);
 		$errno = $this->execute_stmt_without_result($stmt);
 		$db->close();
@@ -499,7 +499,7 @@ class DatabaseOps {
 
 	public function get_login_info($username) {
 		$db = $this->get_db_connection();
-		$stmt = $db->prepare('SELECT id, username, userpassword, salt FROM user WHERE username = ?');
+		$stmt = $db->prepare('SELECT id_user, username, userpassword, salt FROM user WHERE username = ?');
 		$stmt->bind_param('s', $username);
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();
@@ -530,19 +530,6 @@ class DatabaseOps {
 		$stmt = $db->prepare($stmt_string);
 		$stmt->bind_param($param_string,$user_id, ...$args);
 
-		$result = $this->execute_select_stmt($stmt);
-		$db->close();
-		return $result;
-	}
-
-	public function get_all_NUTS_codes_for_user($user_id) {
-		$db = $this->get_db_connection();
-		$stmt = $db->prepare(
-			'SELECT DISTINCT nuts0,nuts1,nuts2,nuts3
-				FROM view_nuts
-				WHERE user_id = ?'
-			);
-		$stmt->bind_param('i', $user_id);
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		return $result;

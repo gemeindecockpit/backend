@@ -29,8 +29,8 @@ return function (App $app) {
         \ConfigRouteController::class . ':get_org_full_link_field_name'); //TESTED, verified for working
 
 
-    $app->post('/config' . ORG_FULL_LINK,
-        \ConfigRouteController::class . ':post_org_full_link'); // TODO
+    $app->post('/config/organisation',
+        \ConfigRouteController::class . ':post_org'); // TODO
     $app->post('/config' . ORG_FULL_LINK . FIELD_NAME,
         \ConfigRouteController::class . ':post_org_full_link_field_name'); // TODO
 
