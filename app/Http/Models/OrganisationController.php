@@ -168,7 +168,7 @@ class OrganisationController extends AbstractController {
       $organisation_links = [];
       foreach ($orgs as $org) {
           array_walk_recursive($org, [$this, 'encode_items_url']);
-          $organisation_links[] = $_SERVER['SERVER_NAME'].'/'.$endpoint_type.'/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['organisation_unit_id'].'/'.$org['name'];
+          $organisation_links[] = $_SERVER['SERVER_NAME'].'/'.$endpoint_type.'/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['organisation_type'].'/'.$org['organisation_name'];
       }
 
       return $organisation_links;
