@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Application\Middleware;
+namespace App\Http\Middleware;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -49,7 +49,6 @@ class LoginMiddleware implements Middleware {
           // redirect the user to the login page and do not proceed.
           $routeParser = RouteContext::fromRequest($request)->getRouteParser();
           $url = $routeParser->urlFor('login');
-
           //$response->withStatus(302)->withHeader('Location', $url);
           $response = $this->responseFactory->createResponse()->withStatus(403);
 

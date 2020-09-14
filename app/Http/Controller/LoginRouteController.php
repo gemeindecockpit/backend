@@ -14,7 +14,8 @@ class LoginRouteController extends RouteController {
    public function login ($request, $response, $args) {
      //is the user already logged in? if yes redirect to user-page
      if(isset($_SESSION['user_id'])){
-       return $response->withStatus(303)->withHeader('Location', '/users/me');
+       //return $response->withStatus(303)->withHeader('Location', '/users/me'); //TODO:once implemented this should be used instead of 403
+       return $response->withStatus(403, 'already logged in');
      } else {
        $logCon = new LoginController();
        //geting all post parameter
@@ -40,6 +41,10 @@ class LoginRouteController extends RouteController {
      $logCon = new LoginController();
      $logCon->logout();
      return $response->withStatus(200);
+   }
+
+   public function wrong_method ($request, $response, $args) {
+     return $response->withStatus(405)->withHeader('Access-Control-Allow-Methods','POST'); //TODO: is currently overwritten by the errorHandler. Either rewrite error handler to ignore 'Wrong Methods' and let the routing handle these or rewrite ErrorHandler to correctly display available methods
    }
 
 }

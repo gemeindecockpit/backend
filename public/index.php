@@ -15,6 +15,7 @@ use Slim\Factory\ServerRequestCreatorFactory;
 require __DIR__ . '/../vendor/autoload.php';
 require_once(__DIR__ . '/../config/config.php');
 
+//$_SESSION['user_id'] = 4;
 
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
@@ -44,7 +45,8 @@ $app = AppFactory::create();
 $callableResolver = $app->getCallableResolver();
 
 // Register middleware
-$app->add(SessionMiddleware::class);
+$middleware = require __DIR__ . '/../app/Http/Middleware/middleware.php';
+$middleware($app);
 
 // Register routes
 $routes = require __DIR__ . '/../routes/routes.php';
@@ -67,8 +69,6 @@ $shutdownHandler = new ShutdownHandler($request, $errorHandler, $displayErrorDet
 register_shutdown_function($shutdownHandler);
 
 
-// Add Routing Middleware
-$app->addRoutingMiddleware();
 
 // Add Error Middleware
 $errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, false, false);
@@ -76,7 +76,9 @@ $errorMiddleware->setDefaultErrorHandler($errorHandler);
 
 //Use default behaviour of sessions
 session_start();
-$_SESSION['user_id'] = 4;
+
+// Add Routing Middleware
+$app->addRoutingMiddleware();
 // Run App & Emit Response
 $response = $app->handle($request);
 $responseEmitter = new ResponseEmitter();

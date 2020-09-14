@@ -89,6 +89,12 @@ return function (App $app) {
     $app->put('/users/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
     $app->delete('/users/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
 
+    $app->get('/users/me', function ($request, $response, $args) {
+
+      $response->getBody()->write('You are on /users/me, to be implemented');
+      return $response;
+    });
+
     $app->get('/test', function ($request, $response, $args) {
       if(isset($_SESSION['user_id'])){
         $response->getBody()->write('User id: ' . $_SESSION['user_id']);
@@ -100,6 +106,7 @@ return function (App $app) {
     });
 
     $app->post('/login', \LoginRouteController::class . ':login')->setName('login');
+    $app->map(['GET', 'PUT', 'DELETE', 'PATCH'], '/login', \LoginRouteController::class . ':wrong_method');
     $app->post('/logout', \LoginRouteController::class . ':logout')->setName('logout');
 
 }
