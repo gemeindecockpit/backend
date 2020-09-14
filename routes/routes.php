@@ -106,9 +106,7 @@ return function (App $app) {
     });
 
     $app->post('/login', \LoginRouteController::class . ':login')->setName('login');
-    $app->put('/login', \LoginRouteController::class . ':wrong_method');
-    $app->get('/login', \LoginRouteController::class . ':wrong_method');
-    $app->delete('/login', \LoginRouteController::class . ':wrong_method');
+    $app->map(['GET', 'PUT', 'DELETE', 'PATCH'], '/login', \LoginRouteController::class . ':wrong_method');
     $app->post('/logout', \LoginRouteController::class . ':logout')->setName('logout');
 
 }

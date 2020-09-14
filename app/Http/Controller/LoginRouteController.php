@@ -44,7 +44,7 @@ class LoginRouteController extends RouteController {
    }
 
    public function wrong_method ($request, $response, $args) {
-     return $response->withStatus(405)->withHeader('Access-Control-Allow-Methods','POST');
+     return $response->withStatus(405)->withHeader('Access-Control-Allow-Methods','POST'); //TODO: is currently overwritten by the errorHandler. Either rewrite error handler to ignore 'Wrong Methods' and let the routing handle these or rewrite ErrorHandler to correctly display available methods
    }
 
 }
