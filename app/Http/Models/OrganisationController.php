@@ -112,6 +112,16 @@ class OrganisationController extends AbstractController {
         return $this->format_json($self_link, $query_result, $next_entity_types, $next_entity_array);
     }
 
+    public function insert_organisation($organisation) {
+        $db_ops = new DatabaseOps();
+        $db_connection = $db_ops->get_db_connection();
+        $stmt = $db_connection->prepare('INSERT INTO organisation(name, type, description, contact, zipcode) VALUES(?, ?, ?, ?, ?)');
+        $stmt->bind_param('ssssi', $organisation['name'], $organisation['organisation_unit_id'], $organisation['description'], $organisation['contact'], $organisation['zipcode']);
+        $errno = $db_ops->execute_stmt_without_result($stmt);
+        $db_connection->close();
+        return $errno;
+    }
+
     /**
     * Updates the organisation with org_id, if the user $user_id is allowed to do so
     * @param $user_id
@@ -158,7 +168,7 @@ class OrganisationController extends AbstractController {
       $organisation_links = [];
       foreach ($orgs as $org) {
           array_walk_recursive($org, [$this, 'encode_items_url']);
-          $organisation_links[] = $_SERVER['SERVER_NAME'].'/'.$endpoint_type.'/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['type'].'/'.$org['name'];
+          $organisation_links[] = $_SERVER['SERVER_NAME'].'/'.$endpoint_type.'/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['organisation_unit_id'].'/'.$org['name'];
       }
 
       return $organisation_links;
@@ -197,16 +207,6 @@ class OrganisationController extends AbstractController {
       }
       $json_array['links'] = $links;
       return $json_array;
-    }
-
-    public function insert_organisation($organisation) {
-        $db_ops = new DatabaseOps();
-        $db_connection = $db_ops->get_db_connection();
-        $stmt = $db_connection->prepare('INSERT INTO organisation(name, type, description, contact, zipcode) VALUES(?, ?, ?, ?, ?)');
-        $stmt->bind_param('ssssi', $organisation['name'], $organisation['type'], $organisation['description'], $organisation['contact'], $organisation['zipcode']);
-        $errno = $db_ops->execute_stmt_without_result($stmt);
-        $db_connection->close();
-        return $errno;
     }
 
 }
