@@ -50,31 +50,10 @@ class ConfigRouteController extends RouteController {
        return $response->withHeader('Content-type', 'application/json');
     }
 
-    public function post_org($request, $response, $args) {
-       $user_controller = new UserController();
-       if(!$user_controller->can_create_organisation($_SESSION['user_id'])) {
-            return $response->getBody()->write('not allowed!');
-       }
-
-       $entity = json_decode($request->getBody(), true);
-
-       if (!isset($entity['name'])
-       || !isset($entity['description'])
-       || !isset($entity['organisation_unit_id'])
-       || !isset($entity['contact'])
-       || !isset($entity['zipcode'])) {
-           $response->getBody()->write("key in organisation json is missing");
-           return $response->withStatus(500);
-   }
-       $org_controller = new OrganisationController();
-       $errno = $org_controller->insert_organisation($entity);
-       if ($errno) {
-        $response->getBody()->write(json_encode($errno));
-        return $response->withStatus(500);
-    } else {
-        return $response->withStatus(200);
+    public function post_org_full_link($request, $response, $args) {
+       $response->getBody()->write('post/'.implode('/', $args));
+       return $response;
     }
-}
 
     public function post_org_full_link_field_name($request, $response, $args) {
        $response->getBody()->write('post/'.implode('/', $args));
@@ -104,8 +83,8 @@ class ConfigRouteController extends RouteController {
       $entity = json_decode($request->getBody(), true);
       if (!isset($entity['organisation_id'])
           || !isset($entity['name'])
+          || !isset($entity['type'])
           || !isset($entity['description'])
-          || !isset($entity['organisation_unit_id'])
           || !isset($entity['contact'])
           || !isset($entity['zipcode'])
           || !isset($entity['active'])) {
@@ -122,7 +101,7 @@ class ConfigRouteController extends RouteController {
           $entity['organisation_id'],
           $entity['name'],
           $entity['description'],
-          $entity['organisation_unit_id'],
+          $entity['type'],
           $entity['contact'],
           $entity['zipcode'],
           $entity['active']
@@ -160,9 +139,9 @@ class ConfigRouteController extends RouteController {
 
        if (!isset($field['field_id'])
             || !isset($field['field_name'])
-            || !isset($field['reference_value'])
-            || !isset($field['yellow_limit'])
-            || !isset($field['red_limit'])
+            || !isset($field['max_value'])
+            || !isset($field['yellow_value'])
+            || !isset($field['red_value'])
             || !isset($field['relational_flag'])) {
             $response->getBody()->write("key in field json is missing");
             return $response->withStatus(500);
@@ -176,9 +155,9 @@ class ConfigRouteController extends RouteController {
        $errno = $field_controller->put_field_config($_SESSION['user_id'],
             $field['field_id'],
             $field['field_name'],
-            $field['reference_value'],
-            $field['yellow_limit'],
-            $field['red_limit'],
+            $field['max_value'],
+            $field['yellow_value'],
+            $field['red_value'],
             $field['relational_flag']
        );
 
