@@ -19,7 +19,7 @@ class LoginRouteController extends RouteController {
      } else {
        $logCon = new LoginController();
        //geting all post parameter
-       $allPostVars = json_decode($request->getBody(), true);
+       $allPostVars = $request->getParsedBody();
        //are the correct post parameter set?
        if(isset($allPostVars['name']) && isset($allPostVars['pass'])) {
          $postName = utf8_encode($allPostVars['name']);
@@ -32,7 +32,7 @@ class LoginRouteController extends RouteController {
            return $response->withStatus(401, 'Wrong User/Pass');
          }
        } else {
-        return $response->withStatus(400,'expected \'user\' and \'pass\'');
+        return $response->withStatus(400,'expected \'name\' and \'pass\'');
        }
      }
    }
