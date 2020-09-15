@@ -8,4 +8,4 @@
 commit.sh
 composer.json
 composer.lock
-config.php
+/config/config.php
