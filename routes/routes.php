@@ -22,21 +22,35 @@ return function (App $app) {
 
     $app->get('/', \RouteController::class . ':home');
 
-    $app->get('/config[/{nuts0}[/{nuts1}[/{nuts2}[/{nuts3}[/{org_type}[/{org_name}]]]]]]',
-        \ConfigRouteController::class . ':get_organisation_config')->setName('conf'); //TESTED, verified for working
+    $app->get('/config', \ConfigRouteController::class . ':home');
 
-    $app->get('/config' . ORG_FULL_LINK . FIELD_NAME,
-        \ConfigRouteController::class . ':get_org_full_link_field_name'); //TESTED, verified for working
+    $app->get('/config/location[/{nuts0}[/{nuts1}[/{nuts2}[/{nuts3}[/{org_type}[/{org_name}]]]]]]',
+        \ConfigRouteController::class . ':get_org_by_location')->setName('conf'); //TESTED, verified for working
+    $app->get('/config/location' . ORG_FULL_LINK . FIELD_NAME,
+        \ConfigRouteController::class . ':get_field_by_org_location'); //TESTED, verified for working
+
+    $app->get('/config/organisation-unit[/{org_unit}[/{org_name}]]',
+        \ConfigRouteController::class . ':get_org_by_unit');
+    $app->get('/config/organisation-unit/{org_unit}/{org_name}/{field_name}', #
+        \ConfigRouteController::class . ':get_field_by_org_unit');
+
+    $app->get('/config/organisation[/{org_id:[0-9]+}]',
+        \ConfigRouteController::class . ':get_org_by_id');
+    $app->get('/config/organisation/{org_id:[0-9]+}/{field_name}',
+        \ConfigRouteController::class . ':get_field_by_org_id');
+
+    $app->get('/config/field[/{field_id:[0-9]+}]',
+        \ConfigRouteController::class . ':get_field_by_id');
 
 
     $app->post('/config/organisation',
         \ConfigRouteController::class . ':post_org'); // TODO
-    $app->post('/config' . ORG_FULL_LINK . FIELD_NAME,
-        \ConfigRouteController::class . ':post_org_full_link_field_name'); // TODO
+    $app->post('/config/organisation/{org_id:[0-9]+}',
+        \ConfigRouteController::class . ':post_field_by_org_id'); // TODO
 
-    $app->put('/config' . ORG_FULL_LINK,
+    $app->put('/config/location' . ORG_FULL_LINK,
         \ConfigRouteController::class . ':put_org_full_link');
-    $app->put('/config' . ORG_FULL_LINK . FIELD_NAME,
+    $app->put('/config/location' . ORG_FULL_LINK . FIELD_NAME,
         \ConfigRouteController::class . ':put_org_full_link_field_name');
 
     $app->delete('/config' . ORG_FULL_LINK,

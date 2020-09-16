@@ -1,6 +1,7 @@
 <?php
 
 require_once('DatabaseOps.php');
+require_once('DatabaseAccess.php');
 
 /*
 * To be renamed and refactored as a model
@@ -13,7 +14,33 @@ abstract class AbstractController {
         $this->db_ops = new DatabaseOps();
     }
 
-    protected function assoc_array_to_indexed($assoc_array) {
+    protected function execute_stmt($stmt_string, $param_string, ...$args) {
+        $db_access = new DatabaseAccess();
+        $no_error = $db_access->prepare_stmt($stmt_string);
+        if($no_error) {
+            $no_error = $db_access->bind_param($param_string, ...$args);
+        }
+
+        $query_result;
+        if($no_error) {
+            $query_result = $db_access->execute();
+        } else {
+            return [];
+        }
+        if(!$query_result) {
+            return [];
+        }
+        $result = [];
+        while($row = $query_result->fetch_assoc()) {
+            $result[] = $row;
+        }
+
+        $db_access->close_db();
+
+        return $result;
+    }
+
+    public static function assoc_array_to_indexed($assoc_array) {
         $indexed_array = [];
         foreach($assoc_array as $value) {
             $indexed_array[] = $value;

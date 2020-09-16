@@ -8,6 +8,23 @@ require_once("NutsController.php");
 */
 class OrganisationController extends AbstractController {
 
+    private $select_org_sceleton =
+        'SELECT
+            organisation_id,
+            organisation_name,
+            organisation_type,
+            organisation_unit,
+            description,
+            contact,
+            zipcode,
+            nuts0,
+            nuts1,
+            nuts2,
+            nuts3
+        FROM view_organisation_visible_for_user
+        WHERE active = 1
+        AND user_id = ?';
+
     public function __construct() {
         parent::__construct();
     }
@@ -59,17 +76,17 @@ class OrganisationController extends AbstractController {
         $next_entity_types = [];
         $next_entity_array = [];
 
-        $self_link = $this->get_link($request_type, ...$args);
+        $self_link = $this->get_link($request_type, 'location', ...$args);
         if($request_type === 'data') {
             $next_entity_types[] = 'config';
-            $next_entity_array[] = $this->get_link('config', ...$args);
+            $next_entity_array[] = $this->get_link('config', 'location', ...$args);
         } else {
             $next_entity_types[] = 'data';
-            $next_entity_array[] = $this->get_link('data', ...$args);
+            $next_entity_array[] = $this->get_link('data', 'location', ...$args);
         }
 
         $next_entity_types[] = 'organisations';
-        $organisation_links = $this->get_org_links($request_type, $query_result);
+        $organisation_links = $this->get_org_links($request_type . '/location', $query_result);
         $next_entity_array[] = $organisation_links;
 
 
@@ -112,6 +129,30 @@ class OrganisationController extends AbstractController {
         return $this->format_json($self_link, $query_result, $next_entity_types, $next_entity_array);
     }
 
+    public function get_org_by_unit($user_id, ...$args) {
+        $stmt_string = $this->select_org_sceleton;
+        $param_string = 'i';
+        if(sizeof($args) > 0) {
+            $stmt_string .= ' AND organisation_unit = ?';
+            $param_string .= 's';
+        }
+        if(sizeof($args) > 1) {
+            $stmt_string .= ' AND organisation_name = ?';
+            $param_string .= 's';
+        }
+        return AbstractController::execute_stmt($stmt_string, $param_string, $user_id, ...$args);
+    }
+
+    public function get_org_by_id($user_id, ...$args) {
+        $stmt_string = $this->select_org_sceleton;
+        $param_string = 'i';
+        if(sizeof($args) > 0) {
+            $stmt_string .= ' AND organisation_id = ?';
+            $param_string .= 'i';
+        }
+        return AbstractController::execute_stmt($stmt_string, $param_string, $user_id, ...$args);
+    }
+
     public function insert_organisation($organisation) {
         $db_ops = new DatabaseOps();
         $db_connection = $db_ops->get_db_connection();
@@ -139,20 +180,44 @@ class OrganisationController extends AbstractController {
     }
 
     /**
-    * Getter function for all organisation_ids that a user can see in the current layer
+    * Getter function for all organisation_ids that a user can see
     * @param $user_id
-    * @param $args
-    *    Can include nuts0, nuts1, nuts2, nuts3, org_type, org_name
     * @return
     *   An array with all org_ids
     */
-    public function get_org_ids($user_id, ...$args) {
-        $query_result = $this->db_ops->get_org_ids($user_id, ...$args);
+    public function get_org_ids($user_id) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = 'SELECT DISTINCT(organisation_id)
+            FROM view_organisation_visible_for_user
+            WHERE active = 1
+            AND user_id = ?';
+        $db_access->bind_param('i', $user_id);
+        $query_result = $db_access->execute();
         $org_ids = [];
         while ($row = $query_result->fetch_assoc()) {
             $org_ids[] = $row['organisation_id'];
         }
+        $db_access->close_db();
         return $org_ids;
+    }
+
+    public function get_org_units($user_id) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = 'SELECT DISTINCT(organisation_unit)
+            FROM view_organisation_visible_for_user
+            WHERE active = 1
+            AND user_id = ?';
+        $db_access->prepare_stmt($stmt_string);
+        $db_access->bind_param('i', $user_id);
+        $query_result = $db_access->execute();
+
+        $org_units = [];
+        while($row = $query_result->fetch_assoc()) {
+            $org_units[] = $row['organisation_unit'];
+        }
+
+        $db_access->close_db();
+        return $org_units;
     }
 
     /**

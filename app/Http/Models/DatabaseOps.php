@@ -150,25 +150,6 @@ class DatabaseOps {
 		return $query_result;
 	}
 
-	public function get_org_ids($user_id, ...$args) {
-		$db = $this->get_db_connection();
-		$stmt = $db->prepare(
-			'SELECT organisation_id
-			FROM view_organisation_visible_for_user
-			WHERE user_id = ?
-			AND nuts0 = ?
-			AND nuts1 = ?
-			AND nuts2 = ?
-			AND nuts3 = ?
-			AND organisation_type = ?
-			AND organisation_name = ?'
-		);
-		$stmt->bind_param('issssss', $user_id, ...$args);
-		$query_result = $this->execute_select_stmt($stmt);
-		$db->close();
-		return $query_result;
-	}
-
 	public function get_all_types($user_id, $nuts0, $nuts1, $nuts2, $nuts3) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare(
