@@ -19,7 +19,7 @@ class LoginRouteController extends RouteController {
      } else {
        $logCon = new LoginController();
        //geting all post parameter
-       $allPostVars = $request->getParesedBody();
+       $allPostVars = $request->getParsedBody();
        //are the correct post parameter set?
        if(isset($allPostVars['name']) && isset($allPostVars['pass'])) {
          $postName = utf8_encode($allPostVars['name']);
