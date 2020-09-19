@@ -39,7 +39,10 @@ return function (App $app) {
     $app->get('/config/organisation/{org_id:[0-9]+}/{field_name}',
         \ConfigRouteController::class . ':get_field_by_org_id');
 
-    $app->get('/config/field[/{field_id:[0-9]+}]',
+    $app->get('/config/field',
+        \ConfigRouteController::class . ':get_field');
+
+    $app->get('/config/field/{field_id:[0-9]+}',
         \ConfigRouteController::class . ':get_field_by_id');
 
 

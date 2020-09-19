@@ -7,25 +7,33 @@ require_once("AbstractController.php");
 */
 class FieldController extends AbstractController {
 
+    private $select_field_skeleton =
+        'SELECT
+            field_id,
+            field_name,
+            reference_value,
+            yellow_limit,
+            red_limit,
+            relational_flag
+        FROM view_fields_visible_for_user
+        WHERE user_id = ?
+        ';
+
     public function __construct() {
         parent::__construct();
     }
 
     /**
     * Constructs an array that contains the config for all fields visible for $user_id
-    * Also has links to the 'data' endpoints of these fields
     */
     public function get_all($user_id) {
-        $query_result = $this->db_ops->get_config_all_fields($user_id);
-        $query_result = $this->format_query_result($query_result);
+        return AbstractController::execute_stmt($this->select_field_skeleton, 'i', $user_id);
+    }
 
-        $self_link = $this->get_link('data', 'field');
-        $field_ids = [];
-        foreach ($query_result as $field) {
-            $field_ids[] = $field['field_id'];
-        }
-
-        return $this->format_json($self_link, $query_result, 'fields', $field_ids);
+    public function get_field_by_id($user_id, $field_id) {
+        $stmt = $this->select_field_skeleton;
+        $stmt .= ' AND field_id = ?';
+        return AbstractController::execute_stmt($stmt, 'ii', $user_id, $field_id);
     }
 
     /**

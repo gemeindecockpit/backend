@@ -6,9 +6,9 @@ require_once("NutsController.php");
 /*
 * To be renamed and refactored as a model
 */
-class OrganisationController extends AbstractController {
-
-    private $select_org_sceleton =
+class OrganisationController extends AbstractController
+{
+    private $select_org_skeleton =
         'SELECT
             organisation_id,
             organisation_name,
@@ -25,7 +25,8 @@ class OrganisationController extends AbstractController {
         WHERE active = 1
         AND user_id = ?';
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
     }
 
@@ -37,7 +38,8 @@ class OrganisationController extends AbstractController {
     * @return
     *   Returns the formatted JSON array with the organisations and links to further resources
     */
-    public function get_organisation_config($user_id, ...$args) {
+    public function get_organisation_config($user_id, ...$args)
+    {
         return $this->get_organisation_json($user_id, 'config', ...$args);
     }
 
@@ -49,7 +51,8 @@ class OrganisationController extends AbstractController {
     * @return
     *   Returns the formatted JSON array with the organisations and links to further resources
     */
-    public function get_organisation_data($user_id, ...$args) {
+    public function get_organisation_data($user_id, ...$args)
+    {
         return $this->get_organisation_json($user_id, 'data', ...$args);
     }
 
@@ -66,9 +69,10 @@ class OrganisationController extends AbstractController {
     * @return
     *   Returns the formatted JSON array with the organisations and links to further resources
     */
-    private function get_organisation_json($user_id, $request_type, ...$args) {
+    private function get_organisation_json($user_id, $request_type, ...$args)
+    {
         $query_result = $this->db_ops->get_organisation_config($user_id, ...$args);
-        if($query_result === null) {
+        if ($query_result === null) {
             return array("error");
         }
         $query_result = $this->format_query_result($query_result);
@@ -77,7 +81,7 @@ class OrganisationController extends AbstractController {
         $next_entity_array = [];
 
         $self_link = $this->get_link($request_type, 'location', ...$args);
-        if($request_type === 'data') {
+        if ($request_type === 'data') {
             $next_entity_types[] = 'config';
             $next_entity_array[] = $this->get_link('config', 'location', ...$args);
         } else {
@@ -120,7 +124,7 @@ class OrganisationController extends AbstractController {
         }
 
         $next_entities = [];
-        while(!is_null($next_entities_query_result) && $row = $next_entities_query_result->fetch_array()) {
+        while (!is_null($next_entities_query_result) && $row = $next_entities_query_result->fetch_array()) {
             array_walk_recursive($row, [$this, 'encode_items']);
             $next_entities[] = $row[0];
         }
@@ -129,31 +133,34 @@ class OrganisationController extends AbstractController {
         return $this->format_json($self_link, $query_result, $next_entity_types, $next_entity_array);
     }
 
-    public function get_org_by_unit($user_id, ...$args) {
-        $stmt_string = $this->select_org_sceleton;
+    public function get_org_by_unit($user_id, ...$args)
+    {
+        $stmt_string = $this->select_org_skeleton;
         $param_string = 'i';
-        if(sizeof($args) > 0) {
+        if (sizeof($args) > 0) {
             $stmt_string .= ' AND organisation_unit = ?';
             $param_string .= 's';
         }
-        if(sizeof($args) > 1) {
+        if (sizeof($args) > 1) {
             $stmt_string .= ' AND organisation_name = ?';
             $param_string .= 's';
         }
         return AbstractController::execute_stmt($stmt_string, $param_string, $user_id, ...$args);
     }
 
-    public function get_org_by_id($user_id, ...$args) {
-        $stmt_string = $this->select_org_sceleton;
+    public function get_org_by_id($user_id, ...$args)
+    {
+        $stmt_string = $this->select_org_skeleton;
         $param_string = 'i';
-        if(sizeof($args) > 0) {
+        if (sizeof($args) > 0) {
             $stmt_string .= ' AND organisation_id = ?';
             $param_string .= 'i';
         }
         return AbstractController::execute_stmt($stmt_string, $param_string, $user_id, ...$args);
     }
 
-    public function insert_organisation($organisation) {
+    public function insert_organisation($organisation)
+    {
         $db_ops = new DatabaseOps();
         $db_connection = $db_ops->get_db_connection();
         $stmt = $db_connection->prepare('INSERT INTO organisation(name, type, description, contact, zipcode) VALUES(?, ?, ?, ?, ?)');
@@ -171,8 +178,9 @@ class OrganisationController extends AbstractController {
     * @return
     *   Returns an error code or null;
     */
-    public function put_org_config($user_id, ...$args) {
-        if(!$this->db_ops->user_can_modify_organisation($user_id, $args[0])) {
+    public function put_org_config($user_id, ...$args)
+    {
+        if (!$this->db_ops->user_can_modify_organisation($user_id, $args[0])) {
             return 'Forbidden'; // TODO: implement fail case
         }
         $errno = $this->db_ops->update_organisation_by_id(...$args);
@@ -185,7 +193,8 @@ class OrganisationController extends AbstractController {
     * @return
     *   An array with all org_ids
     */
-    public function get_org_ids($user_id) {
+    public function get_org_ids($user_id)
+    {
         $db_access = new DatabaseAccess();
         $stmt_string = 'SELECT DISTINCT(organisation_id)
             FROM view_organisation_visible_for_user
@@ -201,7 +210,8 @@ class OrganisationController extends AbstractController {
         return $org_ids;
     }
 
-    public function get_org_units($user_id) {
+    public function get_org_units($user_id)
+    {
         $db_access = new DatabaseAccess();
         $stmt_string = 'SELECT DISTINCT(organisation_unit)
             FROM view_organisation_visible_for_user
@@ -212,7 +222,7 @@ class OrganisationController extends AbstractController {
         $query_result = $db_access->execute();
 
         $org_units = [];
-        while($row = $query_result->fetch_assoc()) {
+        while ($row = $query_result->fetch_assoc()) {
             $org_units[] = $row['organisation_unit'];
         }
 
@@ -229,14 +239,15 @@ class OrganisationController extends AbstractController {
     * @return
     *   An array with the links
     */
-    private function get_org_links($endpoint_type, $orgs) {
-      $organisation_links = [];
-      foreach ($orgs as $org) {
-          array_walk_recursive($org, [$this, 'encode_items_url']);
-          $organisation_links[] = $_SERVER['SERVER_NAME'].'/'.$endpoint_type.'/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['organisation_type'].'/'.$org['organisation_name'];
-      }
+    private function get_org_links($endpoint_type, $orgs)
+    {
+        $organisation_links = [];
+        foreach ($orgs as $org) {
+            array_walk_recursive($org, [$this, 'encode_items_url']);
+            $organisation_links[] = $_SERVER['SERVER_NAME'].'/'.$endpoint_type.'/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['organisation_type'].'/'.$org['organisation_name'];
+        }
 
-      return $organisation_links;
+        return $organisation_links;
     }
 
     /*
@@ -251,27 +262,28 @@ class OrganisationController extends AbstractController {
     * 'data', 'config' and 'organisations' links are a special case, as they are formatted prior in get_organisation_json
     * TODO: This is hardly readable. We need a better solution
     */
-    protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {
-      $json_array;
-      if($next_entity_types[1] === 'fields') {
-          $json_array = $query_result[0];
-      } else {
-          $json_array = array('organisations' => $query_result);
-      }
+    protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = [])
+    {
+        $json_array;
+        if ($next_entity_types[1] === 'fields') {
+            $json_array = $query_result[0];
+        } else {
+            $json_array = array('organisations' => $query_result);
+        }
 
-      $links['self'] = $self_link;
-      for($i = 0; $i < sizeof($next_entity_types); $i++) {
-          if($next_entity_types[$i] === 'data' || $next_entity_types[$i] === 'config' || $next_entity_types[$i] === 'organisations') {
-              $links[$next_entity_types[$i]] = $next_entities[$i];
-          } else {
-              $links[$next_entity_types[$i]] = [];
-              foreach ($next_entities[$i] as $entity) {
-                  $links[$next_entity_types[$i]][] = $self_link . '/' . $entity;
-              }
-          }
-      }
-      $json_array['links'] = $links;
-      return $json_array;
+        $links['self'] = $self_link;
+        for ($i = 0; $i < sizeof($next_entity_types); $i++) {
+            if ($next_entity_types[$i] === 'data' || $next_entity_types[$i] === 'config' || $next_entity_types[$i] === 'organisations') {
+                $links[$next_entity_types[$i]] = $next_entities[$i];
+            } else {
+                $links[$next_entity_types[$i]] = [];
+                foreach ($next_entities[$i] as $entity) {
+                    $links[$next_entity_types[$i]][] = $self_link . '/' . $entity;
+                }
+            }
+        }
+        $json_array['links'] = $links;
+        return $json_array;
     }
-
 }
+?>
