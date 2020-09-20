@@ -41,6 +41,14 @@ class UserRouteController extends RouteController {
        return $response;
    }
 
+   public function get_me ($request, $response, $args) {
+    $userCon = new UserController();
+    $userInfo = $userCon->get_one($_SESSION['user_id'], $_SESSION);
+    $response->getBody()->write(json_encode($userInfo));
+    return $response;
+       
+   }
+
 }
 
 ?>

@@ -89,11 +89,8 @@ return function (App $app) {
     $app->put('/users/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
     $app->delete('/users/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
 
-    $app->get('/users/me', function ($request, $response, $args) {
+    $app->get('/users/me', \UserRouteController::class . ':get_me');
 
-      $response->getBody()->write('You are on /users/me, to be implemented');
-      return $response;
-    });
 
     $app->get('/test', function ($request, $response, $args) {
       if(isset($_SESSION['user_id'])){
