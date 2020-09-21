@@ -56,11 +56,6 @@ return function (App $app) {
     $app->put('/config/location' . ORG_FULL_LINK . FIELD_NAME,
         \ConfigRouteController::class . ':put_org_full_link_field_name');
 
-    $app->delete('/config' . ORG_FULL_LINK,
-        \ConfigRouteController::class . ':delete_org_full_link'); // TODO
-    $app->delete('/config' . ORG_FULL_LINK . FIELD_NAME,
-        \ConfigRouteController::class . ':delete_org_full_link_field_name'); // TODO
-
 
 
     $app->get('/data',

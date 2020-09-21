@@ -80,7 +80,6 @@ class ConfigRouteController extends RouteController
     }
 
 
-
     public function get_org_by_id($request, $response, $args)
     {
         $args_indexed = RouteController::assoc_array_to_indexed($args);
