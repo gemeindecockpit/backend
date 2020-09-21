@@ -81,15 +81,18 @@ return function (App $app) {
     $app->put('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
         \DataRouteController::class . ':put_org_full_link_field_name');
 
-    $app->get('/users', \UserRouteController::class . '/get_home');
+    $app->get('/users', \UserRouteController::class . ':get_home'); //get fuer users
     $app->post('/users', \UserRouteController::class . '/post_home');
 
-    $app->get('/users/{id:[0-9]+}', \UserRouteController::class . '/get_user_id');
+    $app->get('/users/{id:[0-9]+}', \UserRouteController::class . ':get_user_id'); //get fuer users id
+
     $app->post('/users/{id:[0-9]+}', \UserRouteController::class . '/post_user_id');
     $app->put('/users/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
-    $app->delete('/users/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
+
+    $app->delete('/users/{id:[0-9]+}', \UserRouteController::class . ':delete_user_id'); //delete fuer users id
 
     $app->get('/users/me', \UserRouteController::class . ':get_me');
+
 
 
     $app->get('/test', function ($request, $response, $args) {
