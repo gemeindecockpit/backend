@@ -23,7 +23,7 @@ class UserController extends AbstractController {
     }
 
     public function get_one($user_id, ...$args) {
-        $query_result;
+        
         $arg = $args[0];
         if(isset($arg['user_id'])) {
             $query_result = $this->db_ops->get_user_by_id($user_id, $arg['user_id']);
