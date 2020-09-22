@@ -81,7 +81,7 @@ class DataRouteController extends RouteController {
        $user_controller = new UserController();
 
        if(!$user_controller->can_see_field($_SESSION['user_id'], $args['field_id'])) {
-           $response->getBody()->write('Acces denied');
+           $response->getBody()->write('Access denied');
            return $response->withHeader(403);
        }
 
@@ -105,14 +105,59 @@ class DataRouteController extends RouteController {
 
 
    public function get_data_by_org_and_date($request, $response, $args) {
-       $args['URI'] = $_SERVER['REQUEST_URI'];
-       $response->getBody()->write(json_encode($args));
+       $data_controller = new DataController();
+       $org_controller = new OrganisationController();
+
+       $field_ids = $org_controller->get_field_ids($_SESSION['user_id'], $args['org_id']);
+
+       $data = [];
+       if(isset($args['day'])) {
+           $day = $args['year'] . '-' . $args['month'] . '-' . $args['day'];
+           $data = $data_controller->get_data_by_field_ids_and_day($field_ids, $args['org_id'], $day);
+       } else if (isset($args['month'])) {
+           $month = $args['year'] . '-' . $args['month'] . '-01';
+           $data = $data_controller->get_data_by_field_ids_and_month($field_ids, $args['org_id'], $month);
+       } else {
+           $year = $args['year'] . '-01-01';
+           $data = $data_controller->get_data_by_field_ids_and_year($field_ids, $args['org_id'], $year);
+       }
+
+       $args_indexed = RouteController::assoc_array_to_indexed($args);
+       $links['self'] = RouteController::get_link('data', 'organisation', ...$args_indexed);
+       $links['config'] = RouteController::get_link('config', 'organisation', $args['org_id']);
+
+       $json_array = array('data' => $data, 'links' => $links);
+       $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_data_by_field_and_date($request, $response, $args) {
-       $args['URI'] = $_SERVER['REQUEST_URI'];
-       $response->getBody()->write(json_encode($args));
+       $data_controller = new DataController();
+       $user_controller = new UserController();
+
+       if(!$user_controller->can_see_field($_SESSION['user_id'], $args['field_id'])) {
+           $response->getBody()->write('Access denied');
+           return $response->withHeader(403);
+       }
+       $field_ids = [$args['field_id']];
+       $data = [];
+       if(isset($args['day'])) {
+           $day = $args['year'] . '-' . $args['month'] . '-' . $args['day'];
+           $data = $data_controller->get_data_by_field_ids_and_day($field_ids, $args['field_id'], $day);
+       } else if (isset($args['month'])) {
+           $month = $args['year'] . '-' . $args['month'] . '-01';
+           $data = $data_controller->get_data_by_field_ids_and_month($field_ids, $args['field_id'], $month);
+
+       } else {
+           $year = $args['year'] . '-01-01';
+           $data = $data_controller->get_data_by_field_ids_and_year($field_ids, $args['field_id'], $year);
+       }
+       $args_indexed = RouteController::assoc_array_to_indexed($args);
+       $links['self'] = RouteController::get_link('data', 'field', ...$args_indexed);
+       $links['config'] = RouteController::get_link('config', 'field', $args['field_id']);
+
+       $json_array = array('data' => $data, 'links' => $links);
+       $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
 
@@ -145,121 +190,84 @@ class DataRouteController extends RouteController {
    }
 
 
-   /**
-   * Handles the GET /data/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{org_type}/{org_name}/{field_name}/{year}[/{month}[/{day}]] endpoints
-   * The response contains the data of the field for the date
-   * @param $request
-   * @param $response
-   * @param $args
-   *    Must include nuts0, nuts1, nuts2, nuts3, org_type, org_name, field_name and year
-   *    Can include month and day
-   */
-   public function get_org_full_link_field_name_date($request, $response, $args) {
-       $data_controller = new DataController();
-
-       $args_indexed = [$args['nuts0'], $args['nuts1'], $args['nuts2'], $args['nuts3'], $args['org_type'], $args['org_name'], $args['field_name']];
-
-       if(isset($args['day'])) {
-           $args_indexed[] = 'day';
-           $args_indexed[] = $args['year'];
-           $args_indexed[] = $args['month'];
-           $args_indexed[] = $args['day'];
-       } else if (isset($args['month'])) {
-           $args_indexed[] = 'month';
-           $args_indexed[] = $args['year'];
-           $args_indexed[] = $args['month'];
-       } else {
-           $args_indexed[] = 'year';
-           $args_indexed[] = $args['year'];
-       }
-       $json_array = $data_controller->get_data_org_full_link_field_name_date($_SESSION['user_id'], ...$args_indexed);
-
-       $response->getBody()->write(json_encode($json_array));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-
-
-
-
-   /**
-   * Handles the GET /data/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{org_type}/{org_name} endpoint
-   * The response contains the data of the organisation
-   * The timeframe is specified by '?last=x'
-   * can be either num_of_days, 'all' or nothing
-   * @param $request
-   * @param $response
-   * @param $args
-   *    Must include nuts0, nuts1, nuts2, nuts3, org_type and org_name
-   */
-   public function get_org_full_link($request, $response, $args) {
-       $data_controller = new DataController();
-       $args_indexed = assoc_array_to_indexed($args);
-
-       $query_parameters = $request->getQueryParams();
-       if(isset($query_parameters['last'])) {
-           $last = $query_parameters['last'];
-       } else {
-           $last = 'latest';
-       }
-
-       $json_array = $data_controller->get_data_by_org($_SESSION['user_id'], $last, ...$args_indexed);
-
-       $response->getBody()->write(json_encode($json_array));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-
-   /**
-   * Handles the GET /data/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{org_type}/{org_name}/{year}[/{month}[/{day}]] endpoints
-   * The response contains the data of the organisation for the date
-   * @param $request
-   * @param $response
-   * @param $args
-   *    Must include nuts0, nuts1, nuts2, nuts3, org_type, org_name and year
-   *    Can include month and day
-   */
-   public function get_org_full_link_date($request, $response, $args) {
-       $data_controller = new DataController();
-
-       $args_indexed = [$args['nuts0'], $args['nuts1'], $args['nuts2'], $args['nuts3'], $args['org_type'], $args['org_name']];
-
-       if(isset($args['day'])) {
-           $args_indexed[] = 'day';
-           $args_indexed[] = $args['year'];
-           $args_indexed[] = $args['month'];
-           $args_indexed[] = $args['day'];
-       } else if (isset($args['month'])) {
-           $args_indexed[] = 'month';
-           $args_indexed[] = $args['year'];
-           $args_indexed[] = $args['month'];
-       } else {
-           $args_indexed[] = 'year';
-           $args_indexed[] = $args['year'];
-       }
-       $json_array = $data_controller->get_data_org_full_link_date($_SESSION['user_id'], ...$args_indexed);
-
-       $response->getBody()->write(json_encode($json_array));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-
    public function post_org_data($request, $response, $args) {
-       $args['URI'] = $_SERVER['REQUEST_URI'];
-       $response->getBody()->write(json_encode($args));
-       return $response->withHeader('Content-type', 'application/json');
+       $data_controller = new DataController();
+       $org_controller = new OrganisationController();
+       $user_controller = new UserController();
+
+       $body = json_decode($request->getBody(),true);
+
+       $data = [];
+       foreach($body as $entry) {
+           if(!isset($entry['field_id'])) {
+               $response->getBody()->write('field_id required for all entries');
+               return $response->withStatus(500);
+           }
+           if(!isset($entry['field_value'])) {
+               $response->getBody()->write('No value given');
+               return $response->withStatus(500);
+           }
+           if(!isset($entry['date'])) {
+               $response->getBody()->write('No date specified');
+               return $response->withStatus(500);
+           }
+           if(!$user_controller->can_insert_into_field($_SESSION['user_id'], $entry['field_id'])) {
+               $response->getBody()->write('Access denied');
+               return $response->withStatus(403);
+           }
+           $data[] = array(
+               'field_id' => $entry['field_id'],
+               'user_id' => $_SESSION['user_id'],
+               'field_value' => $entry['field_value'],
+               'date' => $entry['date']);
+       }
+
+       $errno = $data_controller->insert_data($data);
+
+
+       if($errno) {
+           $response->getBody()->write($errno);
+           return $response->withStatus(500);
+       }
+       return $response->withStatus(200);
+
    }
 
    public function post_field_data($request, $response, $args) {
-       $args['URI'] = $_SERVER['REQUEST_URI'];
-       $response->getBody()->write(json_encode($args));
-       return $response->withHeader('Content-type', 'application/json');
+       $data_controller = new DataController();
+       $user_controller = new UserController();
+
+       if(!$user_controller->can_insert_into_field($_SESSION['user_id'], $args['field_id'])) {
+           $response->getBody()->write('Access denied');
+           return $response->withStatus(403);
+       }
+
+       $body = json_decode($request->getBody(),true);
+
+       if(!isset($body['field_value'])) {
+           $response->getBody()->write('No value given');
+           return $response->withStatus(500);
+       }
+       if(!isset($body['date'])) {
+           $response->getBody()->write('No date specified');
+           return $response->withStatus(500);
+       }
+
+       $data[] = array(
+           'field_id' => $args['field_id'],
+           'user_id' => $_SESSION['user_id'],
+           'field_value' => $body['field_value'],
+           'date' => $body['date']);
+
+       $errno = $data_controller->insert_data($data);
+
+       if($errno) {
+           $response->getBody()->write($errno);
+           return $response->withStatus(500);
+       }
+       $response->getBody()->write(json_encode($data));
+       return $response->withStatus(200);
    }
-
-
-
-
-
 }
 
 ?>

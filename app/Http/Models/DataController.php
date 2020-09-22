@@ -129,11 +129,69 @@ class DataController extends AbstractController {
                 $db_access->bind_param($param_string, $id, $last);
             else
                 $db_access->bind_param($param_string, $id);
-            $field_data = $db_access->execute();
-            while($row = $field_data->fetch_assoc()) {
+            $query_result = $db_access->execute();
+            while($row = $query_result->fetch_assoc()) {
                 $data[] = $row;
             }
         }
+        $db_access->close_db();
+        return $data;
+    }
+
+    public function get_data_by_field_ids_and_day($field_ids, $org_id, $day) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = $this->select_data_skeleton;
+        $stmt_string .= ' AND date = ?';
+        $db_access->prepare_stmt($stmt_string);
+        $data = [];
+        foreach($field_ids as $id) {
+            $db_access->bind_param('is', $id, $day);
+            $query_result = $db_access->execute();
+            while($row = $query_result->fetch_assoc()) {
+                $data[] = $row;
+            }
+        }
+        $db_access->close_db();
+        return $data;
+    }
+
+    public function get_data_by_field_ids_and_month($field_ids, $org_id, $month) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = $this->select_data_skeleton;
+        $stmt_string .=
+            ' AND date >= ?
+            AND date < date_add(?, INTERVAL 1 MONTH)
+            ORDER BY date DESC';
+        $db_access->prepare_stmt($stmt_string);
+        $data = [];
+        foreach($field_ids as $id) {
+            $db_access->bind_param('iss', $id, $month, $month);
+            $query_result = $db_access->execute();
+            while($row = $query_result->fetch_assoc()) {
+                $data[] = $row;
+            }
+        }
+        $db_access->close_db();
+        return $data;
+    }
+
+    public function get_data_by_field_ids_and_year($field_ids, $org_id, $year) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = $this->select_data_skeleton;
+        $stmt_string .=
+            ' AND date >= ?
+            AND date < date_add(?, INTERVAL 1 YEAR)
+            ORDER BY date DESC';
+        $db_access->prepare_stmt($stmt_string);
+        $data = [];
+        foreach($field_ids as $id) {
+            $db_access->bind_param('iss', $id, $year, $year);
+            $query_result = $db_access->execute();
+            while($row = $query_result->fetch_assoc()) {
+                $data[] = $row;
+            }
+        }
+        $db_access->close_db();
         return $data;
     }
 
@@ -318,6 +376,19 @@ class DataController extends AbstractController {
             }
         }
         return $data;
+    }
+
+    public function insert_data($data) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = "INSERT INTO field_values (field_id, user_id, field_value, date) VALUES (?,?,?,?)";
+        $db_access->prepare_stmt($stmt_string);
+        $errno = null;
+        foreach($data as $insert) {
+            $db_access->bind_param('iiis', $insert['field_id'], $insert['user_id'], $insert['field_value'], $insert['date']);
+            $errno = $db_access->execute();
+        }
+        $db_access->close_db();
+        return $errno;
     }
 
     //TODO: First mockup, not functional
