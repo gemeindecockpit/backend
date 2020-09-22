@@ -69,7 +69,6 @@ class DatabaseAccess
             $result = $this->stmt->errno;
         }
 
-        $this->stmt->close();
         $this->params = [];
         $this->param_string = '';
 
@@ -78,6 +77,9 @@ class DatabaseAccess
 
     public function close_db()
     {
+        if($this->stmt) {
+            $this->stmt->close();
+        }
         return $this->db_connection->close();
     }
 }

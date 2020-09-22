@@ -9,6 +9,16 @@ require_once("FieldController.php");
 */
 class DataController extends AbstractController {
 
+    private $select_data_skeleton =
+        'SELECT
+            field_id,
+            field_value,
+            realname,
+            date
+        FROM view_up_to_date_data_from_all_fields
+        WHERE field_id = ?
+        ';
+
     public function __construct() {
         parent::__construct();
     }
@@ -100,27 +110,31 @@ class DataController extends AbstractController {
         return $this->format_json($self_link, $data, array('config'), array($config_link));
     }
 
-
-    /**
-    * Gets the data for a field (identified by id)
-    * The self link is of the form data/field/field_id[?last=x]
-    * @param $user_id
-    * @param $field_id
-    * @param $last
-    *   Either 'latest' (default), 'num_of_days' or 'all'
-    * @return
-    */
-    public function get_data_by_field_id($user_id, $field_id, $last='latest') {
-        $query_result = $this->db_ops->get_data_by_field_id($user_id, $field_id, $last);
-        $query_result = $this->format_query_result($query_result);
-
-        $self_link = $this->get_link('data', 'field', $field_id);
-        if($last !== 'latest') {
-            $self_link .= '?last=' . $last;
+    public function get_data_by_field_ids($field_ids, $last='latest') {
+        $db_access = new DatabaseAccess();
+        $stmt_string = $this->select_data_skeleton;
+        $param_string = 'i';
+        if($last !== 'latest' && $last !== 'all') {
+            $stmt_string .= ' AND date >= (date_add(curdate(), INTERVAL -? DAY))';
+            $param_string .= 'i';
         }
-        $config_link = $this->get_link('config', 'field', $field_id);
-
-        return $this->format_json($self_link, $query_result, array('config'), array($config_link));
+        $stmt_string .= ' ORDER BY date DESC';
+        if($last == 'latest') {
+            $stmt_string .= ' LIMIT 1';
+        }
+        $db_access->prepare_stmt($stmt_string);
+        $data = [];
+        foreach($field_ids as $id) {
+            if($last !== 'latest' && $last !== 'all')
+                $db_access->bind_param($param_string, $id, $last);
+            else
+                $db_access->bind_param($param_string, $id);
+            $field_data = $db_access->execute();
+            while($row = $field_data->fetch_assoc()) {
+                $data[] = $row;
+            }
+        }
+        return $data;
     }
 
 

@@ -266,7 +266,7 @@ class OrganisationController extends AbstractController
         $query_result = AbstractController::execute_stmt($stmt_string, 'ii', $user_id, $org_id);
         $field_ids = [];
         foreach($query_result as $row) {
-            $field_ids[] = $row['field_name'];
+            $field_ids[] = $row['field_id'];
         }
         return $field_ids;
     }

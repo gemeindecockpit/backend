@@ -43,8 +43,24 @@ class DataRouteController extends RouteController {
    }
 
    public function get_data_by_org($request, $response, $args) {
-       $args['URI'] = $_SERVER['REQUEST_URI'];
-       $response->getBody()->write(json_encode($args));
+       $data_controller = new DataController();
+       $org_controller = new OrganisationController();
+
+       $field_ids = $org_controller->get_field_ids($_SESSION['user_id'], $args['org_id']);
+       $query_parameters = $request->getQueryParams();
+       if(isset($query_parameters['last'])) {
+           $last = $query_parameters['last'];
+       } else {
+           $last = 'latest';
+       }
+
+       $data = $data_controller->get_data_by_field_ids($field_ids, $last);
+
+       $links['self'] = RouteController::get_link('data', 'organisation', $args['org_id']);
+       $links['config'] = RouteController::get_link('config', 'organisation', $args['org_id']);
+
+       $json_array = array('data' => $data, 'links' => $links);
+       $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
 
@@ -62,6 +78,12 @@ class DataRouteController extends RouteController {
 
    public function get_data_by_field($request, $response, $args) {
        $data_controller = new DataController();
+       $user_controller = new UserController();
+
+       if(!$user_controller->can_see_field($_SESSION['user_id'], $args['field_id'])) {
+           $response->getBody()->write('Acces denied');
+           return $response->withHeader(403);
+       }
 
        $query_parameters = $request->getQueryParams();
        if(isset($query_parameters['last'])) {
@@ -70,7 +92,12 @@ class DataRouteController extends RouteController {
            $last = 'latest';
        }
 
-       $json_array = $data_controller->get_data_by_field_id($_SESSION['user_id'], $args['field_id'], $last);
+       $data = $data_controller->get_data_by_field_ids([$args['field_id']], $last);
+
+       $links['self'] = RouteController::get_link('data', 'field', $args['field_id']);
+       $links['config'] = RouteController::get_link('config', 'field', $args['field_id']);
+
+       $json_array = array('data' => $data, 'links' => $links);
 
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
