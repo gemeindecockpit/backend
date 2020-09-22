@@ -12,6 +12,35 @@ class UserController extends AbstractController {
         parent::__construct();
     }
 
+    public function can_alter_field($user_id,$field_id){
+       $db_ops = new DatabaseOps();
+       $db_connection = $db_ops->get_db_connection();
+       $stmt = $db_connection->prepare('SELECT * FROM can_see_field WHERE user_id = ? AND field_id=? AND can_alter=1 ');
+       $stmt->bind_param("ii", $user_id, $field_id);
+       $query_result = $db_ops->execute_select_stmt($stmt);
+       $db_connection->close();
+       return $query_result->num_rows > 0;
+    }
+
+    public function can_alter_organisation($user_id,$organisation_id){
+           $db_ops = new DatabaseOps();
+           $db_connection = $db_ops->get_db_connection();
+           $stmt = $db_connection->prepare('SELECT * FROM can_see_organisation WHERE user_id = ? AND organisation_id=? AND can_alter=1 ');
+           $stmt->bind_param("ii", $user_id, $organisation_id);
+           $query_result = $db_ops->execute_select_stmt($stmt);
+           $db_connection->close();
+           return $query_result->num_rows > 0;
+    }
+    public function can_create_field($user_id) {
+        $db_ops = new DatabaseOps();
+        $db_connection = $db_ops->get_db_connection();
+        $stmt = $db_connection->prepare('SELECT * FROM can_create_field WHERE user_id = ?');
+        $stmt->bind_param("i", $user_id);
+        $query_result = $db_ops->execute_select_stmt($stmt);
+        $db_connection->close();
+        return $query_result->num_rows > 0;
+    }
+
     public function can_create_organisation($user_id) {
         $db_ops = new DatabaseOps();
         $db_connection = $db_ops->get_db_connection();

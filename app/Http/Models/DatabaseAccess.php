@@ -34,6 +34,7 @@ class DatabaseAccess
         if ($this->stmt = $this->db_connection->prepare($stmt_string)) {
             return true;
         } else {
+            $this->db_connection->close();
             return false;
         }
     }
@@ -44,12 +45,17 @@ class DatabaseAccess
         $this->params[] = $value;
     }
 
-    public function bind_param($param_string, $user_id, ...$params)
+    public function bind_param($param_string, ...$params)
     {
         if (!$this->stmt) {
             return false;
         }
-        return $this->stmt->bind_param($param_string, $user_id, ...$params);
+        if($this->stmt->bind_param($param_string, ...$params)) {
+            return true;
+        } else {
+            $this->db_connection->close();
+            return false;
+        }
     }
 
     public function execute()

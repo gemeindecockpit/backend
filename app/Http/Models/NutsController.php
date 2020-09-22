@@ -24,7 +24,11 @@ class NUTSController extends AbstractController {
 
     public function get_next_NUTS_codes($user_id, ...$args) {
         $query_result = $this->db_ops->get_next_NUTS_codes($user_id, ...$args);
-        return $query_result->fetch_all();
+        $next_nuts = [];
+        while($row = $query_result->fetch_array()) {
+            $next_nuts[] = $row[0];
+        }
+        return $next_nuts;
     }
 
     protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {}

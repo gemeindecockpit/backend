@@ -93,10 +93,7 @@ class FieldController extends AbstractController {
     * @return
     *   Returns an error code or null;
     */
-    public function put_field_config($user_id, ...$args) {
-        if(!$this->db_ops->user_can_modify_field($user_id, $args[0])) {
-            return 'Forbidden'; // TODO: implement fail case
-        }
+    public function put_field_config(...$args) {
         $errno = $this->db_ops->insert_field_by_sid(...$args);
         return $errno;
     }

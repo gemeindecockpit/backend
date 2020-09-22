@@ -26,10 +26,15 @@ return function (App $app) {
 
     $app->get('/config/location[/{nuts0}[/{nuts1}[/{nuts2}[/{nuts3}[/{org_type}[/{org_name}]]]]]]',
         \ConfigRouteController::class . ':get_org_by_location')->setName('conf'); //TESTED, verified for working
-    $app->get('/config/location' . ORG_FULL_LINK . FIELD_NAME,
+    $app->get('/config/location/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{org_type}/{org_name}/{field_name}',
         \ConfigRouteController::class . ':get_field_by_org_location'); //TESTED, verified for working
 
-    $app->get('/config/organisation-unit[/{org_unit}[/{org_name}]]',
+
+    $app->get('/config/organisation-unit',
+        \ConfigRouteController::class . ':get_org_by_unit');
+    $app->get('/config/organisation-unit/{org_unit}',
+        \ConfigRouteController::class . ':get_org_unit');
+    $app->get('/config/organisation-unit/{org_unit}/{org_name}',
         \ConfigRouteController::class . ':get_org_by_unit');
     $app->get('/config/organisation-unit/{org_unit}/{org_name}/{field_name}', #
         \ConfigRouteController::class . ':get_field_by_org_unit');
@@ -49,49 +54,46 @@ return function (App $app) {
     $app->post('/config/organisation',
         \ConfigRouteController::class . ':post_org'); // TODO
     $app->post('/config/organisation/{org_id:[0-9]+}',
-        \ConfigRouteController::class . ':post_field_by_org_id'); // TODO
+        \ConfigRouteController::class . ':post_field_by_org_id'); // TODO, link is not optimal!
 
-    $app->put('/config/location' . ORG_FULL_LINK,
-        \ConfigRouteController::class . ':put_org_full_link');
-    $app->put('/config/location' . ORG_FULL_LINK . FIELD_NAME,
-        \ConfigRouteController::class . ':put_org_full_link_field_name');
+    $app->put('/config/organisation',
+        \ConfigRouteController::class . ':put_org');
+    $app->put('/config/field',
+        \ConfigRouteController::class . ':put_field');
 
 
 
     $app->get('/data',
         \DataRouteController::class . ':home'); //TESTED, verified for working
 
+    $app->get('/data/organisation',
+        \DataRouteController::class . ':get_org_id_links');
+    $app->get('/data/organisation/{org_id:[0-9]+}',
+        \DataRouteController::class . ':get_data_by_org');
+
     $app->get('/data/field',
-        \DataRouteController::class . ':get_field'); // TODO: NOT WORKING
-
+        \DataRouteController::class . ':get_field_id_links'); // TODO: NOT WORKINg
     $app->get('/data/field/{field_id:[0-9]+}',
-        \DataRouteController::class . ':get_field_field_id'); // TODO: NOT WORKING
-
-    $app->get('/data/{nuts0}[/{nuts1}[/{nuts2}[/{nuts3}[/{org_type}]]]]',
-        \DataRouteController::class . ':get_organisation_data'); //TESTED, verified for working
-
-    $app->get('/data' . ORG_FULL_LINK,
-        \DataRouteController::class . ':get_org_full_link'); //TESTED, TODO: add links for data/.../field_name
-
-    $app->get('/data' . ORG_FULL_LINK . YEAR . '[/{month:[0-1][0-9]}[/{day:[0-3][0-9]}]]',
-        \DataRouteController::class . ':get_org_full_link_date');
+        \DataRouteController::class . ':get_data_by_field'); // TODO: NOT WORKING
 
 
-    $app->get('/data' . ORG_FULL_LINK . FIELD_NAME,
+
+    $app->get('/data/organisation/{org_id:[0-9]+}/{year:[1|2|3][0-9][0-9][0-9]}[/{month:[0-1][0-9]}[/{day:[0-3][0-9]}]]',
+        \DataRouteController::class . ':get_data_by_org_and_date');
+    $app->get('/data/field/{field_id:[0-9]+}/{year:[1|2|3][0-9][0-9][0-9]}[/{month:[0-1][0-9]}[/{day:[0-3][0-9]}]]',
+        \DataRouteController::class . ':get_data_by_field_and_date');
+
+
+    $app->get('/data/organisation/{org_id:[0-9]+}/{field_name}',
         \DataRouteController::class . ':get_org_full_link_field_name'); //TESTED, verified for working
-    $app->get('/data' . ORG_FULL_LINK . FIELD_NAME . YEAR . '[/{month:[0-1][0-9]}[/{day:[0-3][0-9]}]]',
+    $app->get('/data/organisation/{org_id:[0-9]+}/{field_name}/{year:[1|2|3][0-9][0-9][0-9]}[/{month:[0-1][0-9]}[/{day:[0-3][0-9]}]]',
         \DataRouteController::class . ':get_org_full_link_field_name_date');
 
 
-    $app->post('/data' . ORG_FULL_LINK . DATE_FULL,
-        \DataRouteController::class . ':post_org_full_link');
-    $app->post('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
-        \DataRouteController::class . ':post_org_full_link_field_name');
-
-    $app->put('/data' . ORG_FULL_LINK . DATE_FULL,
-        \DataRouteController::class . ':put_org_full_link');
-    $app->put('/data' . ORG_FULL_LINK . FIELD_NAME . DATE_FULL,
-        \DataRouteController::class . ':put_org_full_link_field_name');
+    $app->post('/data/organisation/{org_id:[0-9]+}',
+        \DataRouteController::class . ':post_org_data');
+    $app->post('/data/field/{field_id:[0-9]+}',
+        \DataRouteController::class . ':post_field_data');
 
     $app->get('/users', \UserRouteController::class . '/get_home');
     $app->post('/users', \UserRouteController::class . '/post_home');

@@ -22,115 +22,43 @@ class OrganisationController extends AbstractController
             nuts2,
             nuts3
         FROM view_organisation_visible_for_user
-        WHERE active = 1
-        AND user_id = ?';
+        WHERE user_id = ?';
 
     public function __construct()
     {
         parent::__construct();
     }
 
-    /**
-    * Delegates the call to the get_organisation_json method with the $request_type 'config'
-    * @param $user_id
-    * @param $args
-    *    Can include nuts0, nuts1, nuts2, nuts3, org_type, org_name
-    * @return
-    *   Returns the formatted JSON array with the organisations and links to further resources
-    */
-    public function get_organisation_config($user_id, ...$args)
-    {
-        return $this->get_organisation_json($user_id, 'config', ...$args);
-    }
-
-    /**
-    * Delegates the call to the get_organisation_json method with the $request_type 'data'
-    * @param $user_id
-    * @param $args
-    *    Can include nuts0, nuts1, nuts2, nuts3, org_type, org_name
-    * @return
-    *   Returns the formatted JSON array with the organisations and links to further resources
-    */
-    public function get_organisation_data($user_id, ...$args)
-    {
-        return $this->get_organisation_json($user_id, 'data', ...$args);
-    }
-
-    /**
-    * Gets the config for all organisations in the specific layer (nuts0, nuts1, nuts2, nuts3, org_type, org_name)
-    * Gets the resources of the next layer (e.g. nuts2 regions if the layer is nuts1)
-    * Constructs the self link and the link to either the 'data' or 'config' resource
-    * finally calls format_json to put all resources and links into the json_array
-    * @param $user_id
-    * @param $request_type
-    *   Either 'config' or 'data'
-    * @param $args
-    *    Can include nuts0, nuts1, nuts2, nuts3, org_type, org_name
-    * @return
-    *   Returns the formatted JSON array with the organisations and links to further resources
-    */
-    private function get_organisation_json($user_id, $request_type, ...$args)
-    {
-        $query_result = $this->db_ops->get_organisation_config($user_id, ...$args);
-        if ($query_result === null) {
-            return array("error");
+    public function get_org_by_location($user_id, ...$args) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = $this->select_org_skeleton;
+        $param_string = 'i';
+        $num_args = sizeof($args);
+        if($num_args > 0) {
+            $stmt_string .= ' AND nuts0 = ?';
+            $param_string .= 's';
         }
-        $query_result = $this->format_query_result($query_result);
-
-        $next_entity_types = [];
-        $next_entity_array = [];
-
-        $self_link = $this->get_link($request_type, 'location', ...$args);
-        if ($request_type === 'data') {
-            $next_entity_types[] = 'config';
-            $next_entity_array[] = $this->get_link('config', 'location', ...$args);
-        } else {
-            $next_entity_types[] = 'data';
-            $next_entity_array[] = $this->get_link('data', 'location', ...$args);
+        if($num_args > 1) {
+            $stmt_string .= ' AND nuts1 = ?';
+            $param_string .= 's';
         }
-
-        $next_entity_types[] = 'organisations';
-        $organisation_links = $this->get_org_links($request_type . '/location', $query_result);
-        $next_entity_array[] = $organisation_links;
-
-
-        $next_entities_query_result = null;
-        switch (sizeof($args)) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-                $next_nuts = 'nuts' . sizeof($args);
-                $next_entity_types[] = $next_nuts;
-                $next_entities_query_result = $this->db_ops->get_next_NUTS_codes($user_id, ...$args);
-                break;
-            case 4:
-                $next_entity_types[] = 'organisation_types';
-                $next_entities_query_result = $this->db_ops->get_all_types($user_id, ...$args);
-                break;
-            case 5:
-                // The next entities are the organisations, which is already covered by "$organisation_links";
-                // but this is still here so it doesn't go to the default case
-                break;
-            case 6:
-                // There are no "next organisations", so the links have to be reset
-                $next_entity_types = array($next_entity_types[0], 'fields');
-                $next_entity_array = array($next_entity_array[0]);
-                $next_entities_query_result = $this->db_ops->get_field_names($user_id, ...$args);
-                break;
-            default: // TODO: implement fail case
-                return null;
-                break;
+        if($num_args > 2) {
+            $stmt_string .= ' AND nuts2 = ?';
+            $param_string .= 's';
         }
-
-        $next_entities = [];
-        while (!is_null($next_entities_query_result) && $row = $next_entities_query_result->fetch_array()) {
-            array_walk_recursive($row, [$this, 'encode_items']);
-            $next_entities[] = $row[0];
+        if($num_args > 3) {
+            $stmt_string .= ' AND nuts3 = ?';
+            $param_string .= 's';
         }
-        $next_entity_array[] = $next_entities;
-
-        return $this->format_json($self_link, $query_result, $next_entity_types, $next_entity_array);
+        if($num_args > 4) {
+            $stmt_string .= ' AND organisation_type = ?';
+            $param_string .= 's';
+        }
+        if($num_args > 5) {
+            $stmt_string .= ' AND organisation_name = ?';
+            $param_string .= 's';
+        }
+        return AbstractController::execute_stmt($stmt_string, $param_string, $user_id, ...$args);
     }
 
     public function get_org_by_unit($user_id, ...$args)
@@ -161,12 +89,17 @@ class OrganisationController extends AbstractController
 
     public function insert_organisation($organisation)
     {
-        $db_ops = new DatabaseOps();
-        $db_connection = $db_ops->get_db_connection();
-        $stmt = $db_connection->prepare('INSERT INTO organisation(name, type, description, contact, zipcode) VALUES(?, ?, ?, ?, ?)');
-        $stmt->bind_param('ssssi', $organisation['name'], $organisation['organisation_unit_id'], $organisation['description'], $organisation['contact'], $organisation['zipcode']);
-        $errno = $db_ops->execute_stmt_without_result($stmt);
-        $db_connection->close();
+        $db_access = new DatabaseAccess();
+        $stmt_string = 'INSERT INTO organisation(name, organisation_unit_id, description, contact, zipcode) VALUES(?, ?, ?, ?, ?)';
+        $param_string = 'sissi';
+
+        $db_access->prepare_stmt($stmt_string);
+
+        $org_unit_id = $this->get_org_unit_id($organisation['organisation_unit']);
+        $db_access->bind_param($param_string, $organisation['name'], $org_unit_id, $organisation['description'], $organisation['contact'], $organisation['zipcode']);
+
+        $errno = $db_access->execute();
+        $db_access->close_db();
         return $errno;
     }
 
@@ -178,11 +111,8 @@ class OrganisationController extends AbstractController
     * @return
     *   Returns an error code or null;
     */
-    public function put_org_config($user_id, ...$args)
+    public function put_org_config(...$args)
     {
-        if (!$this->db_ops->user_can_modify_organisation($user_id, $args[0])) {
-            return 'Forbidden'; // TODO: implement fail case
-        }
         $errno = $this->db_ops->update_organisation_by_id(...$args);
         return $errno;
     }
@@ -197,9 +127,9 @@ class OrganisationController extends AbstractController
     {
         $db_access = new DatabaseAccess();
         $stmt_string = 'SELECT DISTINCT(organisation_id)
-            FROM view_organisation_visible_for_user
-            WHERE active = 1
-            AND user_id = ?';
+            FROM can_see_organisation
+            WHERE user_id = ?';
+        $db_access->prepare_stmt($stmt_string);
         $db_access->bind_param('i', $user_id);
         $query_result = $db_access->execute();
         $org_ids = [];
@@ -210,13 +140,64 @@ class OrganisationController extends AbstractController
         return $org_ids;
     }
 
+
+    public function get_org_unit_id($org_unit) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = 'SELECT id_organisation_unit
+            FROM organisation_unit
+            WHERE name = ?';
+        $id_result = AbstractController::execute_stmt($stmt_string,'s',$org_unit);
+        if(sizeof($id_result) > 0 ) {
+            return $id_result[0]['id_organisation_unit'];
+        } else {
+            return -1;
+        }
+    }
+
+
+    public function get_org_unit_config($user_id, $org_unit) {
+        $stmt_string =
+            'SELECT
+                id_organisation_unit as organisation_unit_id,
+                organisation_unit.name as name,
+                organisation_unit.description as description,
+                organisation_unit.organisation_type as organisation_type
+            FROM organisation_unit
+            JOIN view_organisation_visible_for_user
+                ON organisation_unit.name = view_organisation_visible_for_user.organisation_unit
+            WHERE
+                user_id = ?
+            AND
+                organisation_unit.name = ?
+            ';
+        $org_unit_result = AbstractController::execute_stmt($stmt_string, 'is', $user_id, $org_unit);
+        $org_unit = [];
+        if(sizeof($org_unit_result) > 0) {
+            $org_unit = $org_unit_result[0];
+        }
+        $required_fields = $this->get_required_fields_for_unit($org_unit);
+        $org_unit['required_fields'] =  $required_fields;
+        return $org_unit;
+    }
+
+
+    public function get_required_fields_for_unit($org_unit_id) {
+        $stmt_string =
+            'SELECT
+                field_name, description
+            FROM organisation_unit_requires_field
+            WHERE organisation_unit_id = ?
+            ';
+        return AbstractController::execute_stmt($stmt_string, 'i', $org_unit_id);
+    }
+
+
     public function get_org_units($user_id)
     {
         $db_access = new DatabaseAccess();
         $stmt_string = 'SELECT DISTINCT(organisation_unit)
             FROM view_organisation_visible_for_user
-            WHERE active = 1
-            AND user_id = ?';
+            WHERE user_id = ?';
         $db_access->prepare_stmt($stmt_string);
         $db_access->bind_param('i', $user_id);
         $query_result = $db_access->execute();
@@ -228,6 +209,66 @@ class OrganisationController extends AbstractController
 
         $db_access->close_db();
         return $org_units;
+    }
+
+
+    public function get_organisation_types(...$args) {
+        $stmt_string =
+            'SELECT DISTINCT(organisation_type)
+            FROM view_organisation_visible_for_user
+            WHERE user_id = ?
+            AND nuts0 = ?
+			AND nuts1 = ?
+			AND nuts2 = ?
+			AND nuts3 = ?
+            ';
+        $query_result = AbstractController::execute_stmt($stmt_string, 'issss', ...$args);
+        $types = [];
+        foreach($query_result as $row) {
+            $types[] = $row['organisation_type'];
+        }
+        return $types;
+    }
+
+
+    public function get_field_names($user_id, $org_id) {
+        $stmt_string =
+            'SELECT view_organisations_and_fields.field_name
+            FROM view_organisations_and_fields
+            JOIN can_see_organisation
+                ON view_organisations_and_fields.organisation_id = can_see_organisation.organisation_id
+            JOIN can_see_field
+                ON view_organisations_and_fields.field_id = can_see_field.field_id
+                AND can_see_organisation.user_id = can_see_field.user_id
+            WHERE can_see_organisation.user_id = ?
+            AND view_organisations_and_fields.organisation_id = ?
+            ';
+        $query_result = AbstractController::execute_stmt($stmt_string, 'ii', $user_id, $org_id);
+        $field_names = [];
+        foreach($query_result as $row) {
+            $field_names[] = $row['field_name'];
+        }
+        return $field_names;
+    }
+
+    public function get_field_ids($user_id, $org_id) {
+        $stmt_string =
+            'SELECT view_organisations_and_fields.field_id
+            FROM view_organisations_and_fields
+            JOIN can_see_organisation
+                ON view_organisations_and_fields.organisation_id = can_see_organisation.organisation_id
+            JOIN can_see_field
+                ON view_organisations_and_fields.field_id = can_see_field.field_id
+                AND can_see_organisation.user_id = can_see_field.user_id
+            WHERE can_see_organisation.user_id = ?
+            AND view_organisations_and_fields.organisation_id = ?
+            ';
+        $query_result = AbstractController::execute_stmt($stmt_string, 'ii', $user_id, $org_id);
+        $field_ids = [];
+        foreach($query_result as $row) {
+            $field_ids[] = $row['field_name'];
+        }
+        return $field_ids;
     }
 
     /**
