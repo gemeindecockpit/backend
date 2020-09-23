@@ -17,7 +17,7 @@ class DataController extends AbstractController {
             date
         FROM view_up_to_date_data_from_all_fields
         WHERE field_id = ?
-        ';
+    ';
 
     public function __construct() {
         parent::__construct();
@@ -380,7 +380,11 @@ class DataController extends AbstractController {
 
     public function insert_data($data) {
         $db_access = new DatabaseAccess();
-        $stmt_string = "INSERT INTO field_values (field_id, user_id, field_value, date) VALUES (?,?,?,?)";
+        $stmt_string =
+            "INSERT INTO
+                field_values (field_id, user_id, field_value, date)
+            VALUES
+                (?,?,?,?)";
         $db_access->prepare_stmt($stmt_string);
         $errno = null;
         foreach($data as $insert) {

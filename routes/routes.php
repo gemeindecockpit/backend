@@ -96,18 +96,19 @@ return function (App $app) {
         \DataRouteController::class . ':post_field_data');
 
     $app->get('/users', \UserRouteController::class . '/get_home');
-    $app->post('/users', \UserRouteController::class . '/post_home');
+    $app->post('/users', \UserRouteController::class . ':post_home');
 
     $app->get('/users/{id:[0-9]+}', \UserRouteController::class . '/get_user_id');
     $app->post('/users/{id:[0-9]+}', \UserRouteController::class . '/post_user_id');
-    $app->put('/users/{id:[0-9]+}', \UserRouteController::class . '/put_user_id');
-    $app->delete('/users/{id:[0-9]+}', \UserRouteController::class . '/delete_user_id');
+    $app->put('/users/{id:[0-9]+}', \UserRouteController::class . ':put_user_id');
+    $app->delete('/users/{id:[0-9]+}', \UserRouteController::class . ':delete_user_id');
 
     $app->get('/users/me', function ($request, $response, $args) {
 
       $response->getBody()->write('You are on /users/me, to be implemented');
       return $response;
     });
+    $app->put('/users/me', \UserRouteController::class . ':put_users_me');
 
     $app->get('/test', function ($request, $response, $args) {
       if(isset($_SESSION['user_id'])){

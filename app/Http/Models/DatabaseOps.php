@@ -406,6 +406,35 @@ class DatabaseOps {
 	//		users				  	      //
 	////////////////////////////////////////
 
+	/**
+	* Checks if the passed user can insert users.
+	* @param $user_id
+	* @return bool
+	*/
+	public function can_insert_user($user_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT *
+			FROM can_create_user
+			WHERE user_id = ?'
+		);
+		$stmt->bind_param('i', $user_id);
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result->num_rows > 0;
+	}
+
+	public function exists_user($user_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT *
+			FROM user
+			WHERE id_user = ?');
+		$stmt->bind_param('i', $user_id); // 's' specifies the variable type => 'string'
+		$result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $result->num_rows > 0;
+	}
 
 	//returns a resultset containing the userdata for $user where $user is the username
 	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
@@ -418,16 +447,19 @@ class DatabaseOps {
 		return $result;
 	}
 
-	//returns the number of occurrences of users with the username $user as a resultset
-	//TESTED: verified for working. if any changes are made to the method either retest or remove the 'TESTED'-tag
-	public function get_user_count($user){
+	public function get_user_id_by_username($username) {
 		$db = $this->get_db_connection();
-		$stmt = $db->prepare('SELECT COUNT(*) as counter FROM user WHERE username = ?');
-		$stmt->bind_param('s', $user); // 's' specifies the variable type => 'string'
+		$stmt = $db->prepare(
+			'SELECT id_user
+			FROM user
+			WHERE username=?');
+		$stmt->bind_param('s', $username); // 's' specifies the variable type => 'string'
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();
-		return $result;
+		$user = $result->fetch_assoc();
+		return count($user) > 0 ? $user['id'] : false;
 	}
+
 	//returns the error code of the insert querry. 0 if there was no error
 	public function insert_new_user($username, $userpassword, $email, $realname, $salt){
 		$db = $this->get_db_connection();
@@ -439,6 +471,7 @@ class DatabaseOps {
 
 		return $error;
 	}
+
 
 	public function get_user_by_name($active_user_id, $passive_user_name){
 		$db = $this->get_db_connection();
@@ -452,6 +485,7 @@ class DatabaseOps {
 
 		return $result;
 	}
+
 
 	#returns userdata by a given userid
 	public function get_user_by_id($active_user_id, $passive_user_id){
@@ -467,6 +501,7 @@ class DatabaseOps {
     	return $result;
     }
 
+
 	public function get_all_users_visible_for_user($user_id) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('SELECT passive_user_id  AS \'user_id\', username, email, realname, can_alter
@@ -478,6 +513,7 @@ class DatabaseOps {
 		return $result;
 	}
 
+
 	public function get_login_info($username) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('SELECT id_user, username, userpassword, salt FROM user WHERE username = ?');
@@ -487,8 +523,213 @@ class DatabaseOps {
 		return $result;
 	}
 
-	public function update_password($user_id, $password){
-		#TODO:
+
+	public function update_password($user_id, $new_password){
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'UPDATE user
+			SET userpassword=?
+			WHERE id_user=?'
+		);
+		$stmt->bind_param('si', $new_password, $user_id);
+		$errno = $this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+	}
+
+
+	public function update_user_active($user_id, $active) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'UPDATE user
+			SET active = ?
+			WHERE id_user = ?'
+		);
+		$stmt->bind_param('ii', $active, $user_id);
+		$errno = $this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+	}
+
+
+
+	public function update_user($id, $username, $email, $realname, $active, $req_pw_reset) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'UPDATE user
+			SET username = ?, email = ?, realname = ?, active = ?, req_pw_reset = ?
+			WHERE id_user = ?'
+		);
+		$stmt->bind_param('sssiii', $username, $email, $realname, $active, $req_pw_reset, $id);
+		$errno = $this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+	}
+
+	// Permissions
+
+
+	/**
+	 * Checks if the active user is allowed to modify the passive user.
+	 * @param $active_user
+	 * @param $passive_user
+	 * @return bool
+	 */
+	public function can_alter_user($active_user, $passive_user) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'SELECT can_alter
+			FROM can_see_user
+			WHERE active_user_id = ?
+			AND passive_user_id = ?
+			AND can_alter = 1'
+		);
+		$stmt->bind_param("ii", $active_user, $passive_user);
+		$query_result = $this->execute_select_stmt($stmt);
+		$db->close();
+		return $query_result->num_rows > 0;
+	}
+
+
+	public function insert_into_can_insert_into_field($userID, $fieldID){
+		$db= $this->get_db_connection();
+		$stmt = $db->prepare('INSERT into can_insert_into_field(user_id, field_id) VALUES(?,?)');
+		$stmt->bind_param('ii', $userID, $fieldID);
+		$errno =$this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+    }
+
+
+	public function insert_can_create($permission_table, $user_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+				"INSERT INTO $permission_table
+				(user_id)
+				VALUES(?)"
+		);
+		$stmt->bind_param('i', $user_id);
+		$errno = $this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+	}
+
+	public function delete_can_create($permission_table, $user_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			"DELETE FROM $permission_table
+			WHERE user_id=?"
+		);
+		$stmt->bind_param('i', $user_id);
+		$errno = $this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+	}
+
+	public function insert_can_see_user($active_user_id, $passive_user_id, $can_alter) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'INSERT INTO can_see_user
+				(active_user_id, passive_user_id, can_alter)
+				VALUES(?,?,?)'
+		);
+		$stmt->bind_param('iii', $active_user_id, $passive_user_id, $can_alter);
+		$errno = $this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+	}
+
+	public function update_can_see_user($active_user_id, $passive_user_id, $can_alter) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'UPDATE can_see_user
+				SET active_user_id=?, passive_user_id=?, can_alter=?
+				VALUES(?,?,?)'
+		);
+		$stmt->bind_param('iii', $active_user_id, $passive_user_id, $can_alter);
+		$errno = $this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+	}
+
+	public function delete_can_see_user($active_user_id) {
+		$db = $this->get_db_connection();
+		$stmt = $db->prepare(
+			'DELETE FROM can_see_user
+			WHERE active_user_id=?'
+		);
+		$stmt->bind_param('i', $active_user_id);
+		$errno = $this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+	}
+
+
+
+	public function delete_from_can_insert_into_field($userID){
+		$db= $this->get_db_connection();
+		$stmt = $db->prepare('DELETE FROM can_insert_into_field
+											WHERE can_insert_into_field.user_id = ?');
+		$stmt->bind_param('i', $userID);
+		$errno =$this->execute_stmt_without_result($stmt);
+		$db->close();
+		return $errno;
+
+	}
+
+	public function insert_into_can_see_field($userID, $fieldID, $canAlter){
+		$db=$this->get_db_connection();
+		$stmt = $db->prepare('INSERT INTO can_see_field(user_id, field_id, can_alter) VALUES (?, ?, ?)');
+		$stmt->bind_param('iii', $userID, $fieldID, $canAlter);
+		$errno = $this->execute_stmt_without_result($stmt);
+		return $errno;
+	}
+
+	public function delete_from_can_see_field($userID){
+		$db=$this->get_db_connection();
+		$stmt = $db ->prepare('DELETE FROM can_see_field WHERE user_id = ?');
+		$stmt->bind_param('i',$userID);
+		$errno = $this->execute_stmt_without_result($stmt);
+		return $errno;
+	}
+
+	public function update_can_see_field($userID, $fieldID, $canAlter){
+		$db=$this->get_db_connection();
+		$stmt = $db ->prepare('UPDATE can_see_field
+										SET can_alter=?
+										WHERE user_id=? AND field_id=?');
+		$stmt->bind_param('iii', $canAlter,$userID, $fieldID);
+		$errno= $this->execute_stmt_without_result($stmt);
+		return $errno;
+	}
+
+	public function insert_into_can_see_organisation($userID, $orgID, $priority, $canAlter){
+		$db= $this->get_db_connection();
+		$stmt = $db -> prepare(' INSERT INTO can_see_organisation (user_id, organisation_id, priority, can_alter)
+ 										VALUES(?,?,?,?)');
+		$stmt->bind_param('iiii', $userID, $orgID,$priority, $canAlter);
+		$errno=$this->execute_stmt_without_result($stmt);
+		return $errno;
+	}
+
+	public function delete_from_can_see_organisation($userID){
+		$db= $this->get_db_connection();
+		$stmt = $db->prepare('DELETE FROM can_see_organisation
+										WHERE user_id=?');
+		$stmt->bind_param('i', $userID);
+		$errno =$this->execute_stmt_without_result($stmt);
+		return $errno;
+	}
+
+	public function update_can_see_organisation($userID, $orgID, $priority, $canAlter){
+		$db= $this -> get_db_connection();
+		$stmt = $db ->prepare('UPDATE can_see_organisation
+										SET priority = ?, can_alter=?
+										WHERE user_id = ? AND organisation_id = ?');
+		$stmt ->bind_param('iiii', $priority, $canAlter, $userID, $orgID);
+		$errno =$this-> execute_stmt_without_result($stmt);
+		return $errno;
+
 	}
 
 

@@ -118,17 +118,20 @@ class FieldController extends AbstractController {
         $db_access = new DatabaseAccess();
         $stmt_string =
             'INSERT INTO
-                field(field_sid, name, reference_value, yellow_limit, red_limit, relational_flag)
-            VALUES(?, ?, ?, ?, ?, ?)';
+                field (field_sid, name, reference_value, yellow_limit, red_limit, relational_flag)
+            VALUES
+                (?, ?, ?, ?, ?, ?)';
         $sid = $this->get_max_sid() + 1;
         $db_access->prepare_stmt($stmt_string);
-        $db_access->bind_param("isiiii",
+        $db_access->bind_param(
+            'isiiii',
             $sid,
             $field['field_name'],
             $field['reference_value'],
             $field['yellow_limit'],
             $field['red_limit'],
-            $field['relational_flag']);
+            $field['relational_flag']
+        );
         $errno = $db_access->execute();
         $db_access->close_db();
         return $sid;
