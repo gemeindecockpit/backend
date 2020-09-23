@@ -15,9 +15,7 @@ class FieldController extends AbstractController {
             yellow_limit,
             red_limit,
             relational_flag
-        FROM view_fields_visible_for_user
-        WHERE user_id = ?
-        ';
+        FROM view_organisations_and_fields';
 
     public function __construct() {
         parent::__construct();
@@ -26,14 +24,18 @@ class FieldController extends AbstractController {
     /**
     * Constructs an array that contains the config for all fields visible for $user_id
     */
-    public function get_all($user_id) {
-        return AbstractController::execute_stmt($this->select_field_skeleton, 'i', $user_id);
+    public function get_all() {
+        $db_access = new DatabaseAccess();
+        $db_access->prepare_stmt($this->select_field_skeleton);
+        $query_result = $this->format_query_result($db_access->execute());
+        $db_access->close_db();
+        return $query_result;
     }
 
     public function get_field_by_id($user_id, $field_id) {
         $stmt = $this->select_field_skeleton;
-        $stmt .= ' AND field_id = ?';
-        return AbstractController::execute_stmt($stmt, 'ii', $user_id, $field_id);
+        $stmt .= ' WHERE field_id = ?';
+        return AbstractController::execute_stmt($stmt, 'i', $field_id);
     }
 
     /**
@@ -46,6 +48,20 @@ class FieldController extends AbstractController {
             $field_ids[] = $row['field_id'];
         }
         return $field_ids;
+    }
+
+    public function get_field_by_name($org_id, $field_name) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = $this->select_field_skeleton . ' WHERE organisation_id = ? AND field_name = ?';
+        $db_access->prepare_stmt($stmt_string);
+        $db_access->bind_param('is', $org_id, $field_name);
+        $query_result = $this->format_query_result($db_access->execute());
+        $db_access->close_db();
+        if(sizeof($query_result) == 1) {
+            return $query_result[0];
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -95,6 +111,54 @@ class FieldController extends AbstractController {
     */
     public function put_field_config(...$args) {
         $errno = $this->db_ops->insert_field_by_sid(...$args);
+        return $errno;
+    }
+
+    public function insert_field($field) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'INSERT INTO
+                field(field_sid, name, reference_value, yellow_limit, red_limit, relational_flag)
+            VALUES(?, ?, ?, ?, ?, ?)';
+        $sid = $this->get_max_sid() + 1;
+        $db_access->prepare_stmt($stmt_string);
+        $db_access->bind_param("isiiii",
+            $sid,
+            $field['field_name'],
+            $field['reference_value'],
+            $field['yellow_limit'],
+            $field['red_limit'],
+            $field['relational_flag']);
+        $errno = $db_access->execute();
+        $db_access->close_db();
+        return $sid;
+    }
+
+
+    public function get_max_sid(){
+        $db_access = new DatabaseAccess();
+        $db_access->prepare_stmt('SELECT max(field_sid) FROM field');
+        $result = $db_access->execute();
+        $max_sid=$result->fetch_array()[0];
+        $db_access->close_db();
+        return $max_sid;
+    }
+
+
+    public function delete_field($field_id){
+        $db_ops = new DatabaseOps();
+        $db_connection = $db_ops->get_db_connection();
+        $stmt = $db_connection->prepare('UPDATE field SET valid_to=CURDATE() WHERE sid=? AND valid_to IS NULL');
+        $stmt->bind_param("i",$field_id);
+        $errno = $db_ops->execute_stmt_without_result($stmt);
+        if($errno) {
+            $db_connection->close();
+            return $errno;
+        }
+        $stmt = $db_connection->prepare('DELETE FROM organisation_has_field WHERE field_id = ?');
+        $stmt->bind_param("i",$field_id);
+        $errno = $db_ops->execute_stmt_without_result($stmt);
+        $db_connection->close();
         return $errno;
     }
 

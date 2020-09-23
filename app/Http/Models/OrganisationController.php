@@ -21,21 +21,20 @@ class OrganisationController extends AbstractController
             nuts1,
             nuts2,
             nuts3
-        FROM view_organisation_visible_for_user
-        WHERE user_id = ?';
+        FROM view_organisation_visible_for_user';
 
     public function __construct()
     {
         parent::__construct();
     }
 
-    public function get_org_by_location($user_id, ...$args) {
+    public function get_org_by_location(...$args) {
         $db_access = new DatabaseAccess();
         $stmt_string = $this->select_org_skeleton;
-        $param_string = 'i';
+        $param_string = '';
         $num_args = sizeof($args);
         if($num_args > 0) {
-            $stmt_string .= ' AND nuts0 = ?';
+            $stmt_string .= ' WHERE nuts0 = ?';
             $param_string .= 's';
         }
         if($num_args > 1) {
@@ -58,33 +57,33 @@ class OrganisationController extends AbstractController
             $stmt_string .= ' AND organisation_name = ?';
             $param_string .= 's';
         }
-        return AbstractController::execute_stmt($stmt_string, $param_string, $user_id, ...$args);
+        return AbstractController::execute_stmt($stmt_string, $param_string, ...$args);
     }
 
-    public function get_org_by_unit($user_id, ...$args)
+    public function get_org_by_unit(...$args)
     {
         $stmt_string = $this->select_org_skeleton;
-        $param_string = 'i';
+        $param_string = '';
         if (sizeof($args) > 0) {
-            $stmt_string .= ' AND organisation_unit = ?';
+            $stmt_string .= ' WHERE organisation_unit = ?';
             $param_string .= 's';
         }
         if (sizeof($args) > 1) {
             $stmt_string .= ' AND organisation_name = ?';
             $param_string .= 's';
         }
-        return AbstractController::execute_stmt($stmt_string, $param_string, $user_id, ...$args);
+        return AbstractController::execute_stmt($stmt_string, $param_string, ...$args);
     }
 
-    public function get_org_by_id($user_id, ...$args)
+    public function get_org_by_id(...$args)
     {
         $stmt_string = $this->select_org_skeleton;
-        $param_string = 'i';
+        $param_string = '';
         if (sizeof($args) > 0) {
-            $stmt_string .= ' AND organisation_id = ?';
+            $stmt_string .= ' WHERE organisation_id = ?';
             $param_string .= 'i';
         }
-        return AbstractController::execute_stmt($stmt_string, $param_string, $user_id, ...$args);
+        return AbstractController::execute_stmt($stmt_string, $param_string, ...$args);
     }
 
     public function insert_organisation($organisation)
@@ -114,6 +113,18 @@ class OrganisationController extends AbstractController
     public function put_org_config(...$args)
     {
         $errno = $this->db_ops->update_organisation_by_id(...$args);
+        return $errno;
+    }
+
+    public function add_field($org_id, $field_id, $priority = 0) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'INSERT INTO
+                organisation_has_field (organisation_id, field_id, priority)
+            VALUES (?,?,?)';
+        $db_access->prepare_stmt($stmt_string);
+        $db_access->bind_param('iii', $org_id, $field_id, $priority);
+        $errno = $db_access->execute();
         return $errno;
     }
 
@@ -231,9 +242,10 @@ class OrganisationController extends AbstractController
     }
 
 
-    public function get_field_names($user_id, $org_id) {
+    public function get_fields($user_id, $org_id) {
         $stmt_string =
-            'SELECT view_organisations_and_fields.field_name
+            'SELECT view_organisations_and_fields.field_id,
+                    view_organisations_and_fields.field_name
             FROM view_organisations_and_fields
             JOIN can_see_organisation
                 ON view_organisations_and_fields.organisation_id = can_see_organisation.organisation_id
@@ -244,11 +256,11 @@ class OrganisationController extends AbstractController
             AND view_organisations_and_fields.organisation_id = ?
             ';
         $query_result = AbstractController::execute_stmt($stmt_string, 'ii', $user_id, $org_id);
-        $field_names = [];
+        $fields = [];
         foreach($query_result as $row) {
-            $field_names[] = $row['field_name'];
+            $fields[] = $row;
         }
-        return $field_names;
+        return $fields;
     }
 
     public function get_field_ids($user_id, $org_id) {
