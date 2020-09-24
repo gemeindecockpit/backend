@@ -8,5 +8,3 @@
 commit.sh
 composer.json
 composer.lock
-config/config.php
-/config

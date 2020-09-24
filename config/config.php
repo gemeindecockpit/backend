@@ -6,19 +6,22 @@
 # DEBUGMODE on or off
 # values true, false
 define('DEBUG_MODE', false);
-
+$localhost = false;
 # Access to MySQL Database
-/*
-define('DB_HOST', 'db01.kadzioch-media-it.de');
-define('DB_NAME', 'gemeindecockpit');
-define('DB_USER', 'gemeindecockpit');
-define('DB_USER_PASSWORD', '6ScY4IbCrqBMcxB8');
-*/
+if(!$localhost) {
+    define('DB_HOST', 'db01.kadzioch-media-it.de');
+    define('DB_NAME', 'gemeindecockpit');
+    define('DB_USER', 'gemeindecockpit');
+    define('DB_USER_PASSWORD', '6ScY4IbCrqBMcxB8');
+} else {
+    define('DB_HOST', 'localhost');
+    define('DB_NAME', 'gemeindecockpit');
+    define('DB_USER', 'root');
+    define('DB_USER_PASSWORD', 'root');
+}
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'gemeindecockpit');
-define('DB_USER', 'root');
-define('DB_USER_PASSWORD', 'root');
+
+
 
 # SALT value
 define('SALT', 'wevsvirus');
