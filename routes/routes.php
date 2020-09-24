@@ -24,11 +24,19 @@ return function (App $app) {
 
     $app->get('/config', \ConfigRouteController::class . ':home');
 
-    $app->get('/config/location[/{nuts0}[/{nuts1}[/{nuts2}[/{nuts3}[/{org_type}[/{org_name}]]]]]]',
+    $app->get('/config/location[/{nuts0}[/{nuts1}[/{nuts2}[/{nuts3}[/{org_name}]]]]]',
         \ConfigRouteController::class . ':get_org_by_location')->setName('conf'); //TESTED, verified for working
-    $app->get('/config/location/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{org_type}/{org_name}/{field_name}',
+    $app->get('/config/location/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{org_name}/{field_name}',
         \ConfigRouteController::class . ':get_field_by_org_location'); //TESTED, verified for working
 
+    $app->get('/config/organisation-type',
+        \ConfigRouteController::class . ':get_all_types');
+    $app->get('/config/organisation-type/{org_type}',
+        \ConfigRouteController::class . ':get_type');
+    $app->get('/config/organisation-type/{org_type}/{org_name}',
+        \ConfigRouteController::class . ':get_org_by_type');
+    $app->get('/config/organisation-type/{org_type}/{org_name}/{field_name}', #
+        \ConfigRouteController::class . ':get_field_by_org_type');
 
     $app->get('/config/organisation-group',
         \ConfigRouteController::class . ':get_org_by_group');
@@ -46,7 +54,6 @@ return function (App $app) {
 
     $app->get('/config/field',
         \ConfigRouteController::class . ':get_field');
-
     $app->get('/config/field/{field_id:[0-9]+}',
         \ConfigRouteController::class . ':get_field_by_id');
 

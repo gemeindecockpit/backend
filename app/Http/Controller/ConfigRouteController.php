@@ -44,8 +44,10 @@ class ConfigRouteController extends RouteController
     public function get_org_by_location($request, $response, $args)
     {
         $org_controller = new OrganisationController();
-        $args_indexed = RouteController::assoc_array_to_indexed($args);
         $user_controller = new UserController();
+        $nuts_controller = new NutsController();
+
+        $args_indexed = RouteController::assoc_array_to_indexed($args);
 
         $query_result = $org_controller->get_org_by_location(...$args_indexed);
         $orgs = [];
@@ -71,26 +73,13 @@ class ConfigRouteController extends RouteController
         }
 
         $num_args = sizeof($args);
-        switch ($num_args) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-                $nuts_controller = new NutsController();
-                $next_nuts_layer = 'nuts' . $num_args;
-                $links[$next_nuts_layer] = [];
-                $next_nuts_codes = $nuts_controller->get_next_NUTS_codes($_SESSION['user_id'], ...$args_indexed);
-                foreach ($next_nuts_codes as $nuts_code) {
-                    $links[$next_nuts_layer][] = $links['self'] . '/' . rawurlencode($nuts_code);
-                }
-                break;
-            case 4:
-                $links['organisation_types'] = [];
-                $organisation_types = $org_controller->get_organisation_types($_SESSION['user_id'], ...$args_indexed);
-                foreach($organisation_types as $type) {
-                    $links['organisation_types'][] = $links['self'] . '/' . rawurlencode($type);
-                }
-                break;
+        if($num_args < 4) {
+            $next_nuts_layer = 'nuts' . $num_args;
+            $links[$next_nuts_layer] = [];
+            $next_nuts_codes = $nuts_controller->get_next_NUTS_codes($_SESSION['user_id'], ...$args_indexed);
+            foreach ($next_nuts_codes as $nuts_code) {
+                $links[$next_nuts_layer][] = $links['self'] . '/' . rawurlencode($nuts_code);
+            }
         }
 
         $json_array['links'] = $links;
@@ -105,25 +94,166 @@ class ConfigRouteController extends RouteController
     * @param $request
     * @param $response
     * @param $args
-    *    Must include nuts0, nuts1, nuts2, nuts3, org_type, org_name and field_name
+    *    Must include nuts0, nuts1, nuts2, nuts3, org_name and field_name
     * @return Response
     *    The response body is a JSON with all fields associated with the organisation
     *    and links to the data for the fields
     */
     public function get_field_by_org_location($request, $response, $args)
     {
-        $fieldController = new FieldController();
+        $org_controller = new OrganisationController();
+        $field_controller = new FieldController();
+        $user_controller = new UserController();
+
+        $field_name = $args['field_name'];
+        unset($args['field_name']);
         $args_indexed = RouteController::assoc_array_to_indexed($args);
 
-        $json_array = $fieldController->get_config_for_field_by_full_link($_SESSION['user_id'], ...$args_indexed);
+        $orgs = $org_controller->get_org_by_location(...$args_indexed);
+
+        if(sizeof($orgs) == 0) {
+            $response->getBody()->write('Not found');
+            return $response->withStatus(500);
+        }
+
+        $org_id = $orgs[0]['organisation_id'];
+
+        $field = $field_controller->get_field_by_name($org_id, $field_name);
+        if(sizeof($field) == 0) {
+            $response->getBody()->write('Not found');
+            return $response->withStatus(500);
+        }
+
+        if(!$user_controller->can_see_organisation($_SESSION['user_id'], $org_id)
+            || !$user_controller->can_see_field($_SESSION['user_id'], $field['field_id']))
+        {
+            $response->getBody()->write('Access denied');
+            return $response->withStatus(403);
+        }
+
+        $args_indexed[] = $field_name;
+        $links['self'] = RouteController::get_link('config', 'location', ...$args_indexed);
+        $links['data'] = RouteController::get_link('data', 'field', $field['field_id']);
+        $field['links'] = $links;
+
+        $response->getBody()->write(json_encode($field));
+        return $response->withHeader('Content-type', 'application/json');
+    }
+
+    //////////////////////////////////////////////////////////////
+    ////////////////ORGANISTAION-TYPE/////////////////////////////////////
+
+    public function get_all_types($request, $response, $args) {
+        $org_controller = new OrganisationController();
+        $user_controller = new UserController();
+        $query_result = $org_controller->get_all();
+        $orgs = [];
+        foreach($query_result as $org) {
+            if($user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
+                $orgs[] = $org;
+                $links['organistaions'][] = RouteController::get_link(
+                    'config',
+                    'organisation-type',
+                    $org['organisation_type'],
+                    $org['organisation_name']
+                );
+            }
+        }
+        $types = $org_controller->get_organisation_types($_SESSION['user_id']);
+
+        $links['self'] = RouteController::get_link('config', 'organisation-type');
+        foreach($types as $type) {
+            $links['organisation_types'][] = RouteController::get_link('config', 'organisation-type', $type);
+        }
+        $json_array = array('organisations' => $orgs, 'links' => $links);
 
         $response->getBody()->write(json_encode($json_array));
         return $response->withHeader('Content-type', 'application/json');
     }
 
+    public function get_type($request, $response, $args) {
+        $org_controller = new OrganisationController();
+        $user_controller = new UserController();
+
+        if(!$org_type = $org_controller->get_type_by_name($args['org_type']))
+            return $response->withStatus(500);
+        if(!$user_controller->can_see_type($_SESSION['user_id'], $org_type['organisation_type_id']))
+            return $response->withStatus(403);
+        $links['self'] = RouteController::get_link('config', 'organisation-type', $args['org_type']);
+
+        $query_result = $org_controller->get_all_orgs_by_type($args['org_type']);
+        $orgs = [];
+        foreach($query_result as $org) {
+            if($user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
+                $orgs[] = $org;
+                $links['organistaions'][] = RouteController::get_link('config', 'organisation-type', $args['org_type'], $org['organisation_name']);
+            }
+        }
+        $org_type['organisations'] = $orgs;
+        $org_type['links'] = $links;
+
+        $response->getBody()->write(json_encode($org_type));
+        return $response->withHeader('Content-type', 'application/json');
+    }
+
+    public function get_org_by_type($request, $response, $args) {
+        $org_controller = new OrganisationController();
+        $user_controller = new UserController();
+
+        if(!$org = $org_controller->get_org_by_type($args['org_type'], $args['org_name'])) {
+                return $response->withStatus(500);
+        }
+        $org['fields'] = $org_controller->get_fields($_SESSION['user_id'], $orgs[$i]['organisation_id']);
+        $links['self'] = RouteController::get_link('config', 'organistaion-type', $args['org_type'], $args['org_name']);
+        $links['data'] = RouteController::get_link('data', 'organistaion-type', $args['org_type'], $args['org_name']);
+        foreach($org['fields'] as $field) {
+            $links['fields'][] = RouteController::get_link('config', 'organistaion-type', $args['org_type'], $args['org_name'], $field['field_name']);
+        }
+        $response->getBody()->write(json_encode($org));
+        return $response->withHeader('Content-type', 'application/json');
+    }
+
+    public function get_field_by_org_type($request, $response, $args) {
+        $org_controller = new OrganisationController();
+        $field_controller = new FieldController();
+        $user_controller = new UserController();
+
+        $orgs = $org_controller->get_org_by_type($args['org_type'], $args['org_name']);
+        if(sizeof($orgs) == 0) {
+            return $response->getBody()->write('No organisation found');
+        } else {
+            $org = $orgs[0];
+        }
+        if(!$user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
+            $response->getBody()->write('Access denied');
+            return $response->withStatus(403);
+        }
+
+        if(!$field = $field_controller->get_field_by_name($org['organisation_id'], $args['field_name'])) {
+            $response->getBody()->write('Field not found or field name is ambiguous');
+            return $response->withStatus(403);
+        }
+        if(!$user_controller->can_see_field($_SESSION['user_id'], $field['field_id'])) {
+            $response->getBody()->write('Access denied');
+            return $response->withStatus(403);
+        }
+
+        $links['self'] = RouteController::get_link(
+            'config',
+            'organisation-type',
+            $args['org_type'],
+            $args['org_name'],
+            $args['field_name']
+        );
+        $links['data'] = RouteController::get_link('data', 'field', $field['field_id']);
+        $field['links'] = $links;
+
+        $response->getBody()->write(json_encode($field));
+        return $response->withHeader('Content-type', 'application/json');
+    }
 
     //////////////////////////////////////////////////////////////
-    ////////////////ORGANISTAION-group/////////////////////////////////////
+    ////////////////ORGANISTAION-GROUP/////////////////////////////////////
 
 
     public function get_org_group($request, $response, $args) {
@@ -139,10 +269,15 @@ class ConfigRouteController extends RouteController
             return $response->withStatus(403);
         }
         $links['self'] = RouteController::get_link('config', 'organisation-group', $args['org_group']);
-        $orgs = $org_controller->get_org_by_group($_SESSION['user_id'], $args['org_group']);
-        foreach ($orgs as $org) {
-            $links['organisations'][] = ConfigRouteController::get_org_group_link($org);
+        $query_result = $org_controller->get_org_by_group($args['org_group']);
+        $orgs = [];
+        foreach($query_result as $org) {
+            if($user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
+                $orgs[] = $org;
+                $links['organistaions'][] = RouteController::get_link('config', 'organisation-group', $args['org_group'], $org['organisation_name']);
+            }
         }
+        $json_array['organisations'] = $orgs;
         $json_array['links'] = $links;
 
         $response->getBody()->write(json_encode($json_array));
@@ -211,7 +346,8 @@ class ConfigRouteController extends RouteController
         }
 
         if(!$field = $field_controller->get_field_by_name($org['organisation_id'], $args['field_name'])) {
-            return $response->getBody()->write('Field not found or field name is ambiguous');
+            $response->getBody()->write('Field not found or field name is ambiguous');
+            return $response->withStatus(403);
         }
         if(!$user_controller->can_see_field($_SESSION['user_id'], $field['field_id'])) {
             $response->getBody()->write('Access denied');
@@ -275,8 +411,27 @@ class ConfigRouteController extends RouteController
 
     public function get_field_by_org_id($request, $response, $args)
     {
-        $args['URI'] = $_SERVER['REQUEST_URI'];
-        $response->getBody()->write(json_encode($args));
+        $field_controller = new FieldController();
+        $user_controller = new UserController();
+
+
+        if(!$field = $field_controller->get_field_by_name($args['org_id'], $args['field_name'])) {
+            $response->getBody()->write('Not found');
+            return $response->withStatus(500);
+        }
+
+        if(!$user_controller->can_see_organisation($_SESSION['user_id'], $args['org_id'])
+            || !$user_controller->can_see_field($_SESSION['user_id'], $field['field_id']))
+        {
+            $response->getBody()->write('Access denied');
+            return $response->withStatus(403);
+        }
+
+        $links['self'] = RouteController::get_link('config', 'organisation', $args['org_id'], $args['field_name']);
+        $links['data'] = RouteController::get_link('data', 'field', $field['field_id']);
+        $field['links'] = $links;
+
+        $response->getBody()->write(json_encode($field));
         return $response->withHeader('Content-type', 'application/json');
     }
 

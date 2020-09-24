@@ -9,13 +9,13 @@ class FieldController extends AbstractController {
 
     private $select_field_skeleton =
         'SELECT
-            field_id,
-            field_name,
-            reference_value,
-            yellow_limit,
-            red_limit,
-            relational_flag
-        FROM field';
+            view_latest_field.field_id as field_id,
+            view_latest_field.field_name as field_name,
+            view_latest_field.reference_value as reference_value,
+            view_latest_field.yellow_limit as yellow_limit,
+            view_latest_field.red_limit as red_limit,
+            view_latest_field.relational_flag as relational_flag
+        FROM view_latest_field';
 
     public function __construct() {
         parent::__construct();
@@ -52,7 +52,13 @@ class FieldController extends AbstractController {
 
     public function get_field_by_name($org_id, $field_name) {
         $db_access = new DatabaseAccess();
-        $stmt_string = $this->select_field_skeleton . ' WHERE organisation_id = ? AND field_name = ?';
+        $stmt_string = $this->select_field_skeleton;
+        $stmt_string .=
+            ' JOIN view_organisations_and_fields
+                ON view_latest_field.field_id = view_organisations_and_fields.field_id
+            WHERE organisation_id = ?
+            AND view_latest_field.field_name = ?
+            ';
         $db_access->prepare($stmt_string);
         $db_access->bind_param('is', $org_id, $field_name);
         $query_result = $this->format_query_result($db_access->execute());
@@ -73,16 +79,8 @@ class FieldController extends AbstractController {
     *   Returns the formatted JSON array with the fields and links to further resources
     */
     public function get_config_for_field_by_full_link($user_id, ...$args) {
-        $query_result = $this->db_ops->get_config_for_field_by_full_link($user_id, ...$args);
-        $query_result = $this->format_query_result($query_result);
-
-        $self_link = $this->get_link('config', ...$args);
-        $data_link = $this->get_link('data', ...$args);
-
-        $next_entity_types = ['data'];
-        $next_entities = array($data_link);
-
-        return $this->format_json($self_link, $query_result, $next_entity_types, $next_entities);
+        $db_access = new DatabaseAccess();
+        $stmt_string = $this->select_field_skeleton;
     }
 
     /**
