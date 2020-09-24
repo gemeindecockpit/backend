@@ -1,15 +1,21 @@
 <?php
+
+//all of this should be put in a seperate file under bootstrap
+
 declare(strict_types=1);
 
-use App\Application\Handlers\HttpErrorHandler;
-use App\Application\Handlers\ShutdownHandler;
-use App\Application\ResponseEmitter\ResponseEmitter;
+use App\Exceptions\HttpErrorHandler;
+use App\Exceptions\ShutdownHandler;
+use App\Http\Middleware\SessionMiddleware;
+use App\Http\ResponseEmitter;
 use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
-require_once(__DIR__ . '/../app/config.php');
+require_once(__DIR__ . '/../config/config.php');
+
+//$_SESSION['user_id'] = 4;
 
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
@@ -39,11 +45,11 @@ $app = AppFactory::create();
 $callableResolver = $app->getCallableResolver();
 
 // Register middleware
-$middleware = require __DIR__ . '/../app/middleware.php';
+$middleware = require __DIR__ . '/../app/Http/Middleware/middleware.php';
 $middleware($app);
 
 // Register routes
-$routes = require __DIR__ . '/../app/routes.php';
+$routes = require __DIR__ . '/../routes/routes.php';
 $routes($app);
 
 /** @var bool $displayErrorDetails */
@@ -53,6 +59,7 @@ $displayErrorDetails = $container->get('settings')['displayErrorDetails'];
 $serverRequestCreator = ServerRequestCreatorFactory::create();
 $request = $serverRequestCreator->createServerRequestFromGlobals();
 
+
 // Create Error Handler
 $responseFactory = $app->getResponseFactory();
 $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
@@ -61,13 +68,17 @@ $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
 $shutdownHandler = new ShutdownHandler($request, $errorHandler, $displayErrorDetails);
 register_shutdown_function($shutdownHandler);
 
-// Add Routing Middleware
-$app->addRoutingMiddleware();
+
 
 // Add Error Middleware
 $errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, false, false);
 $errorMiddleware->setDefaultErrorHandler($errorHandler);
 
+//Use default behaviour of sessions
+session_start();
+
+// Add Routing Middleware
+$app->addRoutingMiddleware();
 // Run App & Emit Response
 $response = $app->handle($request);
 $responseEmitter = new ResponseEmitter();
