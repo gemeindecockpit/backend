@@ -237,7 +237,6 @@ class DataRouteController extends RouteController {
            $response->getBody()->write($errno);
            return $response->withStatus(500);
        }
-       $response->getBody()->write(json_encode($data));
        return $response->withStatus(200);
    }
 }

@@ -59,10 +59,6 @@ class OrganisationController extends AbstractController
             $param_string .= 's';
         }
         if($num_args > 4) {
-            $stmt_string .= ' AND organisation_type = ?';
-            $param_string .= 's';
-        }
-        if($num_args > 5) {
             $stmt_string .= ' AND organisation_name = ?';
             $param_string .= 's';
         }
@@ -82,6 +78,32 @@ class OrganisationController extends AbstractController
             $param_string .= 's';
         }
         return AbstractController::execute_stmt($stmt_string, $param_string, ...$args);
+    }
+
+    public function get_all_orgs_by_type($org_type) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = $this->select_org_skeleton;
+        $stmt_string .= ' WHERE organisation_type = ?';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('s', $org_type);
+        $query_result = $this->format_query_result($db_access->execute());
+        $db_access->close();
+        return $query_result;
+    }
+
+    public function get_org_by_type($org_type, $org_name) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = $this->select_org_skeleton;
+        $stmt_string .= ' WHERE organisation_type = ? AND organistaion_name = ?';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('ss', $org_type, $org_name);
+        $query_result = $this->format_query_result($db_access->execute());
+        $db_access->close();
+        if(sizeof($query_result) == 1) {
+            return $query_result[0];
+        } else {
+            return false;
+        }
     }
 
     public function get_org_by_id(...$args)
@@ -287,17 +309,13 @@ class OrganisationController extends AbstractController
     }
 
 
-    public function get_organisation_types(...$args) {
+    public function get_organisation_types($user_id) {
         $stmt_string =
             'SELECT DISTINCT(organisation_type)
             FROM view_organisation_visible_for_user
             WHERE user_id = ?
-            AND nuts0 = ?
-			AND nuts1 = ?
-			AND nuts2 = ?
-			AND nuts3 = ?
             ';
-        $query_result = AbstractController::execute_stmt($stmt_string, 'issss', ...$args);
+        $query_result = AbstractController::execute_stmt($stmt_string, 'i', $user_id);
         $types = [];
         foreach($query_result as $row) {
             $types[] = $row['organisation_type'];
