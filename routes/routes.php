@@ -9,7 +9,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 
-foreach (glob('./../app/http/Controller/*.php') as $filename) {
+foreach (glob(__DIR__ . '/../app/http/Controller/*.php') as $filename) {
     require_once($filename);
 }
 
