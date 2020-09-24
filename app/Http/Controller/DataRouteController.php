@@ -162,34 +162,6 @@ class DataRouteController extends RouteController {
    }
 
 
-   /**
-   * Handles the GET /data/{nuts0}/{nuts1}/{nuts2}/{nuts3}/{org_type}/{org_name}/{field_name} endpoint
-   * The response contains the data of the field
-   * The timeframe is specified by '?last=x'
-   * can be either num_of_days, 'all' or nothing
-   * @param $request
-   * @param $response
-   * @param $args
-   *    Must include nuts0, nuts1, nuts2, nuts3, org_type, org_name and field_name
-   */
-   public function get_org_full_link_field_name($request, $response, $args) {
-       $data_controller = new DataController();
-       $args_indexed = assoc_array_to_indexed($args);
-
-       $query_parameters = $request->getQueryParams();
-       if(isset($query_parameters['last'])) {
-           $last = $query_parameters['last'];
-       } else {
-           $last = 'latest';
-       }
-
-       $json_array = $data_controller->get_data_by_org_link_field_name($_SESSION['user_id'], $last, ...$args_indexed);
-
-       $response->getBody()->write(json_encode($json_array));
-       return $response->withHeader('Content-type', 'application/json');
-   }
-
-
    public function post_org_data($request, $response, $args) {
        $data_controller = new DataController();
        $org_controller = new OrganisationController();

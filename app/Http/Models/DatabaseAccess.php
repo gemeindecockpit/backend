@@ -12,8 +12,6 @@ class DatabaseAccess
     private $db_connection;
 
     private $stmt;
-    private $params;
-    private $param_string;
 
 
     public function __construct()
@@ -24,12 +22,10 @@ class DatabaseAccess
         return;
     }
 
-    public function prepare_stmt($stmt_string)
+    public function prepare($stmt_string)
     {
         if ($this->stmt) {
             $this->stmt->close();
-            $this->params = [];
-            $this->param_string = '';
         }
         if ($this->stmt = $this->db_connection->prepare($stmt_string)) {
             return true;
@@ -37,12 +33,6 @@ class DatabaseAccess
             $this->db_connection->close();
             return false;
         }
-    }
-
-    public function add_param($type, $value)
-    {
-        $this->param_string .= $type;
-        $this->params[] = $value;
     }
 
     public function bind_param($param_string, ...$params)
@@ -69,13 +59,19 @@ class DatabaseAccess
             $result = $this->stmt->errno;
         }
 
-        $this->params = [];
-        $this->param_string = '';
-
         return $result;
     }
 
-    public function close_db()
+    public function get_insert_id() {
+        return $this->stmt->insert_id;
+    }
+
+    public function get_error() {
+        return $this->stmt->error;
+    }
+
+
+    public function close()
     {
         if($this->stmt) {
             $this->stmt->close();

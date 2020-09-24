@@ -18,8 +18,8 @@ abstract class AbstractController
     protected function execute_stmt($stmt_string, $param_string, ...$args)
     {
         $db_access = new DatabaseAccess();
-        $no_error = $db_access->prepare_stmt($stmt_string);
-        if ($no_error) {
+        $no_error = $db_access->prepare($stmt_string);
+        if ($no_error && sizeof($args) > 0) {
             $no_error = $db_access->bind_param($param_string, ...$args);
         }
 
@@ -37,7 +37,7 @@ abstract class AbstractController
             $result[] = $row;
         }
 
-        $db_access->close_db();
+        $db_access->close();
 
         return $result;
     }
@@ -66,19 +66,6 @@ abstract class AbstractController
         array_walk_recursive($args, [$this, 'encode_items_url']);
         return $_SERVER['SERVER_NAME'] . '/' . implode('/', $args);
     }
-
-    /**
-    * Creates the array that is latter encoded as a JSON
-    * @param $self_link
-    *   The link to the current resource
-    * @param $query_result
-    *   The current resource
-    * @param $next_entity_types
-    *   The types of resources that are linked in the JSON
-    * @param $next_entities
-    *   The resources that are linked in the JSON
-    */
-    abstract protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []);
 
     public function encode_items_url(&$item, $key)
     {

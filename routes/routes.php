@@ -30,14 +30,14 @@ return function (App $app) {
         \ConfigRouteController::class . ':get_field_by_org_location'); //TESTED, verified for working
 
 
-    $app->get('/config/organisation-unit',
-        \ConfigRouteController::class . ':get_org_by_unit');
-    $app->get('/config/organisation-unit/{org_unit}',
-        \ConfigRouteController::class . ':get_org_unit');
-    $app->get('/config/organisation-unit/{org_unit}/{org_name}',
-        \ConfigRouteController::class . ':get_org_by_unit');
-    $app->get('/config/organisation-unit/{org_unit}/{org_name}/{field_name}', #
-        \ConfigRouteController::class . ':get_field_by_org_unit');
+    $app->get('/config/organisation-group',
+        \ConfigRouteController::class . ':get_org_by_group');
+    $app->get('/config/organisation-group/{org_group}',
+        \ConfigRouteController::class . ':get_org_group');
+    $app->get('/config/organisation-group/{org_group}/{org_name}',
+        \ConfigRouteController::class . ':get_org_by_group');
+    $app->get('/config/organisation-group/{org_group}/{org_name}/{field_name}', #
+        \ConfigRouteController::class . ':get_field_by_org_group');
 
     $app->get('/config/organisation[/{org_id:[0-9]+}]',
         \ConfigRouteController::class . ':get_org_by_id');
@@ -72,22 +72,14 @@ return function (App $app) {
         \DataRouteController::class . ':get_data_by_org');
 
     $app->get('/data/field',
-        \DataRouteController::class . ':get_field_id_links'); // TODO: NOT WORKINg
+        \DataRouteController::class . ':get_field_id_links');
     $app->get('/data/field/{field_id:[0-9]+}',
-        \DataRouteController::class . ':get_data_by_field'); // TODO: NOT WORKING
-
-
+        \DataRouteController::class . ':get_data_by_field');
 
     $app->get('/data/organisation/{org_id:[0-9]+}/{year:[1|2|3][0-9][0-9][0-9]}[/{month:[0-1][0-9]}[/{day:[0-3][0-9]}]]',
         \DataRouteController::class . ':get_data_by_org_and_date');
     $app->get('/data/field/{field_id:[0-9]+}/{year:[1|2|3][0-9][0-9][0-9]}[/{month:[0-1][0-9]}[/{day:[0-3][0-9]}]]',
         \DataRouteController::class . ':get_data_by_field_and_date');
-
-
-    $app->get('/data/organisation/{org_id:[0-9]+}/{field_name}',
-        \DataRouteController::class . ':get_org_full_link_field_name'); //TESTED, verified for working
-    $app->get('/data/organisation/{org_id:[0-9]+}/{field_name}/{year:[1|2|3][0-9][0-9][0-9]}[/{month:[0-1][0-9]}[/{day:[0-3][0-9]}]]',
-        \DataRouteController::class . ':get_org_full_link_field_name_date');
 
 
     $app->post('/data/organisation/{org_id:[0-9]+}',

@@ -15,7 +15,7 @@ class FieldController extends AbstractController {
             yellow_limit,
             red_limit,
             relational_flag
-        FROM view_organisations_and_fields';
+        FROM field';
 
     public function __construct() {
         parent::__construct();
@@ -26,9 +26,9 @@ class FieldController extends AbstractController {
     */
     public function get_all() {
         $db_access = new DatabaseAccess();
-        $db_access->prepare_stmt($this->select_field_skeleton);
+        $db_access->prepare($this->select_field_skeleton);
         $query_result = $this->format_query_result($db_access->execute());
-        $db_access->close_db();
+        $db_access->close();
         return $query_result;
     }
 
@@ -53,10 +53,10 @@ class FieldController extends AbstractController {
     public function get_field_by_name($org_id, $field_name) {
         $db_access = new DatabaseAccess();
         $stmt_string = $this->select_field_skeleton . ' WHERE organisation_id = ? AND field_name = ?';
-        $db_access->prepare_stmt($stmt_string);
+        $db_access->prepare($stmt_string);
         $db_access->bind_param('is', $org_id, $field_name);
         $query_result = $this->format_query_result($db_access->execute());
-        $db_access->close_db();
+        $db_access->close();
         if(sizeof($query_result) == 1) {
             return $query_result[0];
         } else {
@@ -122,7 +122,9 @@ class FieldController extends AbstractController {
             VALUES
                 (?, ?, ?, ?, ?, ?)';
         $sid = $this->get_max_sid() + 1;
-        $db_access->prepare_stmt($stmt_string);
+        $db_access->prepare($stmt_string);
+        if(!isset($field['reference_value']))
+            $field['reference_value'] = null;
         $db_access->bind_param(
             'isiiii',
             $sid,
@@ -133,17 +135,17 @@ class FieldController extends AbstractController {
             $field['relational_flag']
         );
         $errno = $db_access->execute();
-        $db_access->close_db();
+        $db_access->close();
         return $sid;
     }
 
 
     public function get_max_sid(){
         $db_access = new DatabaseAccess();
-        $db_access->prepare_stmt('SELECT max(field_sid) FROM field');
+        $db_access->prepare('SELECT max(field_sid) FROM field');
         $result = $db_access->execute();
         $max_sid=$result->fetch_array()[0];
-        $db_access->close_db();
+        $db_access->close();
         return $max_sid;
     }
 

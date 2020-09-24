@@ -122,7 +122,7 @@ class DataController extends AbstractController {
         if($last == 'latest') {
             $stmt_string .= ' LIMIT 1';
         }
-        $db_access->prepare_stmt($stmt_string);
+        $db_access->prepare($stmt_string);
         $data = [];
         foreach($field_ids as $id) {
             if($last !== 'latest' && $last !== 'all')
@@ -134,7 +134,7 @@ class DataController extends AbstractController {
                 $data[] = $row;
             }
         }
-        $db_access->close_db();
+        $db_access->close();
         return $data;
     }
 
@@ -142,7 +142,7 @@ class DataController extends AbstractController {
         $db_access = new DatabaseAccess();
         $stmt_string = $this->select_data_skeleton;
         $stmt_string .= ' AND date = ?';
-        $db_access->prepare_stmt($stmt_string);
+        $db_access->prepare($stmt_string);
         $data = [];
         foreach($field_ids as $id) {
             $db_access->bind_param('is', $id, $day);
@@ -151,7 +151,7 @@ class DataController extends AbstractController {
                 $data[] = $row;
             }
         }
-        $db_access->close_db();
+        $db_access->close();
         return $data;
     }
 
@@ -162,7 +162,7 @@ class DataController extends AbstractController {
             ' AND date >= ?
             AND date < date_add(?, INTERVAL 1 MONTH)
             ORDER BY date DESC';
-        $db_access->prepare_stmt($stmt_string);
+        $db_access->prepare($stmt_string);
         $data = [];
         foreach($field_ids as $id) {
             $db_access->bind_param('iss', $id, $month, $month);
@@ -171,7 +171,7 @@ class DataController extends AbstractController {
                 $data[] = $row;
             }
         }
-        $db_access->close_db();
+        $db_access->close();
         return $data;
     }
 
@@ -182,7 +182,7 @@ class DataController extends AbstractController {
             ' AND date >= ?
             AND date < date_add(?, INTERVAL 1 YEAR)
             ORDER BY date DESC';
-        $db_access->prepare_stmt($stmt_string);
+        $db_access->prepare($stmt_string);
         $data = [];
         foreach($field_ids as $id) {
             $db_access->bind_param('iss', $id, $year, $year);
@@ -191,7 +191,7 @@ class DataController extends AbstractController {
                 $data[] = $row;
             }
         }
-        $db_access->close_db();
+        $db_access->close();
         return $data;
     }
 
@@ -385,13 +385,13 @@ class DataController extends AbstractController {
                 field_values (field_id, user_id, field_value, date)
             VALUES
                 (?,?,?,?)";
-        $db_access->prepare_stmt($stmt_string);
+        $db_access->prepare($stmt_string);
         $errno = null;
         foreach($data as $insert) {
             $db_access->bind_param('iiis', $insert['field_id'], $insert['user_id'], $insert['field_value'], $insert['date']);
             $errno = $db_access->execute();
         }
-        $db_access->close_db();
+        $db_access->close();
         return $errno;
     }
 

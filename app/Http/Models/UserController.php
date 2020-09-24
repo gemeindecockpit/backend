@@ -108,7 +108,7 @@ class UserController extends AbstractController {
      * @param $user_id
      * @param $permissions
      */
-    private function insert_permissions($user_id, $permissions) {
+    public function insert_permissions($user_id, $permissions) {
         foreach ($permissions as $perm => $perm_val) {
             switch ($perm) {
                 case 'can_create_organisation':
@@ -140,73 +140,80 @@ class UserController extends AbstractController {
         }
     }
 
-    public function can_insert_into_field($user_id, $field_id) {
-        $db_ops = new DatabaseOps();
-        $db_connection = $db_ops->get_db_connection();
-        $stmt = $db_connection->prepare('SELECT * FROM can_insert_into_field WHERE user_id = ? AND field_id=?');
-        $stmt->bind_param("ii", $user_id, $field_id);
-        $query_result = $db_ops->execute_select_stmt($stmt);
-        $db_connection->close();
-        return $query_result->num_rows > 0;
+
+
+    public function can_see_group($user_id, $group_id) {
+        $stmt_string =
+            'SELECT *
+            FROM organisation
+            JOIN can_see_organisation
+                ON organisation.id_organisation = can_see_organisation.organisation_id
+            JOIN organisation_group
+                ON organisation.organisation_group_id = organisation_group.id_organisation_group
+            WHERE can_see_organisation.user_id = ?
+            AND organisation_group.id_organisation_group = ?
+        ';
+        return $this->check_permission($stmt_string, 'ii', $user_id, $group_id);
     }
+
+    public function can_see_type($user_id, $type_id) {
+        $stmt_string =
+            'SELECT *
+            FROM organisation
+            JOIN can_see_organisation
+                ON organisation.id_organisation = can_see_organisation.organisation_id
+            JOIN organisation_type
+                ON organisation.organisation_type_id = organisation_type.id_organisation_type
+            WHERE can_see_organisation.user_id = ?
+            AND organisation_type.id_organisation_type = ?
+        ';
+        return $this->check_permission($stmt_string, 'ii', $user_id, $type_id);
+    }
+
+
+    public function can_see_organisation($user_id, $organisation_id){
+           $stmt_string = 'SELECT * FROM can_see_organisation WHERE user_id = ? AND organisation_id=?';
+           return $this->check_permission($stmt_string, 'ii', $user_id, $organisation_id);
+    }
+
+    public function can_alter_organisation($user_id, $organisation_id){
+           $stmt_string = 'SELECT * FROM can_see_organisation WHERE user_id = ? AND organisation_id=? AND can_alter=1 ';
+           return $this->check_permission($stmt_string, 'ii', $user_id, $organisation_id);
+    }
+
 
     public function can_see_field($user_id, $field_id) {
-        $db_ops = new DatabaseOps();
-        $db_connection = $db_ops->get_db_connection();
-        $stmt = $db_connection->prepare('SELECT * FROM can_see_field WHERE user_id = ? AND field_id=?');
-        $stmt->bind_param("ii", $user_id, $field_id);
-        $query_result = $db_ops->execute_select_stmt($stmt);
-        $db_connection->close();
-        return $query_result->num_rows > 0;
+        $stmt_string = 'SELECT * FROM can_see_field WHERE user_id = ? AND field_id=?';
+        return $this->check_permission($stmt_string, 'ii', $user_id, $field_id);
     }
 
-    public function can_see_organisation($user_id,$organisation_id){
-           $db_ops = new DatabaseOps();
-           $db_connection = $db_ops->get_db_connection();
-           $stmt = $db_connection->prepare('SELECT * FROM can_see_organisation WHERE user_id = ? AND organisation_id=?');
-           $stmt->bind_param("ii", $user_id, $organisation_id);
-           $query_result = $db_ops->execute_select_stmt($stmt);
-           $db_connection->close();
-           return $query_result->num_rows > 0;
+    public function can_alter_field($user_id, $field_id){
+       $stmt_string = 'SELECT * FROM can_see_field WHERE user_id = ? AND field_id=? AND can_alter=1 ';
+       return $this->check_permission($stmt_string, 'ii', $user_id, $field_id);
     }
 
-    public function can_alter_field($user_id,$field_id){
-       $db_ops = new DatabaseOps();
-       $db_connection = $db_ops->get_db_connection();
-       $stmt = $db_connection->prepare('SELECT * FROM can_see_field WHERE user_id = ? AND field_id=? AND can_alter=1 ');
-       $stmt->bind_param("ii", $user_id, $field_id);
-       $query_result = $db_ops->execute_select_stmt($stmt);
-       $db_connection->close();
-       return $query_result->num_rows > 0;
+    public function can_insert_into_field($user_id, $field_id) {
+        $stmt_string = 'SELECT * FROM can_insert_into_field WHERE user_id = ? AND field_id=?';
+        return $this->check_permission($stmt_string, 'ii', $user_id, $field_id);
     }
 
-    public function can_alter_organisation($user_id,$organisation_id){
-           $db_ops = new DatabaseOps();
-           $db_connection = $db_ops->get_db_connection();
-           $stmt = $db_connection->prepare('SELECT * FROM can_see_organisation WHERE user_id = ? AND organisation_id=? AND can_alter=1 ');
-           $stmt->bind_param("ii", $user_id, $organisation_id);
-           $query_result = $db_ops->execute_select_stmt($stmt);
-           $db_connection->close();
-           return $query_result->num_rows > 0;
-    }
 
     public function can_create_field($user_id) {
-        $db_ops = new DatabaseOps();
-        $db_connection = $db_ops->get_db_connection();
-        $stmt = $db_connection->prepare('SELECT * FROM can_create_field WHERE user_id = ?');
-        $stmt->bind_param("i", $user_id);
-        $query_result = $db_ops->execute_select_stmt($stmt);
-        $db_connection->close();
-        return $query_result->num_rows > 0;
+        $stmt_string = 'SELECT * FROM can_create_field WHERE user_id = ?';
+        return $this->check_permission($stmt_string, 'i', $user_id);
     }
 
     public function can_create_organisation($user_id) {
-        $db_ops = new DatabaseOps();
-        $db_connection = $db_ops->get_db_connection();
-        $stmt = $db_connection->prepare('SELECT * FROM can_create_organisation WHERE user_id = ?');
-        $stmt->bind_param("i", $user_id);
-        $query_result = $db_ops->execute_select_stmt($stmt);
-        $db_connection->close();
+        $stmt_string = 'SELECT * FROM can_create_organisation WHERE user_id = ?';
+        return $this->check_permission($stmt_string, 'i', $user_id);
+    }
+
+    private function check_permission($stmt_string, $param_string, ...$params) {
+        $db_access = new DatabaseAccess();
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param($param_string, ...$params);
+        $query_result = $db_access->execute();
+        $db_access->close();
         return $query_result->num_rows > 0;
     }
 
