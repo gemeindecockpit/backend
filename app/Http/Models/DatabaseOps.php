@@ -528,7 +528,8 @@ class DatabaseOps {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare(
 			'UPDATE user
-			SET userpassword=?
+			SET userpassword=?,
+					req_pw_reset=false
 			WHERE id_user=?'
 		);
 		$stmt->bind_param('si', $new_password, $user_id);
