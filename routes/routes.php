@@ -123,5 +123,6 @@ return function (App $app) {
     $app->map(['GET', 'PUT', 'DELETE', 'PATCH'], '/login', \LoginRouteController::class . ':wrong_method');
     $app->post('/logout', \LoginRouteController::class . ':logout')->setName('logout');
 
+
 }
 ?>

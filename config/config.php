@@ -6,6 +6,7 @@
 # DEBUGMODE on or off
 # values true, false
 define('DEBUG_MODE', false);
+define('DEV_MODE', true);
 $localhost = false;
 # Access to MySQL Database
 if(!$localhost) {
