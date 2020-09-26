@@ -12,13 +12,12 @@ class UserController extends AbstractController {
         parent::__construct();
     }
 
-    public function get_all($user_id) {
-        $query_result = $this->db_ops->get_all_users_visible_for_user($user_id);
-        $user_array = array();
-        while($row = $query_result->fetch_assoc()) {
-            $user_array[] = $row;
+    public function get_all_by_id($user_ids) {
+        $users = [];
+        foreach ($user_ids as $user_id) {
+            array_push($users, $this->get_user_by_id($user_id));
         }
-        return $user_array;
+        return $users;
     }
 
     /**
@@ -49,6 +48,36 @@ class UserController extends AbstractController {
         $this->insert_permissions($user_id, $permissions);
 
         return false;
+    }
+
+    public function get_user_by_id($user_id) {
+        $db_access = new DatabaseAccess();
+        $db_access->prepare(
+            'SELECT id_user, username, email, realname, active, req_pw_reset
+            FROM user 
+            WHERE id_user = ?'
+        );
+        $db_access->bind_param('i', $user_id);
+        $query_result = $db_access->execute();
+        $db_access->close();
+        return $this->format_query_result($query_result)[0];
+    }
+
+    public function get_permissions_by_id($user_id) {
+        $permissions['can_create_field'] = ($this->can_create_field($user_id) ? 1 : 0);
+        $permissions['can_create_organisation'] = ($this->can_create_organisation($user_id) ? 1 : 0);
+        $permissions['can_create_user'] = ($this->can_create_user($user_id) ? 1 : 0);
+        $permissions['can_insert_into_field'] = $this->get_can_insert_into_field($user_id);
+        $permissions['can_see_field'] = $this->get_can_see_field($user_id);
+        $permissions['can_see_user'] = $this->get_can_see_user($user_id);
+        $permissions['can_see_organisation'] = $this->get_can_see_organisation($user_id);
+        return $permissions;
+    }
+
+    public function get_user_with_permissions_by_id($user_id) {
+        $full_user = $this->get_user_by_id($user_id);
+        $full_user['permissions'] = $this->get_permissions_by_id($user_id);
+        return $full_user;
     }
 
     public function set_user_inactive($session_user_id, $user_id) {
@@ -153,7 +182,7 @@ class UserController extends AbstractController {
             WHERE can_see_organisation.user_id = ?
             AND organisation_group.id_organisation_group = ?
         ';
-        return $this->check_permission($stmt_string, 'ii', $user_id, $group_id);
+        return $this->exists_entry($stmt_string, 'ii', $user_id, $group_id);
     }
 
     public function can_see_type($user_id, $type_id) {
@@ -167,54 +196,103 @@ class UserController extends AbstractController {
             WHERE can_see_organisation.user_id = ?
             AND organisation_type.id_organisation_type = ?
         ';
-        return $this->check_permission($stmt_string, 'ii', $user_id, $type_id);
+        return $this->exists_entry($stmt_string, 'ii', $user_id, $type_id);
     }
 
 
     public function can_see_organisation($user_id, $organisation_id){
            $stmt_string = 'SELECT * FROM can_see_organisation WHERE user_id = ? AND organisation_id=?';
-           return $this->check_permission($stmt_string, 'ii', $user_id, $organisation_id);
+           return $this->exists_entry($stmt_string, 'ii', $user_id, $organisation_id);
     }
 
     public function can_alter_organisation($user_id, $organisation_id){
            $stmt_string = 'SELECT * FROM can_see_organisation WHERE user_id = ? AND organisation_id=? AND can_alter=1 ';
-           return $this->check_permission($stmt_string, 'ii', $user_id, $organisation_id);
+           return $this->exists_entry($stmt_string, 'ii', $user_id, $organisation_id);
     }
 
 
     public function can_see_field($user_id, $field_id) {
         $stmt_string = 'SELECT * FROM can_see_field WHERE user_id = ? AND field_id=?';
-        return $this->check_permission($stmt_string, 'ii', $user_id, $field_id);
+        return $this->exists_entry($stmt_string, 'ii', $user_id, $field_id);
     }
 
     public function can_alter_field($user_id, $field_id){
        $stmt_string = 'SELECT * FROM can_see_field WHERE user_id = ? AND field_id=? AND can_alter=1 ';
-       return $this->check_permission($stmt_string, 'ii', $user_id, $field_id);
+       return $this->exists_entry($stmt_string, 'ii', $user_id, $field_id);
     }
 
     public function can_insert_into_field($user_id, $field_id) {
         $stmt_string = 'SELECT * FROM can_insert_into_field WHERE user_id = ? AND field_id=?';
-        return $this->check_permission($stmt_string, 'ii', $user_id, $field_id);
+        return $this->exists_entry($stmt_string, 'ii', $user_id, $field_id);
     }
 
 
     public function can_create_field($user_id) {
         $stmt_string = 'SELECT * FROM can_create_field WHERE user_id = ?';
-        return $this->check_permission($stmt_string, 'i', $user_id);
+        return $this->exists_entry($stmt_string, 'i', $user_id);
     }
 
     public function can_create_organisation($user_id) {
         $stmt_string = 'SELECT * FROM can_create_organisation WHERE user_id = ?';
-        return $this->check_permission($stmt_string, 'i', $user_id);
+        return $this->exists_entry($stmt_string, 'i', $user_id);
     }
 
-    private function check_permission($stmt_string, $param_string, ...$params) {
+    private function can_create_user($user_id) {
+        $stmt_string = 'SELECT * FROM can_create_user WHERE user_id = ?';
+        return $this->exists_entry($stmt_string, 'i', $user_id);
+    }
+
+    public function can_see_user($user_id) {
+        $stmt_string = 'SELECT * FROM can_see_user WHERE passive_user_id = ?';
+        return $this->exists_entry($stmt_string, 'i', $user_id);
+    }
+
+    public function exists_user($user_id) {
+        $stmt_string = 'SELECT * FROM user WHERE id_user = ?';
+        return $this->exists_entry($stmt_string, 'i', $user_id);
+    }
+
+    private function exists_entry($stmt_string, $param_string, ...$params) {
         $db_access = new DatabaseAccess();
         $db_access->prepare($stmt_string);
         $db_access->bind_param($param_string, ...$params);
         $query_result = $db_access->execute();
         $db_access->close();
         return $query_result->num_rows > 0;
+    }
+
+    private function get_can_insert_into_field($user_id) {
+        $stmt_string = 'SELECT field_id FROM can_insert_into_field WHERE user_id = ?';
+        return $this->format_query_result_to_indexed_array($this->get_permissions($stmt_string, 'i', $user_id), true);
+    }
+
+    private function get_can_see_field($user_id) {
+        $stmt_string = 'SELECT field_id, can_alter FROM can_see_field WHERE user_id = ?';
+        return $this->format_query_result($this->get_permissions($stmt_string, 'i', $user_id));
+    }
+
+    private function get_can_see_user($user_id) {
+        $stmt_string = 'SELECT passive_user_id, can_alter FROM can_see_user WHERE active_user_id = ?';
+        return $this->format_query_result($this->get_permissions($stmt_string, 'i', $user_id));
+    }
+
+    public function get_can_see_user_ids($user_id) {
+        $stmt_string = 'SELECT passive_user_id FROM can_see_user WHERE active_user_id = ?';
+        return $this->format_query_result_to_indexed_array($this->get_permissions($stmt_string, 'i', $user_id));
+    }
+
+    private function get_can_see_organisation($user_id) {
+        $stmt_string = 'SELECT organisation_id, can_alter, priority FROM can_see_organisation WHERE user_id = ?';
+        return $this->format_query_result($this->get_permissions($stmt_string, 'i', $user_id));
+    }
+
+    private function get_permissions($stmt_string, $param_string, ...$params) {
+        $db_access = new DatabaseAccess();
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param($param_string, ...$params);
+        $query_result = $db_access->execute();
+        $db_access->close();
+        return $query_result;
     }
 
     protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {}

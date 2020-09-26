@@ -501,19 +501,6 @@ class DatabaseOps {
     	return $result;
     }
 
-
-	public function get_all_users_visible_for_user($user_id) {
-		$db = $this->get_db_connection();
-		$stmt = $db->prepare('SELECT passive_user_id  AS \'user_id\', username, email, realname, can_alter
-			FROM user JOIN can_see_user ON user.id_user = can_see_user.passive_user_id
-			WHERE active_user_id = ?');
-		$stmt->bind_param('i', $user_id);
-		$result = $this->execute_select_stmt($stmt);
-		$db->close();
-		return $result;
-	}
-
-
 	public function get_login_info($username) {
 		$db = $this->get_db_connection();
 		$stmt = $db->prepare('SELECT id_user, username, userpassword, salt FROM user WHERE username = ?');
