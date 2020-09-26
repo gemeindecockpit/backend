@@ -94,10 +94,10 @@ return function (App $app) {
     $app->post('/data/field/{field_id:[0-9]+}',
         \DataRouteController::class . ':post_field_data');
 
-    $app->get('/users', \UserRouteController::class . '/get_home');
+    $app->get('/users', \UserRouteController::class . ':get_home');
     $app->post('/users', \UserRouteController::class . ':post_home');
 
-    $app->get('/users/{id:[0-9]+}', \UserRouteController::class . '/get_user_id');
+    $app->get('/users/{id:[0-9]+}', \UserRouteController::class . ':get_user_id');
     $app->post('/users/{id:[0-9]+}', \UserRouteController::class . '/post_user_id');
     $app->put('/users/{id:[0-9]+}', \UserRouteController::class . ':put_user_id');
     $app->delete('/users/{id:[0-9]+}', \UserRouteController::class . ':delete_user_id');

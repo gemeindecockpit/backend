@@ -12,8 +12,15 @@ class UserRouteController extends RouteController {
    }
 
    public function get_home ($request, $response, $args) {
-       $response->getBody()->write('In Progress');
-       return $response;
+
+       $user_controller = new UserController();
+
+       $visible_users = $user_controller->get_can_see_user_ids($_SESSION['user_id']);
+
+       $visible_users = $user_controller->get_all_by_id($visible_users);
+
+       $response->getBody()->write(json_encode($visible_users));
+       return $this->return_response($response, ResponseCodes::OK);
    }
 
     /**
@@ -45,8 +52,17 @@ class UserRouteController extends RouteController {
     }
 
    public function get_user_id ($request, $response, $args) {
-       $response->getBody()->write('In Progress');
-       return $response;
+
+       $user_controller = new UserController();
+       if ($user_controller->exists_user($args['id']))
+           $this->return_response($response, ResponseCodes::NOT_FOUND);
+       if (!$user_controller->can_see_user($_SESSION['user_id']))
+           $this->return_response($response, ResponseCodes::FORBIDDEN);
+
+       $user = $user_controller->get_user_with_permissions_by_id($args['id']);
+
+       $response->getBody()->write(json_encode($user));
+       return $this->return_response($response, ResponseCodes::OK);
    }
 
    public function post_user_id ($request, $response, $args) {
