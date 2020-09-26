@@ -15,7 +15,7 @@ class UserController extends AbstractController {
     public function get_all_by_id($user_ids) {
         $users = [];
         foreach ($user_ids as $user_id) {
-            array_push($users, $this->get_user_by_id($user_id));
+            array_push($users, $this->get_user_with_permissions_by_id($user_id));
         }
         return $users;
     }

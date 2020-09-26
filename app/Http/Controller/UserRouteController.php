@@ -110,6 +110,16 @@ class UserRouteController extends RouteController {
         return $this->return_response($response, $errno);
    }
 
+   public function get_users_me($request, $response) {
+
+        $user_controller = new UserController();
+        $me = $user_controller->get_user_with_permissions_by_id($_SESSION['user_id']);
+        error_log('error where are you');
+        $response->getBody()->write(json_encode($me));
+        return $this->return_response($response, ResponseCodes::OK);
+
+   }
+
    public function put_users_me($request, $response, $args)
    {
 
