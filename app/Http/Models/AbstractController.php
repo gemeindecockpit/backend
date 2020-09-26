@@ -61,6 +61,27 @@ abstract class AbstractController
         return $result;
     }
 
+    /**
+     * Translates a db query result to an indexed array.
+     * Works if only one field is selected.
+     * @param $query_result
+     * @param bool $value_is_int result array items will be converted to int
+     * @return array
+     */
+    protected function format_query_result_to_indexed_array($query_result, $value_is_int = false) {
+        $query_result = $this->format_query_result($query_result);
+        $result = [];
+        foreach ($query_result as $object) {
+            foreach ($object as $key => $value) {
+                if ($value_is_int)
+                    $value = intval($value);
+                array_push($result, $value);
+
+            }
+        }
+        return $result;
+    }
+
     protected function get_link(...$args)
     {
         array_walk_recursive($args, [$this, 'encode_items_url']);
