@@ -457,7 +457,7 @@ class DatabaseOps {
 		$result = $this->execute_select_stmt($stmt);
 		$db->close();
 		$user = $result->fetch_assoc();
-		return count($user) > 0 ? $user['id'] : false;
+		return count($user) > 0 ? $user['id_user'] : false;
 	}
 
 	//returns the error code of the insert querry. 0 if there was no error
