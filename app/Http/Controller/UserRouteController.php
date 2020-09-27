@@ -76,14 +76,14 @@ class UserRouteController extends RouteController {
 
        if (!$this->check_put_users_id_request_format($parsed_request)) {
            return $this->return_response($response, ResponseCodes::BAD_REQUEST);
-       } else if ($parsed_request['id'] != $args['id']) {
+       } else if ($parsed_request['id_user'] != $args['id']) {
            return $this->return_response($response, ResponseCodes::NO_MATCH);
        }
 
        $user_controller = new UserController();
        $errno = $user_controller->modify_user(
            $_SESSION['user_id'],
-           $parsed_request['id'],
+           $parsed_request['id_user'],
            $parsed_request['username'],
            $parsed_request['email'],
            $parsed_request['realname'],
@@ -98,14 +98,14 @@ class UserRouteController extends RouteController {
    public function delete_user_id ($request, $response, $args) {
 
         $parsed_request = json_decode($request->getBody(), true);
-        if (!$this->check_correct_format($parsed_request, ['id' => false])) {
+        if (!$this->check_correct_format($parsed_request, ['id_user' => false])) {
             return $this->return_response($response, ResponseCodes::BAD_REQUEST);
-        } else if ($parsed_request['id'] != $args['id']) {
+        } else if ($parsed_request['id_user'] != $args['id']) {
             return $this->return_response($response, ResponseCodes::NO_MATCH);
         }
 
         $user_controller = new UserController();
-        $errno = $user_controller->set_user_inactive($_SESSION['user_id'], $parsed_request['id']);
+        $errno = $user_controller->set_user_inactive($_SESSION['user_id'], $parsed_request['id_user']);
 
         return $this->return_response($response, $errno);
    }
@@ -114,7 +114,7 @@ class UserRouteController extends RouteController {
 
         $user_controller = new UserController();
         $me = $user_controller->get_user_with_permissions_by_id($_SESSION['user_id']);
-        error_log('error where are you');
+
         $response->getBody()->write(json_encode($me));
         return $this->return_response($response, ResponseCodes::OK);
 
@@ -126,18 +126,18 @@ class UserRouteController extends RouteController {
        $parsed_request = json_decode($request->getBody(), true);
 
        if (!$this->check_correct_format($parsed_request, [
-           'id' => false,
+           'id_user' => false,
            'userpassword' => null
        ])) {
            $response->getBody()->write('Request not match required format.');
            return $response->withStatus(500);
-       } else if ($_SESSION['user_id'] != $parsed_request['id']) {
+       } else if ($_SESSION['user_id'] != $parsed_request['id_user']) {
            $response->getBody()->write('User of request does not match session user.');
            return $response->withStatus(500);
        }
 
        $user_controller = new UserController();
-       $errno = $user_controller->update_password($parsed_request['id'], $parsed_request['userpassword'], 'salty');
+       $errno = $user_controller->update_password($parsed_request['id_user'], $parsed_request['userpassword'], 'salty');
 
        return $this->return_response($response, $errno);
 
@@ -168,7 +168,7 @@ class UserRouteController extends RouteController {
      * @return bool
      */
     private function check_put_users_id_request_format($request) {
-        $request_format = ['id' => false, 'username' => null, 'email' => null, 'realname' => null, 'active' => false, 'req_pw_reset' => false,'permissions' => [
+        $request_format = ['id_user' => false, 'username' => null, 'email' => null, 'realname' => null, 'active' => false, 'req_pw_reset' => false,'permissions' => [
             'can_create_field' => false,
             'can_create_organisation' => false,
             'can_create_user' => false,

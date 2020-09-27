@@ -61,7 +61,10 @@ class RouteController {
             case ($errno === ResponseCodes::SERVER_ERROR):
                 return $response->withStatus(ResponseCodes::SERVER_ERROR);
             case ($errno == false || $errno === ResponseCodes::OK):
-                return $response->withStatus(ResponseCodes::OK);
+                return $response->withHeader(
+                    'Content-Type',
+                    'application/json'
+                )->withStatus(ResponseCodes::OK);
             case($errno === true):
                 return $response->withStatus(ResponseCodes::BAD_REQUEST);
             default:
