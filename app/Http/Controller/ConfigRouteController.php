@@ -19,7 +19,7 @@ class ConfigRouteController extends RouteController
         $json_array = array(
            'organisation' => $self . '/organisation',
            'location' => $self . '/location',
-           'organisation_group' => $self . '/organisation_group',
+           'organisation_group' => $self . '/organisation-group',
            'field' => $self . '/field',
            'links' => array('self' => $self)
        );
