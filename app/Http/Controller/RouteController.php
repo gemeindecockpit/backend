@@ -141,7 +141,12 @@ class RouteController {
     }
 
    public function home($request, $response, $args) {
-       $response->getBody()->write(json_encode(array('data' => 'http://litwinow.xyz/data', 'config' => 'http://litwinow.xyz/config', 'user' => 'http://litwinow.xyz/user', 'login' => 'http://litwinow.xyz/login', 'logout' => 'http://litwinow.xyz/logout')));
+       $response->getBody()->write(json_encode(array(
+         'data' => $_SERVER['SERVER_NAME'] .'/data',
+        'config' => $_SERVER['SERVER_NAME'] . '/config',
+         'user' => $_SERVER['SERVER_NAME'] . '/user',
+          'login' => $_SERVER['SERVER_NAME'] . '/login',
+           'logout' => $_SERVER['SERVER_NAME'] . '/logout')));
        return $response->withHeader('Content-type', 'application/json');
    }
 
