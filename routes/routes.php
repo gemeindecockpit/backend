@@ -78,6 +78,13 @@ return function (App $app) {
     $app->get('/data/organisation/{org_id:[0-9]+}',
         \DataRouteController::class . ':get_data_by_org');
 
+
+    $app->get('/data/organisation-group',
+        \DataRouteController::class . ':get_org_group_links');
+    $app->get('/data/organisation-group/{org_group}',
+        \DataRouteController::class . ':get_data_by_group');
+
+
     $app->get('/data/field',
         \DataRouteController::class . ':get_field_id_links');
     $app->get('/data/field/{field_id:[0-9]+}',
