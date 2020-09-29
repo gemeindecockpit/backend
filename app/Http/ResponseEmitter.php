@@ -15,7 +15,7 @@ class ResponseEmitter extends SlimResponseEmitter
     {
         $origin = '';
         // This variable should be set to the allowed host from which your API can be accessed with
-        if(DEV_MODE) {
+        if(CROSS_ORIGIN) {
           $origin = '*';
         } else {
             $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';

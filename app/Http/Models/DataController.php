@@ -114,7 +114,7 @@ class DataController extends AbstractController {
         $db_access = new DatabaseAccess();
         $stmt_string = $this->select_data_skeleton;
         $param_string = 'i';
-        if($last !== 'latest' && $last !== 'all') {
+        if($last !== 'latest' && $last !== 'all') { // TODO: What happens if gibberish input?
             $stmt_string .= ' AND date >= (date_add(curdate(), INTERVAL -? DAY))';
             $param_string .= 'i';
         }
