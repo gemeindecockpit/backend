@@ -16,7 +16,6 @@ class SVGRouteController extends RouteController {
 
     public function get_org_svg($request, $response, $args) {
       $user_con = new UserController();
-      error_log($_SERVER['DOCUMENT_ROOT'] . 'svg');
       $svg = ''; //encoded in base64
 
       //can the user see the org? $args['org_id']
