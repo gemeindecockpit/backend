@@ -29,7 +29,7 @@ class SVGRouteController extends RouteController {
           $response->getBody()->write(DEFAULT_SVG);
           return $response->withStatus(200,'no svg set');
         } else if (file_exists(SVG_PATH . '/' . $SVG_path['svg_path'])){
-          $svg = file_get_contents(SVG_PATH . $SVG_path);
+          $svg = file_get_contents(SVG_PATH .'/'. $SVG_path);
           $svg = base64_encode($svg);
           $response->getBody()->write($svg);
           return $response->withStatus(200);
