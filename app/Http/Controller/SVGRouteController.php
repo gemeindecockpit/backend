@@ -91,7 +91,7 @@ class SVGRouteController extends RouteController {
 
         // see http://php.net/manual/en/function.random-bytes.php
         $basename = bin2hex(random_bytes(8)) . $uploadedFile->getClientFilename();
-        $filename = sprintf('%s.8s', $basename);
+        $filename = sprintf('%s', $basename);
 
         $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
 
