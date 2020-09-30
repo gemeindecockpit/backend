@@ -75,6 +75,7 @@ class SVGRouteController extends RouteController {
       } else {
         return $response->withStatus(403,'no access to org or organisation does not exists');
       }
+      return $response->withStatus(200);
     }
 
     /**
