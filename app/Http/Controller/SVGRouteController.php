@@ -16,7 +16,7 @@ class SVGRouteController extends RouteController {
 
     public function get_org_svg($request, $response, $args) {
       $user_con = new UserController();
-
+      error_log($_SERVER['DOCUMENT_ROOT'] . 'svg');
       $svg = ''; //encoded in base64
 
       //can the user see the org? $args['org_id']
@@ -24,12 +24,11 @@ class SVGRouteController extends RouteController {
         $SVG_con = new SVGController();
         $SVG_path = $SVG_con->get_SVG_for_org($args['org_id']);
         //does the org have a svg ? if not than send the default svg back
-        error_log(json_encode($SVG_path['svg_path']));
         if ($SVG_path['svg_path'] == '0') {
           $response->getBody()->write(DEFAULT_SVG);
           return $response->withStatus(200,'no svg set');
         } else if (file_exists(SVG_PATH . '/' . $SVG_path['svg_path'])){
-          $svg = file_get_contents(SVG_PATH .'/'. $SVG_path);
+          $svg = file_get_contents(SVG_PATH .'/'. $SVG_path['svg_path']);
           $svg = base64_encode($svg);
           $response->getBody()->write($svg);
           return $response->withStatus(200);
