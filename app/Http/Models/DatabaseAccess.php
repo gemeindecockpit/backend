@@ -13,6 +13,11 @@ class DatabaseAccess
 
     private $stmt;
 
+    /**
+     * Instance for executing db operations
+     * @var null
+     */
+    private static $instance = null;
 
     public function __construct()
     {
@@ -20,6 +25,7 @@ class DatabaseAccess
         $this->params = [];
         $this->param_string = '';
         return;
+        $s = new DatabaseAccess();
     }
 
     public function prepare($stmt_string)
@@ -77,6 +83,17 @@ class DatabaseAccess
             $this->stmt->close();
         }
         return $this->db_connection->close();
+    }
+
+    /**
+     * Returns the instance of DatabaseAccess
+     * @return DatabaseAccess|null
+     */
+    public static function getInstance() {
+        if (self::$instance == null)
+            self::$instance = new DatabaseAccess();
+
+        return self::$instance;
     }
 }
 ?>
