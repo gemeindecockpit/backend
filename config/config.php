@@ -24,7 +24,7 @@ if(!$localhost) {
 
 
 #location of the folder for the svg icons
-define('SVG_PATH', '/home/svg');
+define('SVG_PATH', '/home/alx/svg');
 //in base64
 define('DEFAULT_SVG','PD94bWwgdmVyc2lvbj0iMS4wIj8+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBoZWlnaHQ9IjIwMCIgd2lkdGg9IjIwMCIgdmlld0JveD0iLTMwMCAtMzAwIDYwMCA2MDAiPgo8Y2lyY2xlIHN0eWxlPSJzdHJva2U6I0FBQTtzdHJva2Utd2lkdGg6MTA7ZmlsbDojRkZGIiByPSIyOTAiLz4KPHRleHQgc3R5bGU9InRleHQtYW5jaG9yOm1pZGRsZTtmaWxsOiM0NDQ7Zm9udC1zaXplOjI2MHB4O2ZvbnQtZmFtaWx5OnNhbnMtc2VyaWY7Zm9udC13ZWlnaHQ6bm9ybWFsOyIgdHJhbnNmb3JtPSJzY2FsZSguMykiPjx0c3BhbiB5PSItNTAiIHg9IjAiPktFSU4gQklMRDwvdHNwYW4+PHRzcGFuIHk9IjMzMCIgeD0iMCI+VkVSRsOcR0JBUjwvdHNwYW4+CjwvdGV4dD4KPC9zdmc+');
 define('MAX_SVG_SIZE', 4096000); //in bytes, the filesize is also limited by the max post size in the php.ini
