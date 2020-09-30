@@ -59,7 +59,6 @@ class UserController extends AbstractController {
         );
         $db_access->bind_param('i', $user_id);
         $query_result = $db_access->execute();
-        $db_access->close();
         return $this->format_query_result($query_result)[0];
     }
 
@@ -257,7 +256,6 @@ class UserController extends AbstractController {
         $db_access->prepare($stmt_string);
         $db_access->bind_param($param_string, ...$params);
         $query_result = $db_access->execute();
-        $db_access->close();
         return $query_result->num_rows > 0;
     }
 
@@ -291,7 +289,6 @@ class UserController extends AbstractController {
         $db_access->prepare($stmt_string);
         $db_access->bind_param($param_string, ...$params);
         $query_result = $db_access->execute();
-        $db_access->close();
         return $query_result;
     }
 

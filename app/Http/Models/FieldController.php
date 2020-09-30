@@ -28,7 +28,6 @@ class FieldController extends AbstractController {
         $db_access = DatabaseAccess::getInstance();
         $db_access->prepare($this->select_field_skeleton);
         $query_result = $this->format_query_result($db_access->execute());
-        $db_access->close();
         return $query_result;
     }
 

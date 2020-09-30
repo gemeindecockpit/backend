@@ -30,14 +30,14 @@ class OrganisationController extends AbstractController
     }
 
     public function get_all() {
-        $db_access = DatabaseAccess::getInstance()();
+        $db_access = DatabaseAccess::getInstance();
         $db_access->prepare($this->select_org_skeleton);
         $query_result = $this->format_query_result($db_access->execute());
         return $query_result;
     }
 
     public function get_org_by_location(...$args) {
-        $db_access = DatabaseAccess::getInstance()();
+        $db_access = DatabaseAccess::getInstance();
         $stmt_string = $this->select_org_skeleton;
         $param_string = '';
         $num_args = sizeof($args);
