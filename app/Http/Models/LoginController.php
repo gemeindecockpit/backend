@@ -27,7 +27,7 @@ class LoginController {
     }
 
     public function logout() {
-        $ret;
+        $ret = null;
         if(isset($_SESSION['user_id'])) {
             $ret = true;
         } else {

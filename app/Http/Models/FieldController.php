@@ -25,7 +25,7 @@ class FieldController extends AbstractController {
     * Constructs an array that contains the config for all fields visible for $user_id
     */
     public function get_all() {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $db_access->prepare($this->select_field_skeleton);
         $query_result = $this->format_query_result($db_access->execute());
         $db_access->close();
@@ -51,7 +51,7 @@ class FieldController extends AbstractController {
     }
 
     public function get_field_by_name($org_id, $field_name) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $stmt_string = $this->select_field_skeleton;
         $stmt_string .=
             ' JOIN view_organisations_and_fields
@@ -62,7 +62,6 @@ class FieldController extends AbstractController {
         $db_access->prepare($stmt_string);
         $db_access->bind_param('is', $org_id, $field_name);
         $query_result = $this->format_query_result($db_access->execute());
-        $db_access->close();
         if(sizeof($query_result) == 1) {
             return $query_result[0];
         } else {
@@ -79,7 +78,7 @@ class FieldController extends AbstractController {
     *   Returns the formatted JSON array with the fields and links to further resources
     */
     public function get_config_for_field_by_full_link($user_id, ...$args) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $stmt_string = $this->select_field_skeleton;
     }
 
@@ -113,7 +112,7 @@ class FieldController extends AbstractController {
     }
 
     public function insert_field($field) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $stmt_string =
             'INSERT INTO
                 field (field_sid, name, reference_value, yellow_limit, red_limit, relational_flag)
@@ -133,17 +132,15 @@ class FieldController extends AbstractController {
             $field['relational_flag']
         );
         $errno = $db_access->execute();
-        $db_access->close();
         return $sid;
     }
 
 
     public function get_max_sid(){
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $db_access->prepare('SELECT max(field_sid) FROM field');
         $result = $db_access->execute();
         $max_sid=$result->fetch_array()[0];
-        $db_access->close();
         return $max_sid;
     }
 

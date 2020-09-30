@@ -111,7 +111,7 @@ class DataController extends AbstractController {
     }
 
     public function get_data_by_field_ids($field_ids, $last='latest') {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $stmt_string = $this->select_data_skeleton;
         $param_string = 'i';
         if($last !== 'latest' && $last !== 'all') { // TODO: What happens if gibberish input?
@@ -134,12 +134,11 @@ class DataController extends AbstractController {
                 $data[] = $row;
             }
         }
-        $db_access->close();
         return $data;
     }
 
     public function get_data_by_field_ids_and_day($field_ids, $org_id, $day) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $stmt_string = $this->select_data_skeleton;
         $stmt_string .= ' AND date = ?';
         $db_access->prepare($stmt_string);
@@ -151,12 +150,11 @@ class DataController extends AbstractController {
                 $data[] = $row;
             }
         }
-        $db_access->close();
         return $data;
     }
 
     public function get_data_by_field_ids_and_month($field_ids, $org_id, $month) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $stmt_string = $this->select_data_skeleton;
         $stmt_string .=
             ' AND date >= ?
@@ -171,12 +169,11 @@ class DataController extends AbstractController {
                 $data[] = $row;
             }
         }
-        $db_access->close();
         return $data;
     }
 
     public function get_data_by_field_ids_and_year($field_ids, $org_id, $year) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $stmt_string = $this->select_data_skeleton;
         $stmt_string .=
             ' AND date >= ?
@@ -191,7 +188,6 @@ class DataController extends AbstractController {
                 $data[] = $row;
             }
         }
-        $db_access->close();
         return $data;
     }
 
@@ -379,7 +375,7 @@ class DataController extends AbstractController {
     }
 
     public function insert_data($data) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $stmt_string =
             "INSERT INTO
                 field_values (field_id, user_id, field_value, date)
@@ -391,7 +387,6 @@ class DataController extends AbstractController {
             $db_access->bind_param('iiis', $insert['field_id'], $insert['user_id'], $insert['field_value'], $insert['date']);
             $errno = $db_access->execute();
         }
-        $db_access->close();
         return $errno;
     }
 

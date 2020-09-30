@@ -51,7 +51,7 @@ class UserController extends AbstractController {
     }
 
     public function get_user_by_id($user_id) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $db_access->prepare(
             'SELECT id_user, username, email, realname, active, req_pw_reset
             FROM user 
@@ -253,7 +253,7 @@ class UserController extends AbstractController {
     }
 
     private function exists_entry($stmt_string, $param_string, ...$params) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $db_access->prepare($stmt_string);
         $db_access->bind_param($param_string, ...$params);
         $query_result = $db_access->execute();
@@ -287,7 +287,7 @@ class UserController extends AbstractController {
     }
 
     private function get_permissions($stmt_string, $param_string, ...$params) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::getInstance();
         $db_access->prepare($stmt_string);
         $db_access->bind_param($param_string, ...$params);
         $query_result = $db_access->execute();
