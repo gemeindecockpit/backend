@@ -34,7 +34,6 @@ class SVGRouteController extends RouteController {
           $response->getBody()->write($svg);
           return $response->withStatus(200);
         } else {
-          error_log(SVG_PATH . $SVG_path['svg_path']);
           return $response->withStatus(403,'no such file');
         }
       } else {
