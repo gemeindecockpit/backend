@@ -18,7 +18,7 @@ class SVGRouteController extends RouteController {
       $user_con = new UserController();
       $svg = ''; //encoded in base64
 
-      //can the user see the org? $args['org_id']
+      //can the user see the org? $args['org_id'].
       if($user_con->can_see_organisation($_SESSION['user_id'], $args['org_id'])) {
         $SVG_con = new SVGController();
         $SVG_path = $SVG_con->get_SVG_for_org($args['org_id']);
