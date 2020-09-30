@@ -195,134 +195,34 @@ class DataController extends AbstractController {
         return $data;
     }
 
-
-    /**
-    * Gets the data for a field (identified by org_params + field_name)
-    * First a FieldController fetches the field_id, then the data is fetched from DB
-    * The self link is of the form data/org_params/field_name[?last=x]
-    * @param $user_id
-    * @param $args
-    *    Must include nuts0, nuts1, nuts2, nuts3, org_type, org_name and field_name
-    * @param $last
-    *   Either 'latest', 'num_of_days' or 'all'
-    * @return
-    */
-    public function get_data_by_org_link_field_name($user_id, $last, ...$args) {
-        $field_controller = new FieldController();
-        $field_ids = $field_controller->get_field_ids($user_id, ...$args);
-
-        $field_id = -1;
-        if(sizeof($field_ids) > 0) {
-            $field_id = $field_ids[0];
-        }
-
-        $query_result = $this->db_ops->get_data_by_field_id($user_id, $field_id, $last);
-        $query_result = $this->format_query_result($query_result);
-
-        $self_link = $this->get_link('data', ...$args);
-        if($last !== 'latest') {
-            $self_link .= '?last=' . $last;
-        }
-        $config_link = $this->get_link('config', ...$args);
-
-        return $this->format_json($self_link, $query_result, array('config'), array($config_link));
-    }
-
-
-    /**
-    * Gets the data for an organisation for a specific date(-range).
-    * If $interval_type == 'year' all data for that year is fetched
-    * If $interval_type == 'month' all data for that month is fetched
-    * If $interval_type == 'day' all data for that day is fetched
-    * @param $user_id
-    * @param ...$args
-    * @param $interval_type
-    *   Either 'year', 'month' or 'day'
-    * @return
-    */
-    public function get_data_org_full_link_date($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $interval_type, $year, $month = '01', $day = '01') {
-        $field_controller = new FieldController();
-
-        $args = [$nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name];
-
-        $date = $year . '-' . $month . '-' . $day;
-        $field_ids = $field_controller->get_field_ids($user_id, ...$args);
+    public function get_static_data_by_field_ids($field_ids) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'SELECT
+                field_id,
+                field_value,
+                realname
+            FROM
+                field_values
+            JOIN user
+                ON field_values.user_id = user.id_user
+            WHERE field_id = ?
+            AND is_static = 1
+        ';
+        $db_access->prepare($stmt_string);
         $data = [];
-        switch ($interval_type) {
-            case 'year':
-                $data = $this->get_data_field_ids_year($user_id, $field_ids, $date);
-                $args[] = $year;
-                break;
-            case 'month':
-                $data = $this->get_data_field_ids_month($user_id, $field_ids, $date);
-                $args[] = $year;
-                $args[] = $month;
-                break;
-            case 'day':
-                $data = $this->get_data_field_ids_date($user_id, $field_ids, $date);
-                $args[] = $year;
-                $args[] = $month;
-                $args[] = $day;
-                break;
-            default:
-                return null;
-                break;
+        foreach($field_ids as $field_id) {
+            $db_access->bind_param('i', $field_id);
+            $query_result = $db_access->execute();
+            while($row = $query_result->fetch_assoc()) {
+                $data[] = $row;
+            }
         }
-
-        $self_link = $this->get_link('data', ...$args);
-
-        return $this->format_json($self_link, $data);
+        $db_access->close();
+        return $data;
     }
 
 
-    /**
-    * Gets the data for a field for a specific date(-range).
-    * If $interval_type == 'year' all data for that year is fetched
-    * If $interval_type == 'month' all data for that month is fetched
-    * If $interval_type == 'day' all data for that day is fetched
-    * @param $user_id
-    * @param ...$args
-    * @param $interval_type
-    *   Either 'year', 'month' or 'day'
-    * @return
-    */
-    public function get_data_org_full_link_field_name_date($user_id, $nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $field_name, $interval_type, $year, $month = '01', $day = '01') {
-        $field_controller = new FieldController();
-        $args = [$nuts0, $nuts1, $nuts2, $nuts3, $org_type, $org_name, $field_name];
-
-        $date = $year . '-' . $month . '-' . $day;
-        $field_ids = $field_controller->get_field_ids($user_id, ...$args);
-        $field_id = -1;
-        if(sizeof($field_ids) > 0) {
-            $field_id = $field_ids[0];
-        }
-        $query_result;
-        switch ($interval_type) {
-            case 'year':
-                $query_result = $this->db_ops->get_data_field_id_year($user_id, $field_id, $date);
-                $args[] = $year;
-                break;
-            case 'month':
-                $query_result = $this->db_ops->get_data_field_id_month($user_id, $field_id, $date);
-                $args[] = $year;
-                $args[] = $month;
-                break;
-            case 'day':
-                $query_result = $this->db_ops->get_data_field_id_date($user_id, $field_id, $date);
-                $args[] = $year;
-                $args[] = $month;
-                $args[] = $day;
-                break;
-            default:
-                return null;
-                break;
-        }
-        $query_result = $this->format_query_result($query_result);
-
-        $self_link = $this->get_link('data', ...$args);
-
-        return $this->format_json($self_link, $query_result);
-    }
 
 
     /**

@@ -55,11 +55,12 @@ class DataRouteController extends RouteController {
        }
 
        $data = $data_controller->get_data_by_field_ids($field_ids, $last);
+       $static_data = $data_controller->get_static_data_by_field_ids($field_ids);
 
        $links['self'] = RouteController::get_link('data', 'organisation', $args['org_id']);
        $links['config'] = RouteController::get_link('config', 'organisation', $args['org_id']);
 
-       $json_array = array('data' => $data, 'links' => $links);
+       $json_array = array('data' => $data, 'static_data' => $static_data, 'links' => $links);
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
