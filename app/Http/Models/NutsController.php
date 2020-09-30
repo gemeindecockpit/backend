@@ -12,18 +12,20 @@ class NUTSController extends AbstractController {
         parent::__construct();
     }
 
-    public function get_all($user_id) {
-        $query_result = $this->db_ops->get_all_NUTS_codes_for_user($user_id);
-        $nuts_codes = array();
-
-        while($row = $query_result->fetch_assoc()) {
-            $nuts_codes[] = $row;
-        }
-        return $nuts_codes;
-    }
-
     public function get_next_NUTS_codes($user_id, ...$args) {
-        $query_result = $this->db_ops->get_next_NUTS_codes($user_id, ...$args);
+        $db_access = DatabaseAccess::getInstance();
+        $stmt_string =
+            'SELECT DISTINCT (nuts' . sizeof($args) .
+            ') FROM view_organisation_visible_for_user
+			WHERE user_id = ?';
+        $param_string = 'i';
+        for($i = 0; $i < sizeof($args); $i++) {
+            $stmt_string .= ' AND nuts' . $i . ' = ?';
+            $param_string .= 's';
+        }
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param($param_string, $user_id, ...$args);
+        $query_result = $db_access->execute();
         $next_nuts = [];
         while($row = $query_result->fetch_array()) {
             $next_nuts[] = $row[0];
