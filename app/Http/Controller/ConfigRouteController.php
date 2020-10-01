@@ -692,6 +692,45 @@ class ConfigRouteController extends RouteController
         }
     }
 
+    public function put_org_type($request, $response, $args) {
+        $org_controller = new OrganisationController();
+        $user_controller = new UserController();
+
+        $body = json_decode($request->getBody(), true);
+
+        if ($err_msg = $this->is_valid_put_org_type_body($body)) {
+            $response->getBody()->write($err_msg);
+            return $response->withStatus(500);
+        }
+        $errno = null;
+        if($org_type = $org_controller->get_type_by_id($body['organisation_type_id'])) {
+            if($body['organisation_type_name'] != $org_type['organisation_type_name']) {
+                if(is_null($org_controller->get_type_by_name($body['organisation_type_name']))) {
+                    $errno = $org_controller->put_org_type(
+                        $body['organisation_type_id'],
+                        $body['organisation_type_name']
+                    );
+                } else {
+                    $response->getBody()->write('new name is already taken');
+                    return $response->withStatus(500);
+                }
+            }
+        }
+
+
+
+        if(!$errno) {
+            $errno = $org_controller->update_required_fields(
+                $body['organisation_type_id'],
+                $body['required_fields']);
+        }
+        if($errno) {
+            $response->getBody()->write(json_encode($errno));
+            return $response->withStatus(500);
+        }
+        return $response->withStatus(200);
+    }
+
 
     /**
     * Updates the field.
@@ -881,6 +920,14 @@ class ConfigRouteController extends RouteController
                     return 'each removed field must be identified by an id';
             }
         }
+        return;
+    }
+
+    private function is_valid_put_org_type_body($body) {
+        if($err_msg = $this->is_valid_post_org_type_body($body))
+            return $err_msg;
+        if(!isset($body['organisation_type_id']))
+            return 'organisation_type_id not set';
         return;
     }
 

@@ -244,6 +244,28 @@ class OrganisationController extends AbstractController
         }
     }
 
+    public function get_type_by_id($type_id) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'SELECT
+                id_organisation_type as organisation_type_id,
+                organisation_type_name
+            FROM
+                organisation_type
+            WHERE
+                id_organisation_type = ?
+        ';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('i', $type_id);
+        $type = $this->format_query_result($db_access->execute());
+        $db_access->close();
+        if(sizeof($type) > 0) {
+            return $type[0];
+        } else {
+            return false;
+        }
+    }
+
 
     public function get_required_fields($type_id) {
         $db_access = new DatabaseAccess();
@@ -271,13 +293,40 @@ class OrganisationController extends AbstractController
         $db_access->bind_param('s', $type_name);
         $db_access->execute();
         $type_id = $db_access->get_insert_id();
-        $this->add_required_fields($type_id, $required_fields);
+        $this->update_required_fields($type_id, $required_fields);
         $db_access->close();
         return $type_id;
     }
 
-    public function add_required_fields($type_id, $required_fields) {
+    public function put_org_type($type_id, $type_name) {
         $db_access = new DatabaseAccess();
+        $stmt_string =
+            'UPDATE
+                organisation_type
+            SET organisation_type_name = ?
+            WHERE id_organisation_type = ?
+        ';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('si', $type_name, $type_id);
+        $errno = $db_access->execute();
+        return $errno;
+    }
+
+    public function update_required_fields($type_id, $required_fields) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'DELETE FROM
+                organisation_type_requires_field
+            WHERE
+                organisation_type_id = ?
+        ';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('i', $type_id);
+        $errno = $db_access->execute();
+
+        if($errno)
+            return $errno;
+
         $stmt_string =
             'INSERT INTO
                 organisation_type_requires_field (organisation_type_id,field_name,relational_flag)
@@ -285,8 +334,12 @@ class OrganisationController extends AbstractController
         $db_access->prepare($stmt_string);
         foreach($required_fields as $field) {
             $db_access->bind_param('isi', $type_id, $field['field_name'], $field['relational_flag']);
+            $errno = $db_access->execute();
+            if($errno)
+                break;
         }
         $db_access->close();
+        return $errno;
     }
 
     public function get_group_by_name($group_name) {

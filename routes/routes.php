@@ -67,6 +67,8 @@ return function (App $app) {
 
     $app->put('/config/organisation',
         \ConfigRouteController::class . ':put_org');
+    $app->put('/config/organisation-type',
+        \ConfigRouteController::class . ':put_org_type');
     $app->put('/config/field',
         \ConfigRouteController::class . ':put_field');
 
