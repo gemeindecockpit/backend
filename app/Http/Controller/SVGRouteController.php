@@ -55,7 +55,7 @@ class SVGRouteController extends RouteController {
               return $response->withStatus(413,'filesize too big, max size is ' . MAX_SVG_SIZE);
             } else {
               //check if the mimetype is image/svg+xml and if the extension is .svg
-              if ($uploadedFile->getClientMediaType() != 'image/svg+xml' && !preg_match("/\.(svg)$/", $uploadedFile->getClientFilename())) {
+              if ($uploadedFile->getClientMediaType() != 'image/svg+xml' || !preg_match("/\.(svg)$/", $uploadedFile->getClientFilename())) {
                 return $response->withStatus(406,'file is not a svg')->withHeader('Content-Type','.svg');
               } else {
                 //all checks are correct, move file to system and make the DB entry
