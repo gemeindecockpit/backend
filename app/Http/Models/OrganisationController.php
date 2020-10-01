@@ -245,15 +245,48 @@ class OrganisationController extends AbstractController
     }
 
 
-    public function create_new_type($type_name) {
+    public function get_required_fields($type_id) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'SELECT
+                field_name,
+                relational_flag
+            FROM
+                organisation_type_requires_field
+            WHERE
+                organisation_type_id = ?
+        ';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('i', $type_id);
+        $fields = $this->format_query_result($db_access->execute());
+        $db_access->close();
+        return $fields;
+    }
+
+
+    public function create_new_type($type_name, $required_fields = []) {
         $db_access = new DatabaseAccess();
         $stmt_string = 'INSERT INTO organisation_type (organisation_type_name) VALUES (?)';
         $db_access->prepare($stmt_string);
         $db_access->bind_param('s', $type_name);
         $db_access->execute();
         $type_id = $db_access->get_insert_id();
+        $this->add_required_fields($type_id, $required_fields);
         $db_access->close();
         return $type_id;
+    }
+
+    public function add_required_fields($type_id, $required_fields) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'INSERT INTO
+                organisation_type_requires_field (organisation_type_id,field_name,relational_flag)
+            VALUES (?,?,?)';
+        $db_access->prepare($stmt_string);
+        foreach($required_fields as $field) {
+            $db_access->bind_param('isi', $type_id, $field['field_name'], $field['relational_flag']);
+        }
+        $db_access->close();
     }
 
     public function get_group_by_name($group_name) {

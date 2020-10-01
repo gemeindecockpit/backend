@@ -189,6 +189,7 @@ class ConfigRouteController extends RouteController
                 $links['organistaions'][] = RouteController::get_link('config', 'organisation-type', $args['org_type'], $org['organisation_name']);
             }
         }
+        $org_type['required_fields'] = $org_controller->get_required_fields($org_type['organisation_type_id']);
         $org_type['organisations'] = $orgs;
         $org_type['links'] = $links;
 
@@ -495,7 +496,6 @@ class ConfigRouteController extends RouteController
     {
         $user_controller = new UserController();
         $org_controller = new OrganisationController();
-        $user_controller = new UserController();
         $field_controller = new FieldController();
 
         if (!$user_controller->can_create_organisation($_SESSION['user_id'])) {
@@ -546,6 +546,32 @@ class ConfigRouteController extends RouteController
                 $user_controller->insert_permissions($_SESSION['user_id'], $permissions);
             }
         }
+        return $response->withStatus(200);
+    }
+
+    public function post_org_type($request, $response, $args) {
+        $user_controller = new UserController();
+        $org_controller = new OrganisationController();
+
+        if (!$user_controller->can_create_organisation_type($_SESSION['user_id'])) {
+            $response->getBody()->write('not allowed!');
+            return $response->withStatus(403);
+        }
+
+        $body = json_decode($request->getBody(), true);
+
+        if ($err_msg = $this->is_valid_post_org_type_body($body)) {
+            $response->getBody()->write($err_msg);
+            return $response->withStatus(500);
+        }
+
+        if($org_type = $org_controller->get_type_by_name($body['organisation_type_name'])) {
+            $response->getBody()->write('Type already exists');
+            return $response->withStatus(500);
+        }
+
+        $org_type_id = (int)$org_controller->create_new_type($body['organisation_type_name'], $body['required_fields']);
+        $response->getBody()->write(json_encode(array('organisation_type_id' => $org_type_id, 'organisation_type_name' => $body['organisation_type_name'])));
         return $response->withStatus(200);
     }
 
@@ -751,6 +777,24 @@ class ConfigRouteController extends RouteController
                 if($err_msg = $this->is_valid_post_field_body($field))
                     return $err_msg;
             }
+        }
+        return;
+    }
+
+    private function is_valid_post_org_type_body($body) {
+        if(is_null($body))
+            return 'not a valid JSON';
+        if(!isset($body['organisation_type_name']))
+            return 'organisation_type_name must be set';
+        if(!isset($body['required_fields']))
+            return 'required_fields must be set';
+        if(!is_array($body['required_fields']))
+            return 'required_fields must be given as an array';
+        foreach($body['required_fields'] as $field) {
+            if(!isset($field['field_name']))
+                return 'field_name must be set for each field';
+            if(!isset($field['relational_flag']))
+                return 'relational_flag must be set for each field';
         }
         return;
     }
