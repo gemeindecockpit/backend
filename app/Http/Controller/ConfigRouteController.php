@@ -189,6 +189,7 @@ class ConfigRouteController extends RouteController
                 $links['organistaions'][] = RouteController::get_link('config', 'organisation-type', $args['org_type'], $org['organisation_name']);
             }
         }
+        $org_type['required_fields'] = $org_controller->get_required_fields($org_type['organisation_type_id']);
         $org_type['organisations'] = $orgs;
         $org_type['links'] = $links;
 
@@ -495,7 +496,6 @@ class ConfigRouteController extends RouteController
     {
         $user_controller = new UserController();
         $org_controller = new OrganisationController();
-        $user_controller = new UserController();
         $field_controller = new FieldController();
 
         if (!$user_controller->can_create_organisation($_SESSION['user_id'])) {
@@ -508,6 +508,28 @@ class ConfigRouteController extends RouteController
         if ($err_msg = $this->is_valid_post_org_body($body)) {
             $response->getBody()->write($err_msg);
             return $response->withStatus(500);
+        }
+
+        if($org_type = $org_controller->get_type_by_name($body['organisation_type'])) {
+            $org_type_id = (int)$org_type['organisation_type_id'];
+            $required_fields = $org_controller->get_required_fields($org_type_id);
+            if(sizeof($required_fields) > 0) {
+                if(!isset($body['fields'])) {
+                    $response->getBody()->write('initial fields not set, but required');
+                    return $response->withStatus(500);
+                } else if ($err_msg = $this->all_required_fields_set($body['fields'], $required_fields)) {
+                    $response->getBody()->write($err_msg);
+                    return $response->withStatus(500);
+                }
+            }
+        } else {
+            $org_type_id = (int)$org_controller->create_new_type($body['organisation_type']);
+        }
+
+        if($org_group = $org_controller->get_group_by_name($body['organisation_group'])) {
+            $org_group_id = (int)$org_group['organisation_group_id'];
+        } else {
+            $org_group_id = (int)$org_controller->create_new_group($body['organisation_group']);
         }
 
         if($org_type = $org_controller->get_type_by_name($body['organisation_type'])) {
@@ -546,6 +568,32 @@ class ConfigRouteController extends RouteController
                 $user_controller->insert_permissions($_SESSION['user_id'], $permissions);
             }
         }
+        return $response->withStatus(200);
+    }
+
+    public function post_org_type($request, $response, $args) {
+        $user_controller = new UserController();
+        $org_controller = new OrganisationController();
+
+        if (!$user_controller->can_create_organisation_type($_SESSION['user_id'])) {
+            $response->getBody()->write('not allowed!');
+            return $response->withStatus(403);
+        }
+
+        $body = json_decode($request->getBody(), true);
+
+        if ($err_msg = $this->is_valid_post_org_type_body($body)) {
+            $response->getBody()->write($err_msg);
+            return $response->withStatus(500);
+        }
+
+        if($org_type = $org_controller->get_type_by_name($body['organisation_type_name'])) {
+            $response->getBody()->write('Type already exists');
+            return $response->withStatus(500);
+        }
+
+        $org_type_id = (int)$org_controller->create_new_type($body['organisation_type_name'], $body['required_fields']);
+        $response->getBody()->write(json_encode(array('organisation_type_id' => $org_type_id, 'organisation_type_name' => $body['organisation_type_name'])));
         return $response->withStatus(200);
     }
 
@@ -642,6 +690,45 @@ class ConfigRouteController extends RouteController
         } else {
             return $response->withStatus(200);
         }
+    }
+
+    public function put_org_type($request, $response, $args) {
+        $org_controller = new OrganisationController();
+        $user_controller = new UserController();
+
+        $body = json_decode($request->getBody(), true);
+
+        if ($err_msg = $this->is_valid_put_org_type_body($body)) {
+            $response->getBody()->write($err_msg);
+            return $response->withStatus(500);
+        }
+        $errno = null;
+        if($org_type = $org_controller->get_type_by_id($body['organisation_type_id'])) {
+            if($body['organisation_type_name'] != $org_type['organisation_type_name']) {
+                if(is_null($org_controller->get_type_by_name($body['organisation_type_name']))) {
+                    $errno = $org_controller->put_org_type(
+                        $body['organisation_type_id'],
+                        $body['organisation_type_name']
+                    );
+                } else {
+                    $response->getBody()->write('new name is already taken');
+                    return $response->withStatus(500);
+                }
+            }
+        }
+
+
+
+        if(!$errno) {
+            $errno = $org_controller->update_required_fields(
+                $body['organisation_type_id'],
+                $body['required_fields']);
+        }
+        if($errno) {
+            $response->getBody()->write(json_encode($errno));
+            return $response->withStatus(500);
+        }
+        return $response->withStatus(200);
     }
 
 
@@ -741,16 +828,50 @@ class ConfigRouteController extends RouteController
             return 'contact not set';
         if(!isset($body['zipcode']))
             return 'zipcode not set';
-        if(isset($body['fields'])) {
-            $fields = $body['fields'];
-            if(!is_array($fields))
-                return 'fields must be an array';
-            foreach($fields as $field) {
-                if(!isset($field['priority']))
-                    return 'priority must set for each field';
-                if($err_msg = $this->is_valid_post_field_body($field))
-                    return $err_msg;
-            }
+        if(!isset($body['fields']))
+            return;
+        $fields = $body['fields'];
+        if(!is_array($fields))
+            return 'fields must be an array';
+        foreach($fields as $field) {
+            if(!isset($field['priority']))
+                return 'priority must set for each field';
+            if($err_msg = $this->is_valid_post_field_body($field))
+                return $err_msg;
+        }
+
+        return;
+    }
+
+    private function all_required_fields_set($initial_fields, $required_fields) {
+        $initial_fields_map = array();
+
+        foreach($initial_fields as $initial_field) {
+            $initial_fields_map[$initial_field['field_name']]['relational_flag'] = $initial_field['relational_flag'];
+        }
+        foreach($required_fields as $required_field) {
+            if(!isset($initial_fields_map[$required_field['field_name']]))
+                return 'all required fields must be set';
+            if($initial_fields_map[$required_field['field_name']]['relational_flag'] != $required_field['relational_flag'])
+                return 'at least one relational_flag is set incorrectly';
+        }
+        return;
+    }
+
+    private function is_valid_post_org_type_body($body) {
+        if(is_null($body))
+            return 'not a valid JSON';
+        if(!isset($body['organisation_type_name']))
+            return 'organisation_type_name must be set';
+        if(!isset($body['required_fields']))
+            return 'required_fields must be set';
+        if(!is_array($body['required_fields']))
+            return 'required_fields must be given as an array';
+        foreach($body['required_fields'] as $field) {
+            if(!isset($field['field_name']))
+                return 'field_name must be set for each field';
+            if(!isset($field['relational_flag']))
+                return 'relational_flag must be set for each field';
         }
         return;
     }
@@ -799,6 +920,14 @@ class ConfigRouteController extends RouteController
                     return 'each removed field must be identified by an id';
             }
         }
+        return;
+    }
+
+    private function is_valid_put_org_type_body($body) {
+        if($err_msg = $this->is_valid_post_org_type_body($body))
+            return $err_msg;
+        if(!isset($body['organisation_type_id']))
+            return 'organisation_type_id not set';
         return;
     }
 

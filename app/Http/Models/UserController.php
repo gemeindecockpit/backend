@@ -54,7 +54,7 @@ class UserController extends AbstractController {
         $db_access = new DatabaseAccess();
         $db_access->prepare(
             'SELECT id_user, username, email, realname, active, req_pw_reset
-            FROM user 
+            FROM user
             WHERE id_user = ?'
         );
         $db_access->bind_param('i', $user_id);
@@ -234,6 +234,11 @@ class UserController extends AbstractController {
 
     public function can_create_organisation($user_id) {
         $stmt_string = 'SELECT * FROM can_create_organisation WHERE user_id = ?';
+        return $this->exists_entry($stmt_string, 'i', $user_id);
+    }
+
+    public function can_create_organisation_type($user_id) {
+        $stmt_string = 'SELECT * FROM can_create_organisation_type WHERE user_id = ?';
         return $this->exists_entry($stmt_string, 'i', $user_id);
     }
 

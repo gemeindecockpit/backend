@@ -59,12 +59,16 @@ return function (App $app) {
 
 
     $app->post('/config/organisation',
-        \ConfigRouteController::class . ':post_org'); // TODO
+        \ConfigRouteController::class . ':post_org');
+    $app->post('/config/organisation-type',
+        \ConfigRouteController::class . ':post_org_type');
     $app->post('/config/organisation/{org_id:[0-9]+}',
         \ConfigRouteController::class . ':post_field_by_org_id'); // TODO, link is not optimal!
 
     $app->put('/config/organisation',
         \ConfigRouteController::class . ':put_org');
+    $app->put('/config/organisation-type',
+        \ConfigRouteController::class . ':put_org_type');
     $app->put('/config/field',
         \ConfigRouteController::class . ':put_field');
 
