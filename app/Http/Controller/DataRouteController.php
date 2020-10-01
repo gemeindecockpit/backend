@@ -70,7 +70,8 @@ class DataRouteController extends RouteController {
        $links['self'] = RouteController::get_link('data', 'organisation-group');
        $org_groups = $org_controller->get_org_groups($_SESSION['user_id']);
        foreach($org_groups as $group) {
-           $links['organisation-groups'][] = RouteController::get_link('data', 'organisation-group', $group);
+           $link_json = array('organisation_group_name' => $group, 'href' => RouteController::get_link('data', 'organisation-group', $group));
+           $links['organisation-groups'][] = $link_json;
        }
        $json_array = array('links' => $links);
        $response->getBody()->write(json_encode($json_array));
@@ -97,6 +98,7 @@ class DataRouteController extends RouteController {
            if($user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
                $field_ids = $org_controller->get_field_ids($_SESSION['user_id'], $org['organisation_id']);
                $data_by_org['organisation_id'] = $org['organisation_id'];
+               $data_by_org['organisation_name'] = $org['organisation_name'];
                $data_by_org['data'] = $data_controller->get_data_by_field_ids($field_ids, $last);
                $orgs_in_group[] = $data_by_org;
            }
