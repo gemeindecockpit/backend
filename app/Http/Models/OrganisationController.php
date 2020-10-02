@@ -94,7 +94,7 @@ class OrganisationController extends AbstractController
     public function get_org_by_type($org_type, $org_name) {
         $db_access = new DatabaseAccess();
         $stmt_string = $this->select_org_skeleton;
-        $stmt_string .= ' WHERE organisation_type = ? AND organistaion_name = ?';
+        $stmt_string .= ' WHERE organisation_type = ? AND organisation_name = ?';
         $db_access->prepare($stmt_string);
         $db_access->bind_param('ss', $org_type, $org_name);
         $query_result = $this->format_query_result($db_access->execute());
@@ -378,7 +378,8 @@ class OrganisationController extends AbstractController
     public function get_org_groups($user_id)
     {
         $db_access = new DatabaseAccess();
-        $stmt_string = 'SELECT DISTINCT(organisation_group)
+        $stmt_string = 'SELECT DISTINCT(organisation_group_id),
+                organisation_group as organisation_group_name
             FROM view_organisation_visible_for_user
             WHERE user_id = ?';
         $db_access->prepare($stmt_string);
@@ -387,7 +388,7 @@ class OrganisationController extends AbstractController
 
         $org_groups = [];
         while ($row = $query_result->fetch_assoc()) {
-            $org_groups[] = $row['organisation_group'];
+            $org_groups[] = $row;
         }
 
         $db_access->close();
@@ -397,14 +398,15 @@ class OrganisationController extends AbstractController
 
     public function get_organisation_types($user_id) {
         $stmt_string =
-            'SELECT DISTINCT(organisation_type)
+            'SELECT DISTINCT(organisation_type_id),
+                organisation_type AS organisation_type_name
             FROM view_organisation_visible_for_user
             WHERE user_id = ?
             ';
         $query_result = AbstractController::execute_stmt($stmt_string, 'i', $user_id);
         $types = [];
         foreach($query_result as $row) {
-            $types[] = $row['organisation_type'];
+            $types[] = $row;
         }
         return $types;
     }

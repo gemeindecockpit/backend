@@ -19,6 +19,7 @@ class ConfigRouteController extends RouteController
         $json_array = array(
            'organisation' => $self . '/organisation',
            'location' => $self . '/location',
+           'organisation_type' => $self . '/organisation-type',
            'organisation_group' => $self . '/organisation-group',
            'field' => $self . '/field',
            'links' => array('self' => $self)
@@ -63,12 +64,22 @@ class ConfigRouteController extends RouteController
             $json_array = $orgs[0];
             $links['data'] = RouteController::get_link('data', 'organisation', $json_array['organisation_id']);
             foreach($json_array['fields'] as $field) {
-                $links['fields'][] = $links['self'] . '/' . rawurlencode($field['field_name']);
+                $field_link = $links['self'] . '/' . rawurlencode($field['field_name']);
+                $links['fields'][] = array(
+                    'field_id' => $field['field_id'],
+                    'field_name' => $field['field_name'],
+                    'href' => $field_link
+                );
             }
         } else {
             $json_array = array('organisations' => $orgs);
             foreach($orgs as $org) {
-                $links['organisations'][] = ConfigRouteController::get_org_location_link($org);
+                $org_link = ConfigRouteController::get_org_location_link($org);
+                $links['organisations'][] = array(
+                    'organisation_id' => $org['organisation_id'],
+                    'organisation_name' => $org['organisation_name'],
+                    'href' => $org_link
+                );
             }
         }
 
@@ -78,7 +89,11 @@ class ConfigRouteController extends RouteController
             $links[$next_nuts_layer] = [];
             $next_nuts_codes = $nuts_controller->get_next_NUTS_codes($_SESSION['user_id'], ...$args_indexed);
             foreach ($next_nuts_codes as $nuts_code) {
-                $links[$next_nuts_layer][] = $links['self'] . '/' . rawurlencode($nuts_code);
+                $nuts_link = $links['self'] . '/' . rawurlencode($nuts_code);
+                $links[$next_nuts_layer][] = array(
+                    'nuts_region' => $nuts_code,
+                    'href' => $nuts_link
+                );
             }
         }
 
@@ -151,11 +166,16 @@ class ConfigRouteController extends RouteController
         foreach($query_result as $org) {
             if($user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
                 $orgs[] = $org;
-                $links['organistaions'][] = RouteController::get_link(
+                $org_link = RouteController::get_link(
                     'config',
                     'organisation-type',
                     $org['organisation_type'],
                     $org['organisation_name']
+                );
+                $links['organistaions'][] = array(
+                    'organisation_id' => $org['organisation_id'],
+                    'organisation_name' => $org['organisation_name'],
+                    'href' => $org_link
                 );
             }
         }
@@ -163,7 +183,12 @@ class ConfigRouteController extends RouteController
 
         $links['self'] = RouteController::get_link('config', 'organisation-type');
         foreach($types as $type) {
-            $links['organisation_types'][] = RouteController::get_link('config', 'organisation-type', $type);
+            $type_link = RouteController::get_link('config', 'organisation-type', $type['organisation_type_name']);
+            $links['organisation_types'][] = array(
+                'organisation_type_id' => $type['organisation_type_id'],
+                'organisation_type_name' => $type['organisation_type_name'],
+                'href' => $type_link
+            );
         }
         $json_array = array('organisations' => $orgs, 'links' => $links);
 
@@ -186,7 +211,12 @@ class ConfigRouteController extends RouteController
         foreach($query_result as $org) {
             if($user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
                 $orgs[] = $org;
-                $links['organistaions'][] = RouteController::get_link('config', 'organisation-type', $args['org_type'], $org['organisation_name']);
+                $org_link = RouteController::get_link('config', 'organisation-type', $args['org_type'], $org['organisation_name']);
+                $links['organistaions'][] = array(
+                    'organisation_id' => $org['organisation_id'],
+                    'organisation_name' => $org['organisation_name'],
+                    'href' => $org_link
+                );
             }
         }
         $org_type['required_fields'] = $org_controller->get_required_fields($org_type['organisation_type_id']);
@@ -204,12 +234,18 @@ class ConfigRouteController extends RouteController
         if(!$org = $org_controller->get_org_by_type($args['org_type'], $args['org_name'])) {
                 return $response->withStatus(500);
         }
-        $org['fields'] = $org_controller->get_fields($_SESSION['user_id'], $orgs[$i]['organisation_id']);
+        $org['fields'] = $org_controller->get_fields($_SESSION['user_id'], $org['organisation_id']);
         $links['self'] = RouteController::get_link('config', 'organistaion-type', $args['org_type'], $args['org_name']);
         $links['data'] = RouteController::get_link('data', 'organistaion-type', $args['org_type'], $args['org_name']);
         foreach($org['fields'] as $field) {
-            $links['fields'][] = RouteController::get_link('config', 'organistaion-type', $args['org_type'], $args['org_name'], $field['field_name']);
+            $field_link = RouteController::get_link('config', 'organistaion-type', $args['org_type'], $args['org_name'], $field['field_name']);
+            $links['fields'][] = array(
+                'field_id' => $field['field_id'],
+                'field_name' => $field['field_name'],
+                'href' => $field_link
+            );
         }
+        $org['links'] = $links;
         $response->getBody()->write(json_encode($org));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -219,11 +255,8 @@ class ConfigRouteController extends RouteController
         $field_controller = new FieldController();
         $user_controller = new UserController();
 
-        $orgs = $org_controller->get_org_by_type($args['org_type'], $args['org_name']);
-        if(sizeof($orgs) == 0) {
-            return $response->getBody()->write('No organisation found');
-        } else {
-            $org = $orgs[0];
+        if(!$org = $org_controller->get_org_by_type($args['org_type'], $args['org_name'])) {
+                return $response->withStatus(500);
         }
         if(!$user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
             $response->getBody()->write('Access denied');
@@ -232,7 +265,7 @@ class ConfigRouteController extends RouteController
 
         if(!$field = $field_controller->get_field_by_name($org['organisation_id'], $args['field_name'])) {
             $response->getBody()->write('Field not found or field name is ambiguous');
-            return $response->withStatus(403);
+            return $response->withStatus(500);
         }
         if(!$user_controller->can_see_field($_SESSION['user_id'], $field['field_id'])) {
             $response->getBody()->write('Access denied');
@@ -275,7 +308,12 @@ class ConfigRouteController extends RouteController
         foreach($query_result as $org) {
             if($user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
                 $orgs[] = $org;
-                $links['organistaions'][] = RouteController::get_link('config', 'organisation-group', $args['org_group'], $org['organisation_name']);
+                $org_link = RouteController::get_link('config', 'organisation-group', $args['org_group'], $org['organisation_name']);
+                $links['organistaions'][] = array(
+                    'organisation_id' => $org['organisation_id'],
+                    'organisation_name' => $org['organisation_name'],
+                    'href' => $org_link
+                );
             }
         }
         $json_array['organisations'] = $orgs;
@@ -306,19 +344,34 @@ class ConfigRouteController extends RouteController
         if (sizeof($args_indexed) < 2) {
             $json_array = array('organisations' => $orgs);
             foreach ($orgs as $org) {
-                $links['organisations'][] = ConfigRouteController::get_org_group_link($org);
+                $org_link = ConfigRouteController::get_org_group_link($org);
+                $links['organistaions'][] = array(
+                    'organisation_id' => $org['organisation_id'],
+                    'organisation_name' => $org['organisation_name'],
+                    'href' => $org_link
+                );
             }
             if (sizeof($args_indexed) == 0) {
                 $organisation_groups = $org_controller->get_org_groups($_SESSION['user_id']);
                 foreach ($organisation_groups as $group) {
-                    $links['organisation_groups'][] = RouteController::get_link('config', 'organisation-group', $group);
+                    $org_group_link = RouteController::get_link('config', 'organisation-group', $group['organisation_group_name']);
+                    $links['organistaions_groups'][] = array(
+                        'organisation_group_id' => $group['organisation_group_id'],
+                        'organisation_group_name' => $group['organisation_group_name'],
+                        'href' => $org_group_link
+                    );
                 }
             }
         } elseif (sizeof($orgs) > 0) {
             $json_array = $orgs[0];
             $links['data'] = RouteController::get_link('data', 'organisation-group', ...$args_indexed);
             foreach($json_array['fields'] as $field) {
-                $links['fields'][] = $links['self'] . '/' . rawurlencode($field['field_name']);
+                $field_link = $links['self'] . '/' . rawurlencode($field['field_name']);
+                $links['fields'][] = array(
+                    'field_id' => $field['field_id'],
+                    'field_name' => $field['field_name'],
+                    'href' => $field_link
+                );
             }
         }
 
@@ -393,13 +446,23 @@ class ConfigRouteController extends RouteController
         if (!isset($args['org_id'])) {
             $json_array = array('organisations' => $orgs);
             foreach ($orgs as $org) {
-                $links['organisations'][] = ConfigRouteController::get_org_id_link($org);
+                $org_link = ConfigRouteController::get_org_id_link($org);
+                $links['organistaions'][] = array(
+                    'organisation_id' => $org['organisation_id'],
+                    'organisation_name' => $org['organisation_name'],
+                    'href' => $org_link
+                );
             }
         } elseif (sizeof($orgs) > 0) {
             $json_array = $orgs[0];
             $links['data'] = RouteController::get_link('data', 'organisation', ...$args_indexed);
             foreach($json_array['fields'] as $field) {
-                $links['fields'][] = $links['self'] . '/' . rawurlencode($field['field_name']);
+                $field_link = $links['self'] . '/' . rawurlencode($field['field_name']);
+                $links['fields'][] = array(
+                    'field_id' => $field['field_id'],
+                    'field_name' => $field['field_name'],
+                    'href' => $field_link
+                );
             }
         }
 
@@ -456,7 +519,12 @@ class ConfigRouteController extends RouteController
         $self_link = RouteController::get_link('config', 'field');
         $links['self'] = $self_link;
         foreach($fields as $field) {
-            $links['fields'][] = $self_link . '/' . $field['field_id'];
+            $field_link = $self_link . '/' . $field['field_id'];
+            $links['fields'][] = array(
+                'field_id' => $field['field_id'],
+                'field_name' => $field['field_name'],
+                'href' => $field_link
+            );
         }
         if(sizeof($fields) > 0) {
             $json_array['fields'] = $fields;
