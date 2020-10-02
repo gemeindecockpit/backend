@@ -42,7 +42,7 @@ class DataRouteController extends RouteController {
        }
        foreach($org_groups as $group) {
            $org_group_link = RouteController::get_link('data', 'organisation-group', $group['organisation_group_name']);
-           $links['organisation-groups'][] = array(
+           $links['organisation_groups'][] = array(
                'organisation_group_id' => $group['organisation_group_id'],
                'organisation_group_name' => $group['organisation_group_name'],
                'href' => $org_group_link
@@ -119,7 +119,7 @@ class DataRouteController extends RouteController {
 
        foreach($org_groups as $group) {
            $org_group_link = RouteController::get_link('data', 'organisation-group', $group['organisation_group_name']);
-           $links['organisation-groups'][] = array(
+           $links['organisation_groups'][] = array(
                'organisation_group_id' => $group['organisation_group_id'],
                'organisation_group_name' => $group['organisation_group_name'],
                'href' => $org_group_link
