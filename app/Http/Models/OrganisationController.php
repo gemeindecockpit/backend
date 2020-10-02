@@ -205,18 +205,20 @@ class OrganisationController extends AbstractController
     * @return
     *   An array with all org_ids
     */
-    public function get_org_ids($user_id)
+    public function get_orgs_visble_for_user($user_id)
     {
         $db_access = new DatabaseAccess();
-        $stmt_string = 'SELECT DISTINCT(organisation_id)
-            FROM can_see_organisation
+        $stmt_string =
+            'SELECT DISTINCT(organisation_id),
+                organisation_name
+            FROM view_organisation_visible_for_user
             WHERE user_id = ?';
         $db_access->prepare($stmt_string);
         $db_access->bind_param('i', $user_id);
         $query_result = $db_access->execute();
         $org_ids = [];
         while ($row = $query_result->fetch_assoc()) {
-            $org_ids[] = $row['organisation_id'];
+            $org_ids[] = $row;
         }
         $db_access->close();
         return $org_ids;
@@ -431,26 +433,6 @@ class OrganisationController extends AbstractController
             $fields[] = $row;
         }
         return $fields;
-    }
-
-    public function get_field_ids($user_id, $org_id) {
-        $stmt_string =
-            'SELECT view_organisations_and_fields.field_id
-            FROM view_organisations_and_fields
-            JOIN can_see_organisation
-                ON view_organisations_and_fields.organisation_id = can_see_organisation.organisation_id
-            JOIN can_see_field
-                ON view_organisations_and_fields.field_id = can_see_field.field_id
-                AND can_see_organisation.user_id = can_see_field.user_id
-            WHERE can_see_organisation.user_id = ?
-            AND view_organisations_and_fields.organisation_id = ?
-            ';
-        $query_result = AbstractController::execute_stmt($stmt_string, 'ii', $user_id, $org_id);
-        $field_ids = [];
-        foreach($query_result as $row) {
-            $field_ids[] = $row['field_id'];
-        }
-        return $field_ids;
     }
 
     /**

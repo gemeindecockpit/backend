@@ -303,6 +303,8 @@ class ConfigRouteController extends RouteController
             return $response->withStatus(403);
         }
         $links['self'] = RouteController::get_link('config', 'organisation-group', $args['org_group']);
+        $links['data'] = RouteController::get_link('data', 'organisation-group', $args['org_group']);
+
         $query_result = $org_controller->get_org_by_group($args['org_group']);
         $orgs = [];
         foreach($query_result as $org) {
@@ -538,7 +540,12 @@ class ConfigRouteController extends RouteController
     public function get_field_by_id($request, $response, $args)
     {
         $field_controller = new FieldController();
-        $field = $field_controller->get_field_by_id($_SESSION['user_id'], $args['field_id']);
+        $user_controller = new UserController();
+
+        if(!$user_controller->can_see_field($_SESSION['user_id'], $args['field_id']))
+            return $response->withStatus(403);
+
+        $field = $field_controller->get_field_by_id($args['field_id']);
 
         $json_array = [];
         if(sizeof($field) > 0) {
