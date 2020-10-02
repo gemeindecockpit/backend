@@ -9,10 +9,12 @@ require_once('DatabaseAccess.php');
 abstract class AbstractController
 {
     protected $db_ops;
+    protected $db_access;
 
     public function __construct()
     {
         $this->db_ops = new DatabaseOps();
+        $this->db_access = new DatabaseAccess();
     }
 
     protected function execute_stmt($stmt_string, $param_string, ...$args)
@@ -23,7 +25,7 @@ abstract class AbstractController
             $no_error = $db_access->bind_param($param_string, ...$args);
         }
 
-        $query_result;
+        $query_result = null;
         if ($no_error) {
             $query_result = $db_access->execute();
         } else {
