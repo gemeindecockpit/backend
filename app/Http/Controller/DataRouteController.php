@@ -22,21 +22,61 @@ class DataRouteController extends RouteController {
    *    Is Empty
    */
    public function home($request, $response, $args) {
-       $data_controller = new DataController();
+       $org_controller = new OrganisationController();
+       $field_controller = new FieldController();
 
-       $json_array = $data_controller->get_organisation_and_field_ids($_SESSION['user_id']);
+       $orgs = $org_controller->get_orgs_visble_for_user($_SESSION['user_id']);
+       $org_groups = $org_controller->get_org_groups($_SESSION['user_id']);
+       $fields = $field_controller->get_fields_visible_for_user($_SESSION['user_id']);
 
+       $links['self'] = RouteController::get_link('data');
+       $links['config'] = RouteController::get_link('config');
+
+       foreach($orgs as $org) {
+           $org_link = RouteController::get_link('data', 'organisation', $org['organisation_id']);
+           $links['organisations'][] = array(
+               'organisation_id' => $org['organisation_id'],
+               'organisation_name' => $org['organisation_name'],
+               'href' => $org_link
+           );
+       }
+       foreach($org_groups as $group) {
+           $org_group_link = RouteController::get_link('data', 'organisation-group', $group['organisation_group_name']);
+           $links['organisation-groups'][] = array(
+               'organisation_group_id' => $group['organisation_group_id'],
+               'organisation_group_name' => $group['organisation_group_name'],
+               'href' => $org_group_link
+           );
+       }
+       foreach($fields as $field) {
+           $field_link = RouteController::get_link('data', 'field', $field['field_id']);
+           $links['fields'][] = array(
+               'field_id' => $field['field_id'],
+               'field_name' => $field['field_name'],
+               'href' => $field_link
+           );
+       }
+       $json_array['links'] = $links;
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
 
    public function get_org_id_links($request, $response, $args) {
        $org_controller = new OrganisationController();
+
+       $orgs = $org_controller->get_orgs_visble_for_user($_SESSION['user_id']);
+
        $links['self'] = RouteController::get_link('data', 'organisation');
-       $org_ids = $org_controller->get_org_ids($_SESSION['user_id']);
-       foreach($org_ids as $id) {
-           $links['organisations'][] = RouteController::get_link('data', 'organisation', $id);
+       $links['config'] = RouteController::get_link('config', 'organisation');
+       foreach($orgs as $org) {
+           $org_link = RouteController::get_link('data', 'organisation', $org['organisation_id']);
+           $links['organisations'][] = array(
+               'organisation_id' => $org['organisation_id'],
+               'organisation_name' => $org['organisation_name'],
+               'href' => $org_link
+           );
        }
+
        $json_array = array('links' => $links);
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
@@ -46,7 +86,11 @@ class DataRouteController extends RouteController {
        $data_controller = new DataController();
        $org_controller = new OrganisationController();
 
-       $field_ids = $org_controller->get_field_ids($_SESSION['user_id'], $args['org_id']);
+       $fields = $org_controller->get_fields($_SESSION['user_id'], $args['org_id']);
+       $field_ids = [];
+       foreach($fields as $field) {
+           $field_ids[] = $field['field_id'];
+       }
        $query_parameters = $request->getQueryParams();
        if(isset($query_parameters['last'])) {
            $last = $query_parameters['last'];
@@ -67,12 +111,21 @@ class DataRouteController extends RouteController {
 
    public function get_org_group_links($request, $response, $args) {
        $org_controller = new OrganisationController();
-       $links['self'] = RouteController::get_link('data', 'organisation-group');
+
        $org_groups = $org_controller->get_org_groups($_SESSION['user_id']);
+
+       $links['self'] = RouteController::get_link('data', 'organisation-group');
+       $links['config'] = RouteController::get_link('config', 'organisation-group');
+
        foreach($org_groups as $group) {
-           $link_json = array('organisation_group_name' => $group, 'href' => RouteController::get_link('data', 'organisation-group', $group));
-           $links['organisation-groups'][] = $link_json;
+           $org_group_link = RouteController::get_link('data', 'organisation-group', $group['organisation_group_name']);
+           $links['organisation-groups'][] = array(
+               'organisation_group_id' => $group['organisation_group_id'],
+               'organisation_group_name' => $group['organisation_group_name'],
+               'href' => $org_group_link
+           );
        }
+
        $json_array = array('links' => $links);
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
@@ -96,7 +149,11 @@ class DataRouteController extends RouteController {
 
        foreach($orgs as $org) {
            if($user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
-               $field_ids = $org_controller->get_field_ids($_SESSION['user_id'], $org['organisation_id']);
+               $fields = $org_controller->get_fields($_SESSION['user_id'], $org['organisation_id']);
+               $field_ids = [];
+               foreach($fields as $field) {
+                   $field_ids[] = $field['field_id'];
+               }
                $data_by_org['organisation_id'] = $org['organisation_id'];
                $data_by_org['organisation_name'] = $org['organisation_name'];
                $data_by_org['data'] = $data_controller->get_data_by_field_ids($field_ids, $last);
@@ -114,12 +171,22 @@ class DataRouteController extends RouteController {
 
 
    public function get_field_id_links($request, $response, $args) {
-       $org_controller = new FieldController();
+       $field_controller = new FieldController();
+
+       $fields = $field_controller->get_fields_visible_for_user($_SESSION['user_id']);
+
        $links['self'] = RouteController::get_link('data', 'field');
-       $org_ids = $org_controller->get_field_ids($_SESSION['user_id']);
-       foreach($org_ids as $id) {
-           $links['organisations'][] = RouteController::get_link('data', 'field', $id);
+       $links['config'] = RouteController::get_link('config', 'field');
+       foreach($fields as $field) {
+           $field_link = RouteController::get_link('data', 'field', $field['field_id']);
+           $links['fields'][] = array(
+               'field_id' => $field['field_id'],
+               'field_name' => $field['field_name'],
+               'href' => $field_link
+           );
        }
+
+
        $json_array = array('links' => $links);
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
@@ -157,7 +224,11 @@ class DataRouteController extends RouteController {
        $data_controller = new DataController();
        $org_controller = new OrganisationController();
 
-       $field_ids = $org_controller->get_field_ids($_SESSION['user_id'], $args['org_id']);
+       $fields = $org_controller->get_fields($_SESSION['user_id'], $args['org_id']);
+       $field_ids = [];
+       foreach($fields as $field) {
+           $field_ids[] = $field['field_id'];
+       }
 
        $data = [];
        if(isset($args['day'])) {
