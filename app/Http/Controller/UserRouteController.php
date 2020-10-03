@@ -31,6 +31,11 @@ class UserRouteController extends RouteController {
      * @return mixed
      */
     public function post_home ($request, $response, $args) {
+        $user_controller = new UserController();
+
+        if (!$user_controller->can_create_user($_SESSION['user_id'])) {
+            return $this->return_response($response, ResponseCodes::FORBIDDEN);
+        }
 
         $new_user = json_decode($request->getBody(), true);
         if (!$this->check_post_users_request_format($new_user)) {
@@ -38,25 +43,35 @@ class UserRouteController extends RouteController {
             return $response->withStatus(500);
         }
 
-        $user_controller = new UserController();
-        $errno = $user_controller->create_new_user($_SESSION['user_id'],
-            $new_user['username'],
+        if ($user_controller->exists_user_for_username($new_user['username']))
+            return $this->return_response($response, ResponseCodes::SERVER_ERROR);
+
+        if (!$this->can_grant_this_rights($_SESSION['user_id'], $new_user['permissions'])) {
+            return $this->return_response($response, ResponseCodes::FORBIDDEN);
+        }
+
+        $user_controller->insert_into_user($new_user['username'],
             $new_user['email'],
             $new_user['realname'],
             $new_user['userpassword'],
-            $new_user['permissions']
-        );
+            'salty');
 
-        return $this->return_response($response, $errno);
+        $new_user_id = $user_controller->get_user_id_by_username($new_user['username']);
+
+        $user_controller->insert_permissions($new_user_id, $new_user['permissions']);
+
+        $user_controller->insert_into_can_see_user($_SESSION['user_id'], $new_user_id, 1);
+
+        return $this->return_response($response, ResponseCodes::OK);
 
     }
 
    public function get_user_id ($request, $response, $args) {
 
        $user_controller = new UserController();
-       if ($user_controller->exists_user($args['id']))
-           $this->return_response($response, ResponseCodes::NOT_FOUND);
-       if (!$user_controller->can_see_user($_SESSION['user_id']))
+       if ($user_controller->exists_user_for_id($args['id']))
+           $this->return_response($response, ResponseCodes::FORBIDDEN);
+       if (!$user_controller->can_see_user($_SESSION['user_id'], $args['id']))
            $this->return_response($response, ResponseCodes::FORBIDDEN);
 
        $user = $user_controller->get_user_with_permissions_by_id($args['id']);
@@ -79,8 +94,18 @@ class UserRouteController extends RouteController {
        } else if ($parsed_request['id_user'] != $args['id']) {
            return $this->return_response($response, ResponseCodes::NO_MATCH);
        }
-
        $user_controller = new UserController();
+
+       if (!$user_controller->can_alter_user($_SESSION['user_id'], $args['id']))
+            return $this->return_response($response, ResponseCodes::FORBIDDEN);
+
+       if ($user_controller->exists_user_for_username($parsed_request['username']))
+           return $this->return_response($response, ResponseCodes::SERVER_ERROR);
+
+       if (!$this->can_grant_this_rights($_SESSION['user_id'], $parsed_request['permissions']))
+       return $this->return_response($response, ResponseCodes::FORBIDDEN);
+
+
        $errno = $user_controller->modify_user(
            $_SESSION['user_id'],
            $parsed_request['id_user'],
@@ -105,7 +130,11 @@ class UserRouteController extends RouteController {
         }
 
         $user_controller = new UserController();
-        $errno = $user_controller->set_user_inactive($_SESSION['user_id'], $parsed_request['id_user']);
+
+        if (!$user_controller->can_alter_user($_SESSION['user_id'], $parsed_request['id_user']))
+            return $this->return_response($response, ResponseCodes::FORBIDDEN);
+
+        $errno = $user_controller->update_user_active($parsed_request['id_user'], 0);
 
         return $this->return_response($response, $errno);
    }
@@ -156,6 +185,8 @@ class UserRouteController extends RouteController {
             'can_create_organisation' => false,
             'can_create_user' => false,
             'can_insert_into_field' => true,
+            'can_create_organisation_type' => false,
+            'can_create_organisation_group' => false,
             'can_see_user' => [['passive_user_id' => false, 'can_alter' => false]],
             'can_see_field' => [['field_id' => false, 'can_alter' => false]],
             'can_see_organisation' => [['organisation_id' => false, 'priority' => false, 'can_alter' => false]]]];
@@ -172,6 +203,8 @@ class UserRouteController extends RouteController {
             'can_create_field' => false,
             'can_create_organisation' => false,
             'can_create_user' => false,
+            'can_create_organisation_type' => false,
+            'can_create_organisation_group' => false,
             'can_insert_into_field' => true,
             'can_see_user' => [['passive_user_id' => false, 'can_alter' => false]],
             'can_see_field' => [['field_id' => false, 'can_alter' => false]],

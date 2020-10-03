@@ -29,11 +29,7 @@ class UserController extends AbstractController {
      * @param $userpassword
      * @return mixed|string
      */
-    public function create_new_user($session_user_id, $username, $email, $realname, $userpassword, $permissions) {
-        if (!$this->can_create_user($session_user_id)) {
-            return ResponseCodes::FORBIDDEN;
-        }
-
+    public function create_new_user($username, $email, $realname, $userpassword, $permissions) {
         $password_hash = hash('sha256', $userpassword . SALT . 'salty');
         $errno = $this->insert_into_user($username, $password_hash, $email, $realname, 'salty'); // TODO salt value
 
@@ -89,17 +85,6 @@ class UserController extends AbstractController {
         return $full_user;
     }
 
-    public function set_user_inactive($session_user_id, $user_id) {
-        if (!$this->exists_user($user_id)) {
-            return ResponseCodes::NOT_FOUND;
-        } else if (!$this->can_alter_user($session_user_id, $user_id)) {
-            return ResponseCodes::FORBIDDEN;
-        }
-
-        return $this->update_user_active($user_id, 0);
-
-    }
-
     public function insert_into_user($username, $userpassword, $email, $realname, $salt) {
         $this->db_access->prepare(
             'INSERT INTO user (username, userpassword, email, realname, salt) 
@@ -140,11 +125,6 @@ class UserController extends AbstractController {
     }
 
     public function modify_user($session_user_id, $user_id, $username, $email, $realname, $active, $req_pw_reset, $permissions) {
-        if (!$this->exists_user($user_id)) {
-            return ResponseCodes::NOT_FOUND;
-        } else if (!$this->can_alter_user($session_user_id, $user_id)) { //TODO
-            return ResponseCodes::FORBIDDEN;
-        }
 
         $this->update_user($user_id, $username, $email, $realname, $active, $req_pw_reset);
         $this->delete_permissions($user_id);
@@ -178,6 +158,10 @@ class UserController extends AbstractController {
 
         $this->delete_from_can_see_user($user_id);
 
+        $this->delete_from_can_create_organisation_type($user_id);
+
+        $this->delete_from_can_create_organisation_group($user_id);
+
     }
 
     /**
@@ -199,6 +183,14 @@ class UserController extends AbstractController {
                 case 'can_create_user':
                     if ($perm_val)
                         $this->insert_into_can_create_user($user_id);
+                    break;
+                case 'can_create_organisation_type':
+                    if ($perm_val)
+                        $this->insert_into_can_create_organisation_type($user_id);
+                    break;
+                case 'can_create_organisation_group':
+                    if ($perm_val)
+                        $this->insert_into_can_create_organisation_group($user_id);
                     break;
                 case 'can_see_field':
                     foreach ($perm_val as $rec) {
@@ -266,6 +258,22 @@ class UserController extends AbstractController {
         return $this->delete_from_table_where_user_id('can_create_organisation', $user_id);
     }
 
+    private function insert_into_can_create_organisation_type($user_id) {
+        return $this->insert_into_can_create_type('can_create_organisation_type', $user_id);
+    }
+
+    private function delete_from_can_create_organisation_type($user_id) {
+        return $this->delete_from_table_where_user_id('can_create_organisation_type', $user_id);
+    }
+
+    private function insert_into_can_create_organisation_group($user_id) {
+        return $this->insert_into_can_create_type('can_create_organisation_group', $user_id);
+    }
+
+    private function delete_from_can_create_organisation_group($user_id) {
+        return $this->delete_from_table_where_user_id('can_create_organisation_group', $user_id);
+    }
+
     private function insert_into_can_insert_into_field($user_id, $field_id) {
         $this->db_access->prepare(
             'INSERT into can_insert_into_field(user_id, field_id) 
@@ -279,7 +287,7 @@ class UserController extends AbstractController {
         return $this->delete_from_table_where_user_id('can_insert_into_field', $user_id);
     }
 
-    private function insert_into_can_see_user($active_user, $passive_user, $can_alter) {
+    public function insert_into_can_see_user($active_user, $passive_user, $can_alter) {
         $this->db_access->prepare(
             'INSERT INTO can_see_user(active_user_id, passive_user_id, can_alter)
 				VALUES(?,?,?)'
@@ -358,10 +366,9 @@ class UserController extends AbstractController {
     }
 
     public function can_alter_organisation($user_id, $organisation_id){
-           $stmt_string = 'SELECT * FROM can_see_organisation WHERE user_id = ? AND organisation_id=? AND can_alter=1 ';
+           $stmt_string = 'SELECT * FROM can_see_organisation WHERE user_id = ? AND organisation_id=? AND can_alter=1';
            return $this->exists_entry($stmt_string, 'ii', $user_id, $organisation_id);
     }
-
 
     public function can_see_field($user_id, $field_id) {
         $stmt_string = 'SELECT * FROM can_see_field WHERE user_id = ? AND field_id=?';
@@ -397,19 +404,34 @@ class UserController extends AbstractController {
         return $this->exists_entry($stmt_string, 'i', $user_id);
     }
 
-    private function can_create_user($user_id) {
+    public function can_create_organisation_type($user_id) {
+        $stmt_string = 'SELECT * FROM can_create_organisation_type WHERE user_id = ?';
+        return $this->exists_entry($stmt_string, 'i', $user_id);
+    }
+
+    public function can_create_organisation_group($user_id) {
+        $stmt_string = 'SELECT * FROM can_create_organisation_group WHERE user_id = ?';
+        return $this->exists_entry($stmt_string, 'i', $user_id);
+    }
+
+    public function can_create_user($user_id) {
         $stmt_string = 'SELECT * FROM can_create_user WHERE user_id = ?';
         return $this->exists_entry($stmt_string, 'i', $user_id);
     }
 
-    public function can_see_user($user_id) {
-        $stmt_string = 'SELECT * FROM can_see_user WHERE passive_user_id = ?';
+    public function can_see_user($active_user_id, $passive_user_id) {
+        $stmt_string = 'SELECT * FROM can_see_user WHERE active_user_id=? AND passive_user_id = ?';
+        return $this->exists_entry($stmt_string, 'i', $active_user_id, $passive_user_id);
+    }
+
+    public function exists_user_for_id($user_id) {
+        $stmt_string = 'SELECT * FROM user WHERE id_user = ?';
         return $this->exists_entry($stmt_string, 'i', $user_id);
     }
 
-    public function exists_user($user_id) {
-        $stmt_string = 'SELECT * FROM user WHERE id_user = ?';
-        return $this->exists_entry($stmt_string, 'i', $user_id);
+    public function exists_user_for_username($username) {
+        $stmt_string = 'SELECT * FROM user WHERE username = ?';
+        return $this->exists_entry($stmt_string, 's', $username);
     }
 
     private function exists_entry($stmt_string, $param_string, ...$params) {
