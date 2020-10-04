@@ -409,7 +409,7 @@ class UserController extends AbstractController {
 
     public function can_see_user($active_user_id, $passive_user_id) {
         $stmt_string = 'SELECT * FROM can_see_user WHERE active_user_id=? AND passive_user_id = ?';
-        return $this->exists_entry($stmt_string, 'i', $active_user_id, $passive_user_id);
+        return $this->exists_entry($stmt_string, 'ii', $active_user_id, $passive_user_id);
     }
 
     public function exists_user_for_id($user_id) {

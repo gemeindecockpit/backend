@@ -73,10 +73,10 @@ class UserRouteController extends RouteController {
    public function get_user_id ($request, $response, $args) {
 
        $user_controller = new UserController();
-       if ($user_controller->exists_user_for_id($args['id']))
-           $this->return_response($response, ResponseCodes::FORBIDDEN);
+       if (!$user_controller->exists_user_for_id($args['id']))
+           return $this->return_response($response, ResponseCodes::FORBIDDEN);
        if (!$user_controller->can_see_user($_SESSION['user_id'], $args['id']))
-           $this->return_response($response, ResponseCodes::FORBIDDEN);
+            return $this->return_response($response, ResponseCodes::FORBIDDEN);
 
        $user = $user_controller->get_user_by_id($args['id']);
        $user['permissions'] = $user_controller->get_permissions_by_id($args['id']);
