@@ -49,6 +49,17 @@ class UserController extends AbstractController {
         return $this->format_query_result($query_result)[0];
     }
 
+    public function get_username_by_id($user_id) {
+        $this->db_access->prepare(
+            'SELECT username
+            FROM user
+            WHERE id_user = ?'
+        );
+        $this->db_access->bind_param('i', $user_id);
+        $query_result = $this->db_access->execute();
+        return $this->format_query_result_to_indexed_array($query_result)[0];
+    }
+
     public function get_user_id_by_username($username) {
         $this->db_access->prepare(
             'SELECT id_user
@@ -429,7 +440,7 @@ class UserController extends AbstractController {
         return $query_result->num_rows > 0;
     }
 
-    private function get_can_insert_into_field($user_id) {
+    public function get_can_insert_into_field($user_id) {
         $stmt_string = 'SELECT field_id FROM can_insert_into_field WHERE user_id = ?';
         return $this->format_query_result_to_indexed_array($this->get_permissions($stmt_string, 'i', $user_id), true);
     }

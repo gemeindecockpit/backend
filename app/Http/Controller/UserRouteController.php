@@ -148,7 +148,8 @@ class UserRouteController extends RouteController {
 
         $user_controller = new UserController();
         $me = $user_controller->get_user_by_id($_SESSION['user_id']);
-        $me['permissions'] = $user_controller->get_permissions_by_id($_SESSION['user_id']);
+        $old_perms = $user_controller->get_permissions_by_id($_SESSION['user_id']);
+        $me['permissions'] = array_merge($old_perms, $this->create_permissions($_SESSION['user_id']));
 
         $response->getBody()->write(json_encode($me));
         return $this->return_response($response, ResponseCodes::OK);
@@ -177,6 +178,31 @@ class UserRouteController extends RouteController {
    }
 
     //Helper
+
+    public function create_permissions($user_id) {
+
+        $user_controller = new UserController();
+        $permissions['users'] = [];
+        foreach ($user_controller->get_can_see_user_ids($user_id) as $visible_user_id) {
+            array_push($permissions['users'], ['id_user' => $visible_user_id, 'username' => $user_controller->get_username_by_id($visible_user_id)]);
+        }
+
+        $field_controller = new FieldController();
+        $permissions['visible_fields'] = $field_controller->get_fields_visible_for_user($user_id);
+
+        $permissions['writeable_fields'] = [];
+        foreach ($user_controller->get_can_insert_into_field($user_id) as $writeable_field_id) {
+            array_push($permissions['writeable_fields'], $field_controller->get_field_by_id($writeable_field_id));
+        }
+
+        $organisation_controller = new OrganisationController();
+        $permissions['visible_organisations'] = $organisation_controller->get_orgs_visble_for_user($user_id);
+
+        $permissions['organisation_groups'] = $organisation_controller->get_org_groups($user_id);
+
+        return $permissions;
+
+    }
 
     /**
      * Checks if the request is of proper structure.
