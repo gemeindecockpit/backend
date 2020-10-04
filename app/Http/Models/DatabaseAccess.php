@@ -1,6 +1,9 @@
 <?php
+namespace App\Http\Models;
+use Mysqli;
 
 require_once(__DIR__ . '/../../../config/config.php');
+
 
 class DatabaseAccess
 {

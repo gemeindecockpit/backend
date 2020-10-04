@@ -21,6 +21,7 @@ abstract class AbstractController
     {
         $db_access = DatabaseAccess::get_instance();
         $no_error = $db_access->prepare($stmt_string);
+
         if ($no_error && sizeof($args) > 0) {
             $no_error = $db_access->bind_param($param_string, ...$args);
         }
