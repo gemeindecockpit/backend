@@ -192,7 +192,7 @@ class UserRouteController extends RouteController {
 
         $permissions['writeable_fields'] = [];
         foreach ($user_controller->get_can_insert_into_field($user_id) as $writeable_field_id) {
-            array_push($permissions['writeable_fields'], $field_controller->get_field_by_id($writeable_field_id));
+            array_push($permissions['writeable_fields'], $field_controller->get_field_by_id($writeable_field_id)[0]);
         }
 
         $organisation_controller = new OrganisationController();
