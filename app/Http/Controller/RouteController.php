@@ -47,6 +47,7 @@ class RouteController {
      * @return mixed
      */
     protected function return_response($response, $errno) {
+        DatabaseAccess::getInstance()->close();
         switch (true) {
             case ($errno === ResponseCodes::NO_MATCH):
                 $response->getBody()->write('User in request does not match user in url.');
