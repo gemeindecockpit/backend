@@ -23,7 +23,7 @@ class UserRouteController extends RouteController {
            array_push($visible_users, $visible_user);
        }
 
-       $response->getBody()->write(json_encode($visible_users));
+       $response->getBody()->write(json_encode($visible_users, JSON_NUMERIC_CHECK));
        return $this->return_response($response, ResponseCodes::OK);
    }
 
@@ -81,7 +81,7 @@ class UserRouteController extends RouteController {
        $user = $user_controller->get_user_by_id($args['id']);
        $user['permissions'] = $user_controller->get_permissions_by_id($args['id']);
 
-       $response->getBody()->write(json_encode($user));
+       $response->getBody()->write(json_encode($user, JSON_NUMERIC_CHECK));
        return $this->return_response($response, ResponseCodes::OK);
    }
 
@@ -149,9 +149,9 @@ class UserRouteController extends RouteController {
         $user_controller = new UserController();
         $me = $user_controller->get_user_by_id($_SESSION['user_id']);
         $old_perms = $user_controller->get_permissions_by_id($_SESSION['user_id']);
-        $me['permissions'] = array_merge($old_perms, $this->create_permissions($_SESSION['user_id']));
+        $me['permissions'] = $this->create_permissions($_SESSION['user_id']);
 
-        $response->getBody()->write(json_encode($me));
+        $response->getBody()->write(json_encode($me, JSON_NUMERIC_CHECK));
         return $this->return_response($response, ResponseCodes::OK);
 
    }
@@ -182,23 +182,33 @@ class UserRouteController extends RouteController {
     public function create_permissions($user_id) {
 
         $user_controller = new UserController();
-        $permissions['users'] = [];
-        foreach ($user_controller->get_can_see_user_ids($user_id) as $visible_user_id) {
-            array_push($permissions['users'], ['id_user' => $visible_user_id, 'username' => $user_controller->get_username_by_id($visible_user_id)]);
+        $permissions = $user_controller->get_permissions_by_id($user_id);
+        foreach ($permissions['can_see_user'] as &$visible_user) {
+            $visible_user['username'] = $user_controller->get_username_by_id($visible_user['passive_user_id']);
         }
 
         $field_controller = new FieldController();
-        $permissions['visible_fields'] = $field_controller->get_fields_visible_for_user($user_id);
+        foreach ($permissions['can_see_field'] as &$visible_field) {
+            $visible_field['field_name'] = $field_controller->get_field_by_id($visible_field['field_id'])[0]['field_name'];
+        }
 
-        $permissions['writeable_fields'] = [];
-        foreach ($user_controller->get_can_insert_into_field($user_id) as $writeable_field_id) {
-            array_push($permissions['writeable_fields'], $field_controller->get_field_by_id($writeable_field_id)[0]);
+        $writeable_field_ids = $permissions['can_insert_into_field'];
+        $permissions['can_insert_into_field'] = [];
+        foreach ($writeable_field_ids as $writeable_field_id) {
+            $field = $field_controller->get_field_by_id($writeable_field_id)[0];
+            array_push($permissions['can_insert_into_field'], ['field_id' => $field['field_id'], 'field_name' => $field['field_name']]);
         }
 
         $organisation_controller = new OrganisationController();
-        $permissions['visible_organisations'] = $organisation_controller->get_orgs_visble_for_user($user_id);
+        foreach ($permissions['can_see_organisation'] as &$visible_org) {
+            $org = $organisation_controller->get_org_by_id($visible_org['organisation_id']);
+            $visible_org['organisation_name'] = $org[0]['organisation_name'];
+        }
 
         $permissions['organisation_groups'] = $organisation_controller->get_org_groups($user_id);
+        foreach ($permissions['organisation_groups'] as &$org_group) {
+            $org_group['organisation_ids'] = $organisation_controller->get_org_ids_by_group_id_for_user($org_group['organisation_group_id'], $user_id);
+        }
 
         return $permissions;
 

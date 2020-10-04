@@ -99,6 +99,20 @@ class OrganisationController extends AbstractController
         }
     }
 
+    public function get_org_ids_by_group_id_for_user($group_id, $user_id) {
+        $this->db_access->prepare(
+            'SELECT id_organisation
+            FROM organisation
+            JOIN view_organisation_visible_for_user
+                ON id_organisation=organisation_id
+            WHERE organisation.organisation_group_id=?
+            AND user_id=?'
+        );
+        $this->db_access->bind_param('ii', $group_id, $user_id);
+        $query_result = $this->db_access->execute();
+        return $this->format_query_result_to_indexed_array($query_result, true);
+    }
+
     public function get_org_by_id(...$args)
     {
         $stmt_string = $this->select_org_skeleton;
