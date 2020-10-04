@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Models\DatabaseAccess;
+
 require_once('DatabaseOps.php');
-require_once('DatabaseAccess.php');
+#require_once('DatabaseAccess.php');
 
 /*
 * To be renamed and refactored as a model
@@ -19,16 +21,15 @@ abstract class AbstractController
 
     protected function execute_stmt($stmt_string, $param_string, ...$args)
     {
-        $db_access = DatabaseAccess::get_instance();
-        $no_error = $db_access->prepare($stmt_string);
+        $no_error = $this->db_access->prepare($stmt_string);
 
         if ($no_error && sizeof($args) > 0) {
-            $no_error = $db_access->bind_param($param_string, ...$args);
+            $no_error = $this->db_access->bind_param($param_string, ...$args);
         }
 
         $query_result = null;
         if ($no_error) {
-            $query_result = $db_access->execute();
+            $query_result = $this->db_access->execute();
         } else {
             return [];
         }
@@ -77,7 +78,6 @@ abstract class AbstractController
                 if ($value_is_int)
                     $value = intval($value);
                 array_push($result, $value);
-
             }
         }
         return $result;

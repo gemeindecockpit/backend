@@ -13,7 +13,6 @@ class NUTSController extends AbstractController {
     }
 
     public function get_next_NUTS_codes($user_id, ...$args) {
-        $db_access = DatabaseAccess::get_instance();
         $stmt_string =
             'SELECT DISTINCT (nuts' . sizeof($args) .
             ') FROM view_organisation_visible_for_user
@@ -23,9 +22,9 @@ class NUTSController extends AbstractController {
             $stmt_string .= ' AND nuts' . $i . ' = ?';
             $param_string .= 's';
         }
-        $db_access->prepare($stmt_string);
-        $db_access->bind_param($param_string, $user_id, ...$args);
-        $query_result = $db_access->execute();
+        $this->db_access->prepare($stmt_string);
+        $this->db_access->bind_param($param_string, $user_id, ...$args);
+        $query_result = $this->db_access->execute();
         $next_nuts = [];
         while($row = $query_result->fetch_array()) {
             $next_nuts[] = $row[0];
