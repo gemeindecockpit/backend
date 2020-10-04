@@ -44,7 +44,7 @@ class UserRouteController extends RouteController {
         $new_user = json_decode($request->getBody(), true);
         if (!$this->check_post_users_request_format($new_user)) {
             $response->getBody()->write("Request not match required format.");
-            return $response->withStatus(500);
+            return $this->return_response($response, ResponseCodes::SERVER_ERROR);
         }
 
         if ($user_controller->exists_user_for_username($new_user['username']))
@@ -164,11 +164,9 @@ class UserRouteController extends RouteController {
            'id_user' => false,
            'userpassword' => null
        ])) {
-           $response->getBody()->write('Request not match required format.');
-           return $response->withStatus(500);
+           return $this->return_response($response, ResponseCodes::BAD_REQUEST);
        } else if ($_SESSION['user_id'] != $parsed_request['id_user']) {
-           $response->getBody()->write('User of request does not match session user.');
-           return $response->withStatus(500);
+           return $this->return_response($response, ResponseCodes::NO_MATCH);
        }
 
        $user_controller = new UserController();
