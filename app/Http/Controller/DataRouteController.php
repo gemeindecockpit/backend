@@ -57,7 +57,6 @@ class DataRouteController extends RouteController {
            );
        }
        $json_array['links'] = $links;
-       DatabaseAccess::getInstance()->close();
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
@@ -79,7 +78,6 @@ class DataRouteController extends RouteController {
        }
 
        $json_array = array('links' => $links);
-       DatabaseAccess::getInstance()->close();
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
@@ -106,7 +104,6 @@ class DataRouteController extends RouteController {
        $links['config'] = RouteController::get_link('config', 'organisation', $args['org_id']);
 
        $json_array = array('data' => $data, 'links' => $links);
-       DatabaseAccess::getInstance()->close();
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
@@ -130,7 +127,6 @@ class DataRouteController extends RouteController {
        }
 
        $json_array = array('links' => $links);
-       DatabaseAccess::getInstance()->close();
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
@@ -168,7 +164,6 @@ class DataRouteController extends RouteController {
        $links['config'] = RouteController::get_link('data', 'organisation-group', $args['org_group']);
 
        $json_array = array('organisations' => $orgs_in_group, 'links' => $links);
-       DatabaseAccess::getInstance()->close();
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
@@ -193,7 +188,6 @@ class DataRouteController extends RouteController {
 
 
        $json_array = array('links' => $links);
-       DatabaseAccess::getInstance()->close();
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
@@ -203,7 +197,6 @@ class DataRouteController extends RouteController {
        $user_controller = new UserController();
 
        if(!$user_controller->can_see_field($_SESSION['user_id'], $args['field_id'])) {
-           DatabaseAccess::getInstance()->close();
            $response->getBody()->write('Access denied');
            return $response->withHeader(403);
        }
@@ -222,7 +215,6 @@ class DataRouteController extends RouteController {
 
        $json_array = array('data' => $data, 'links' => $links);
 
-       DatabaseAccess::getInstance()->close();
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
@@ -255,7 +247,6 @@ class DataRouteController extends RouteController {
        $links['config'] = RouteController::get_link('config', 'organisation', $args['org_id']);
 
        $json_array = array('data' => $data, 'links' => $links);
-       DatabaseAccess::getInstance()->close();
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
@@ -265,7 +256,6 @@ class DataRouteController extends RouteController {
        $user_controller = new UserController();
 
        if(!$user_controller->can_see_field($_SESSION['user_id'], $args['field_id'])) {
-           DatabaseAccess::getInstance()->close();
            $response->getBody()->write('Access denied');
            return $response->withHeader(403);
        }
@@ -287,7 +277,6 @@ class DataRouteController extends RouteController {
        $links['config'] = RouteController::get_link('config', 'field', $args['field_id']);
 
        $json_array = array('data' => $data, 'links' => $links);
-       DatabaseAccess::getInstance()->close();
        $response->getBody()->write(json_encode($json_array));
        return $response->withHeader('Content-type', 'application/json');
    }
@@ -303,22 +292,18 @@ class DataRouteController extends RouteController {
        $data = [];
        foreach($body as $entry) {
            if(!isset($entry['field_id'])) {
-               DatabaseAccess::getInstance()->close();
                $response->getBody()->write('field_id required for all entries');
                return $response->withStatus(500);
            }
            if(!isset($entry['field_value'])) {
-               DatabaseAccess::getInstance()->close();
                $response->getBody()->write('No value given');
                return $response->withStatus(500);
            }
            if(!isset($entry['date'])) {
-               DatabaseAccess::getInstance()->close();
                $response->getBody()->write('No date specified');
                return $response->withStatus(500);
            }
            if(!$user_controller->can_insert_into_field($_SESSION['user_id'], $entry['field_id'])) {
-               DatabaseAccess::getInstance()->close();
                $response->getBody()->write('Access denied');
                return $response->withStatus(403);
            }
@@ -333,11 +318,9 @@ class DataRouteController extends RouteController {
 
 
        if($errno) {
-           DatabaseAccess::getInstance()->close();
            $response->getBody()->write($errno);
            return $response->withStatus(500);
        }
-       DatabaseAccess::getInstance()->close();
        return $response->withStatus(200);
 
    }
@@ -347,7 +330,6 @@ class DataRouteController extends RouteController {
        $user_controller = new UserController();
 
        if(!$user_controller->can_insert_into_field($_SESSION['user_id'], $args['field_id'])) {
-           DatabaseAccess::getInstance()->close();
            $response->getBody()->write('Access denied');
            return $response->withStatus(403);
        }
@@ -355,12 +337,10 @@ class DataRouteController extends RouteController {
        $body = json_decode($request->getBody(),true);
 
        if(!isset($body['field_value'])) {
-           DatabaseAccess::getInstance()->close();
            $response->getBody()->write('No value given');
            return $response->withStatus(500);
        }
        if(!isset($body['date'])) {
-           DatabaseAccess::getInstance()->close();
            $response->getBody()->write('No date specified');
            return $response->withStatus(500);
        }
@@ -374,11 +354,9 @@ class DataRouteController extends RouteController {
        $errno = $data_controller->insert_data($data);
 
        if($errno) {
-           DatabaseAccess::getInstance()->close();
            $response->getBody()->write($errno);
            return $response->withStatus(500);
        }
-       DatabaseAccess::getInstance()->close();
        return $response->withStatus(200);
    }
 }

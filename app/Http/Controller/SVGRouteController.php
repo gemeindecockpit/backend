@@ -24,26 +24,18 @@ class SVGRouteController extends RouteController {
         $SVG_path = $SVG_con->get_SVG_for_org($args['org_id']);
         //does the org have a svg ? if not than send the default svg back
         if ($SVG_path['svg_path'] == '0') {
-            DatabaseAccess::getInstance()->close();
-
-            $response->getBody()->write(DEFAULT_SVG);
+          $response->getBody()->write(DEFAULT_SVG);
           return $response->withStatus(200,'no svg set');
         } else if (file_exists(SVG_PATH . '/' . $SVG_path['svg_path'])){
-          DatabaseAccess::getInstance()->close();
-
           $svg = file_get_contents(SVG_PATH .'/'. $SVG_path['svg_path']);
           $svg = base64_encode($svg);
           $response->getBody()->write($svg);
           return $response->withStatus(200);
         } else {
-            DatabaseAccess::getInstance()->close();
-
-            return $response->withStatus(403,'no such file');
+          return $response->withStatus(403,'no such file');
         }
       } else {
-          DatabaseAccess::getInstance()->close();
-
-          return $response->withStatus(403,'no access to org or organisation does not exists');
+        return $response->withStatus(403,'no access to org or organisation does not exists');
       }
 
     }
@@ -60,15 +52,11 @@ class SVGRouteController extends RouteController {
           if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
             //is the filesize bigger than allowed?
             if ($uploadedFile->getSize() > MAX_SVG_SIZE) {
-                DatabaseAccess::getInstance()->close();
-
-                return $response->withStatus(413,'filesize too big, max size is ' . MAX_SVG_SIZE);
+              return $response->withStatus(413,'filesize too big, max size is ' . MAX_SVG_SIZE);
             } else {
               //check if the mimetype is image/svg+xml and if the extension is .svg
               if ($uploadedFile->getClientMediaType() != 'image/svg+xml' || !preg_match("/\.(svg)$/", $uploadedFile->getClientFilename())) {
-                  DatabaseAccess::getInstance()->close();
-
-                  return $response->withStatus(406,'file is not a svg')->withHeader('Content-Type','.svg');
+                return $response->withStatus(406,'file is not a svg')->withHeader('Content-Type','.svg');
               } else {
                 //all checks are correct, move file to system and make the DB entry
                 $filename = $this->move_uploaded_file(SVG_PATH, $uploadedFile);
@@ -80,18 +68,12 @@ class SVGRouteController extends RouteController {
           }
         } catch (Exception $e) {
           error_log($e->getMessage());
-            DatabaseAccess::getInstance()->close();
-
-            return $response->withStatus(500,'does the file-form contain svg_file ?');
+          return $response->withStatus(500,'does the file-form contain svg_file ?');
         }
       } else {
-          DatabaseAccess::getInstance()->close();
-
-          return $response->withStatus(403,'no access to org or organisation does not exists');
+        return $response->withStatus(403,'no access to org or organisation does not exists');
       }
-        DatabaseAccess::getInstance()->close();
-
-        return $response->withStatus(200);
+      return $response->withStatus(200);
     }
 
     /**

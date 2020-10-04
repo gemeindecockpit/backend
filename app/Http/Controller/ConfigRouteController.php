@@ -25,8 +25,6 @@ class ConfigRouteController extends RouteController
            'links' => array('self' => $self)
        );
 
-        DatabaseAccess::getInstance()->close();
-
         $response->getBody()->write(json_encode($json_array));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -100,7 +98,7 @@ class ConfigRouteController extends RouteController
         }
 
         $json_array['links'] = $links;
-        DatabaseAccess::getInstance()->close();
+
         $response->getBody()->write(json_encode($json_array));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -129,7 +127,6 @@ class ConfigRouteController extends RouteController
         $orgs = $org_controller->get_org_by_location(...$args_indexed);
 
         if(sizeof($orgs) == 0) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Not found');
             return $response->withStatus(500);
         }
@@ -138,14 +135,13 @@ class ConfigRouteController extends RouteController
 
         $field = $field_controller->get_field_by_name($org_id, $field_name);
         if(sizeof($field) == 0) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Not found');
             return $response->withStatus(500);
         }
 
         if(!$user_controller->can_see_organisation($_SESSION['user_id'], $org_id)
-            || !$user_controller->can_see_field($_SESSION['user_id'], $field['field_id'])) {
-            DatabaseAccess::getInstance()->close();
+            || !$user_controller->can_see_field($_SESSION['user_id'], $field['field_id']))
+        {
             $response->getBody()->write('Access denied');
             return $response->withStatus(403);
         }
@@ -155,7 +151,6 @@ class ConfigRouteController extends RouteController
         $links['data'] = RouteController::get_link('data', 'field', $field['field_id']);
         $field['links'] = $links;
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($field));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -197,7 +192,6 @@ class ConfigRouteController extends RouteController
         }
         $json_array = array('organisations' => $orgs, 'links' => $links);
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($json_array));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -206,14 +200,10 @@ class ConfigRouteController extends RouteController
         $org_controller = new OrganisationController();
         $user_controller = new UserController();
 
-        if(!$org_type = $org_controller->get_type_by_name($args['org_type'])) {
-            DatabaseAccess::getInstance()->close();
+        if(!$org_type = $org_controller->get_type_by_name($args['org_type']))
             return $response->withStatus(500);
-        }
-        if(!$user_controller->can_see_type($_SESSION['user_id'], $org_type['organisation_type_id'])) {
-            DatabaseAccess::getInstance()->close();
+        if(!$user_controller->can_see_type($_SESSION['user_id'], $org_type['organisation_type_id']))
             return $response->withStatus(403);
-        }
         $links['self'] = RouteController::get_link('config', 'organisation-type', $args['org_type']);
 
         $query_result = $org_controller->get_all_orgs_by_type($args['org_type']);
@@ -233,7 +223,6 @@ class ConfigRouteController extends RouteController
         $org_type['organisations'] = $orgs;
         $org_type['links'] = $links;
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($org_type));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -243,8 +232,7 @@ class ConfigRouteController extends RouteController
         $user_controller = new UserController();
 
         if(!$org = $org_controller->get_org_by_type($args['org_type'], $args['org_name'])) {
-            DatabaseAccess::getInstance()->close();
-            return $response->withStatus(500);
+                return $response->withStatus(500);
         }
         $org['fields'] = $org_controller->get_fields($_SESSION['user_id'], $org['organisation_id']);
         $links['self'] = RouteController::get_link('config', 'organistaion-type', $args['org_type'], $args['org_name']);
@@ -258,8 +246,6 @@ class ConfigRouteController extends RouteController
             );
         }
         $org['links'] = $links;
-
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($org));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -270,22 +256,18 @@ class ConfigRouteController extends RouteController
         $user_controller = new UserController();
 
         if(!$org = $org_controller->get_org_by_type($args['org_type'], $args['org_name'])) {
-            DatabaseAccess::getInstance()->close();
-            return $response->withStatus(500);
+                return $response->withStatus(500);
         }
         if(!$user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Access denied');
             return $response->withStatus(403);
         }
 
         if(!$field = $field_controller->get_field_by_name($org['organisation_id'], $args['field_name'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Field not found or field name is ambiguous');
             return $response->withStatus(500);
         }
         if(!$user_controller->can_see_field($_SESSION['user_id'], $field['field_id'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Access denied');
             return $response->withStatus(403);
         }
@@ -300,7 +282,6 @@ class ConfigRouteController extends RouteController
         $links['data'] = RouteController::get_link('data', 'field', $field['field_id']);
         $field['links'] = $links;
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($field));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -315,12 +296,10 @@ class ConfigRouteController extends RouteController
 
         $json_array = $org_controller->get_group_by_name($args['org_group']);
         if(!isset($json_array['organisation_group_id'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('No matching group found');
             return $response->withStatus(500);
         }
         if(!$user_controller->can_see_group($_SESSION['user_id'], $json_array['organisation_group_id'])) {
-            DatabaseAccess::getInstance()->close();
             return $response->withStatus(403);
         }
         $links['self'] = RouteController::get_link('config', 'organisation-group', $args['org_group']);
@@ -342,7 +321,6 @@ class ConfigRouteController extends RouteController
         $json_array['organisations'] = $orgs;
         $json_array['links'] = $links;
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($json_array));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -401,7 +379,6 @@ class ConfigRouteController extends RouteController
 
         $json_array['links'] = $links;
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($json_array));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -415,24 +392,20 @@ class ConfigRouteController extends RouteController
 
         $orgs = $org_controller->get_org_by_group($args['org_group'], $args['org_name']);
         if(sizeof($orgs) == 0) {
-            DatabaseAccess::getInstance()->close();
             return $response->getBody()->write('No organisation found');
         } else {
             $org = $orgs[0];
         }
         if(!$user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Access denied');
             return $response->withStatus(403);
         }
 
         if(!$field = $field_controller->get_field_by_name($org['organisation_id'], $args['field_name'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Field not found or field name is ambiguous');
             return $response->withStatus(403);
         }
         if(!$user_controller->can_see_field($_SESSION['user_id'], $field['field_id'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Access denied');
             return $response->withStatus(403);
         }
@@ -447,7 +420,6 @@ class ConfigRouteController extends RouteController
         $links['data'] = RouteController::get_link('data', 'field', $field['field_id']);
         $field['links'] = $links;
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($field));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -498,7 +470,6 @@ class ConfigRouteController extends RouteController
 
         $json_array['links'] = $links;
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($json_array));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -511,14 +482,13 @@ class ConfigRouteController extends RouteController
 
 
         if(!$field = $field_controller->get_field_by_name($args['org_id'], $args['field_name'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Not found');
             return $response->withStatus(500);
         }
 
         if(!$user_controller->can_see_organisation($_SESSION['user_id'], $args['org_id'])
-            || !$user_controller->can_see_field($_SESSION['user_id'], $field['field_id'])) {
-            DatabaseAccess::getInstance()->close();
+            || !$user_controller->can_see_field($_SESSION['user_id'], $field['field_id']))
+        {
             $response->getBody()->write('Access denied');
             return $response->withStatus(403);
         }
@@ -527,7 +497,6 @@ class ConfigRouteController extends RouteController
         $links['data'] = RouteController::get_link('data', 'field', $field['field_id']);
         $field['links'] = $links;
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($field));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -564,7 +533,6 @@ class ConfigRouteController extends RouteController
         }
         $json_array['links'] = $links;
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($json_array));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -574,10 +542,8 @@ class ConfigRouteController extends RouteController
         $field_controller = new FieldController();
         $user_controller = new UserController();
 
-        if(!$user_controller->can_see_field($_SESSION['user_id'], $args['field_id'])) {
-            DatabaseAccess::getInstance()->close();
+        if(!$user_controller->can_see_field($_SESSION['user_id'], $args['field_id']))
             return $response->withStatus(403);
-        }
 
         $field = $field_controller->get_field_by_id($args['field_id']);
 
@@ -589,7 +555,6 @@ class ConfigRouteController extends RouteController
         $links['data'] = RouteController::get_link('data', 'field', $args['field_id']);
         $json_array['links'] = $links;
 
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode($json_array));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -609,7 +574,6 @@ class ConfigRouteController extends RouteController
         $field_controller = new FieldController();
 
         if (!$user_controller->can_create_organisation($_SESSION['user_id'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('not allowed!');
             return $response->withStatus(403);
         }
@@ -617,7 +581,6 @@ class ConfigRouteController extends RouteController
         $body = json_decode($request->getBody(), true);
 
         if ($err_msg = $this->is_valid_post_org_body($body)) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write($err_msg);
             return $response->withStatus(500);
         }
@@ -627,11 +590,9 @@ class ConfigRouteController extends RouteController
             $required_fields = $org_controller->get_required_fields($org_type_id);
             if(sizeof($required_fields) > 0) {
                 if(!isset($body['fields'])) {
-                    DatabaseAccess::getInstance()->close();
                     $response->getBody()->write('initial fields not set, but required');
                     return $response->withStatus(500);
                 } else if ($err_msg = $this->all_required_fields_set($body['fields'], $required_fields)) {
-                    DatabaseAccess::getInstance()->close();
                     $response->getBody()->write($err_msg);
                     return $response->withStatus(500);
                 }
@@ -668,7 +629,6 @@ class ConfigRouteController extends RouteController
         );
 
         if ($org_id == 0) {
-            DatabaseAccess::getInstance()->close();
             return $response->withStatus(500);
         }
         $permissions = array('can_see_organisation' => array(array('organisation_id' => $org_id, 'can_alter' => 1, 'priority' => 0)));        $user_controller->insert_permissions($_SESSION['user_id'], $permissions);
@@ -683,7 +643,6 @@ class ConfigRouteController extends RouteController
                 $user_controller->insert_permissions($_SESSION['user_id'], $permissions);
             }
         }
-        DatabaseAccess::getInstance()->close();
         return $response->withStatus(200);
     }
 
@@ -692,7 +651,6 @@ class ConfigRouteController extends RouteController
         $org_controller = new OrganisationController();
 
         if (!$user_controller->can_create_organisation_type($_SESSION['user_id'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('not allowed!');
             return $response->withStatus(403);
         }
@@ -700,19 +658,16 @@ class ConfigRouteController extends RouteController
         $body = json_decode($request->getBody(), true);
 
         if ($err_msg = $this->is_valid_post_org_type_body($body)) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write($err_msg);
             return $response->withStatus(500);
         }
 
         if($org_type = $org_controller->get_type_by_name($body['organisation_type_name'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Type already exists');
             return $response->withStatus(500);
         }
 
         $org_type_id = (int)$org_controller->create_new_type($body['organisation_type_name'], $body['required_fields']);
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode(array('organisation_type_id' => $org_type_id, 'organisation_type_name' => $body['organisation_type_name'])));
         return $response->withStatus(200);
     }
@@ -724,7 +679,6 @@ class ConfigRouteController extends RouteController
         $org_controller = new OrganisationController();
 
         if (!$user_controller->can_alter_organisation($_SESSION['user_id'], $args['org_id'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('not allowed!');
             return $response->withStatus(403);
         }
@@ -732,7 +686,6 @@ class ConfigRouteController extends RouteController
 
 
         if ($err_msg = $this->is_valid_post_field_body($field)) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write($err_msg);
             return $response->withStatus(500);
         }
@@ -741,8 +694,6 @@ class ConfigRouteController extends RouteController
         $org_controller->add_field($args['org_id'], $sid);
         $permissions = array('can_see_field' => array(array('field_id' => $sid, 'can_alter' => 1)));
         $user_controller->insert_permissions($_SESSION['user_id'], $permissions);
-
-        DatabaseAccess::getInstance()->close();
         $response->getBody()->write(json_encode(array('field_id' => $sid)));
         return $response->withHeader('Content-type', 'application/json');
     }
@@ -762,13 +713,11 @@ class ConfigRouteController extends RouteController
         $body = json_decode($request->getBody(), true);
 
         if ($err_msg = $this->is_valid_put_org_body($body)) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write($err_msg);
             return $response->withStatus(500);
         }
 
         if(!$user_controller->can_alter_organisation($_SESSION['user_id'], $body['organisation_id'])) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Not allowed to modify the organisation');
             return $response->withStatus(403);
         }
@@ -811,11 +760,9 @@ class ConfigRouteController extends RouteController
         }
 
         if ($errno) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write(json_encode($errno));
             return $response->withStatus(500);
         } else {
-            DatabaseAccess::getInstance()->close();
             return $response->withStatus(200);
         }
     }
@@ -827,7 +774,6 @@ class ConfigRouteController extends RouteController
         $body = json_decode($request->getBody(), true);
 
         if ($err_msg = $this->is_valid_put_org_type_body($body)) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write($err_msg);
             return $response->withStatus(500);
         }
@@ -840,7 +786,6 @@ class ConfigRouteController extends RouteController
                         $body['organisation_type_name']
                     );
                 } else {
-                    DatabaseAccess::getInstance()->close();
                     $response->getBody()->write('new name is already taken');
                     return $response->withStatus(500);
                 }
@@ -855,11 +800,9 @@ class ConfigRouteController extends RouteController
                 $body['required_fields']);
         }
         if($errno) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write(json_encode($errno));
             return $response->withStatus(500);
         }
-        DatabaseAccess::getInstance()->close();
         return $response->withStatus(200);
     }
 
@@ -880,14 +823,12 @@ class ConfigRouteController extends RouteController
         $field = json_decode($request->getBody(), true);
 
         if ($err_msg = $this->is_valid_put_field_body($field)) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write("key in field json is missing");
             return $response->withStatus(500);
         }
 
         $permission = $user_controller->can_alter_field($_SESSION['user_id'], $field['field_id']);
         if(!$permission) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write('Not allowed to alter the field');
             return $response->withStatus(403);
         }
@@ -902,11 +843,9 @@ class ConfigRouteController extends RouteController
         );
 
         if ($errno) {
-            DatabaseAccess::getInstance()->close();
             $response->getBody()->write($errno);
             return $response->withStatus(500);
         } else {
-            DatabaseAccess::getInstance()->close();
             return $response->withStatus(200);
         }
     }
@@ -917,17 +856,14 @@ class ConfigRouteController extends RouteController
        $user_controller = new UserController();
        $permission = $user_controller->can_alter_organisation($_SESSION['user_id'], $args['org_id']);
        if(!$permission) {
-           DatabaseAccess::getInstance()->close();
            return $response->withStatus(403);
        }
 
        $errno = $org_controller->delete_organisation($args['org_id']);
        if($errno) {
-           DatabaseAccess::getInstance()->close();
            $response->getBody()->write($errno);
            return $response->withStatus(500);
        } else {
-           DatabaseAccess::getInstance()->close();
            return $response->withStatus(200);
        }
     }
@@ -939,18 +875,15 @@ class ConfigRouteController extends RouteController
 
        $permission = $user_controller->can_alter_field($_SESSION['user_id'], $args['field_id']);
        if(!$permission) {
-           DatabaseAccess::getInstance()->close();
            return $response->withStatus(403);
        }
 
        $errno = $field_controller->delete_field($args['field_id']);
 
        if($errno) {
-           DatabaseAccess::getInstance()->close();
            $response->getBody()->write($errno);
            return $response->withStatus(500);
        } else {
-           DatabaseAccess::getInstance()->close();
            return $response->withStatus(200);
        }
     }
