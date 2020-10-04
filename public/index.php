@@ -70,8 +70,8 @@ register_shutdown_function($shutdownHandler);
 
 
 // Add Error Middleware
-$errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, false, false);
-$errorMiddleware->setDefaultErrorHandler($errorHandler);
+//$errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, false, false);
+//$errorMiddleware->setDefaultErrorHandler($errorHandler);
 
 
 

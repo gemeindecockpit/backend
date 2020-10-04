@@ -140,6 +140,71 @@ class RouteController {
         return true;
     }
 
+    /**
+     * Checks if the session user has enough rights to grant the permissions.
+     * @param $session_user_id
+     * @param $permissions
+     * @return bool
+     */
+    protected function can_grant_this_rights($session_user_id, $permissions) {
+        $user_controller = new UserController();
+        foreach ($permissions as $permission => $values) {
+            switch ($permission) {
+                case 'can_create_field':
+                    if ($values && !$user_controller->can_create_field($session_user_id))
+                        return false;
+                    break;
+                case 'can_create_user':
+                    if ($values && !$user_controller->can_create_user($session_user_id))
+                        return false;
+                    break;
+                case 'can_create_organisation':
+                    if ($values && !$user_controller->can_create_organisation($session_user_id))
+                        return false;
+                    break;
+                case 'can_create_organisation_type':
+                    if ($values && !$user_controller->can_create_organisation_type($session_user_id))
+                        return false;
+                    break;
+                case 'can_create_organisation_group':
+                    if ($values && !$user_controller->can_create_organisation_group($session_user_id))
+                        return false;
+                    break;
+                case 'can_insert_into_field':
+                    foreach ($values as $field_id) {
+                        if (!$user_controller->can_insert_into_field($session_user_id, $field_id))
+                            return false;
+                    }
+                    break;
+                case 'can_see_field':
+                    foreach ($values as $field_perm) {
+                        if (!$field_perm['can_alter'] && !$user_controller->can_see_field($session_user_id, $field_perm['field_id']))
+                            return false;
+                        else if ($field_perm['can_alter'] && !$user_controller->can_alter_field($session_user_id, $field_perm['field_id']))
+                            return false;
+                    }
+                    break;
+                case 'can_see_user':
+                    foreach ($values as $user_perm) {
+                        if (!$user_perm['can_alter'] && !$user_controller->can_see_user($session_user_id, $user_perm['passive_user_id']))
+                            return false;
+                        else if ($user_perm['can_alter'] && !$user_controller->can_alter_user($session_user_id, $user_perm['passive_user_id']))
+                            return false;
+                    }
+                    break;
+                case 'can_see_organisation':
+                    foreach ($values as $org_perm) {
+                        if (!$org_perm['can_alter'] && !$user_controller->can_see_organisation($session_user_id, $org_perm['organisation_id']))
+                            return false;
+                        else if ($org_perm['can_alter'] && !$user_controller->can_alter_organisation($session_user_id, $org_perm['organisation_id']))
+                            return false;
+                    }
+                    break;
+            }
+        }
+        return true;
+    }
+
    public function home($request, $response, $args) {
        $response->getBody()->write(json_encode(array(
          'data' => $_SERVER['SERVER_NAME'] .'/data',

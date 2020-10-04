@@ -112,7 +112,6 @@ class DataController extends AbstractController {
     }
 
     public function get_data_by_field_ids($field_ids, $last='latest') {
-        $db_access = new DatabaseAccess();
         $stmt_string = $this->select_data_skeleton;
         $param_string = 'i';
         if($last !== 'latest' && $last !== 'all') { // TODO: What happens if gibberish input?
@@ -123,76 +122,69 @@ class DataController extends AbstractController {
         if($last == 'latest') {
             $stmt_string .= ' LIMIT 1';
         }
-        $db_access->prepare($stmt_string);
+        $this->db_access->prepare($stmt_string);
         $data = [];
         foreach($field_ids as $id) {
             if($last !== 'latest' && $last !== 'all')
-                $db_access->bind_param($param_string, $id, $last);
+                $this->db_access->bind_param($param_string, $id, $last);
             else
-                $db_access->bind_param($param_string, $id);
-            $query_result = $db_access->execute();
+                $this->db_access->bind_param($param_string, $id);
+            $query_result = $this->db_access->execute();
             while($row = $query_result->fetch_assoc()) {
                 $data[] = $row;
             }
         }
-        $db_access->close();
         return $data;
     }
 
     public function get_data_by_field_ids_and_day($field_ids, $org_id, $day) {
-        $db_access = new DatabaseAccess();
         $stmt_string = $this->select_data_skeleton;
         $stmt_string .= ' AND date = ?';
-        $db_access->prepare($stmt_string);
+        $this->db_access->prepare($stmt_string);
         $data = [];
         foreach($field_ids as $id) {
-            $db_access->bind_param('is', $id, $day);
-            $query_result = $db_access->execute();
+            $this->db_access->bind_param('is', $id, $day);
+            $query_result = $this->db_access->execute();
             while($row = $query_result->fetch_assoc()) {
                 $data[] = $row;
             }
         }
-        $db_access->close();
         return $data;
     }
 
     public function get_data_by_field_ids_and_month($field_ids, $org_id, $month) {
-        $db_access = new DatabaseAccess();
         $stmt_string = $this->select_data_skeleton;
         $stmt_string .=
             ' AND date >= ?
             AND date < date_add(?, INTERVAL 1 MONTH)
             ORDER BY date DESC';
-        $db_access->prepare($stmt_string);
+        $this->db_access->prepare($stmt_string);
         $data = [];
         foreach($field_ids as $id) {
-            $db_access->bind_param('iss', $id, $month, $month);
-            $query_result = $db_access->execute();
+            $this->db_access->bind_param('iss', $id, $month, $month);
+            $query_result = $this->db_access->execute();
             while($row = $query_result->fetch_assoc()) {
                 $data[] = $row;
             }
         }
-        $db_access->close();
         return $data;
     }
 
     public function get_data_by_field_ids_and_year($field_ids, $org_id, $year) {
-        $db_access = new DatabaseAccess();
         $stmt_string = $this->select_data_skeleton;
         $stmt_string .=
             ' AND date >= ?
             AND date < date_add(?, INTERVAL 1 YEAR)
             ORDER BY date DESC';
-        $db_access->prepare($stmt_string);
+        $this->db_access->prepare($stmt_string);
         $data = [];
         foreach($field_ids as $id) {
-            $db_access->bind_param('iss', $id, $year, $year);
-            $query_result = $db_access->execute();
+            $this->db_access->bind_param('iss', $id, $year, $year);
+            $query_result = $this->db_access->execute();
             while($row = $query_result->fetch_assoc()) {
                 $data[] = $row;
             }
         }
-        $db_access->close();
         return $data;
     }
 
@@ -380,19 +372,17 @@ class DataController extends AbstractController {
     }
 
     public function insert_data($data) {
-        $db_access = new DatabaseAccess();
         $stmt_string =
             "INSERT INTO
                 field_values (field_id, user_id, field_value, date)
             VALUES
                 (?,?,?,?)";
-        $db_access->prepare($stmt_string);
+        $this->db_access->prepare($stmt_string);
         $errno = null;
         foreach($data as $insert) {
-            $db_access->bind_param('iiis', $insert['field_id'], $insert['user_id'], $insert['field_value'], $insert['date']);
-            $errno = $db_access->execute();
+            $this->db_access->bind_param('iiis', $insert['field_id'], $insert['user_id'], $insert['field_value'], $insert['date']);
+            $errno = $this->db_access->execute();
         }
-        $db_access->close();
         return $errno;
     }
 

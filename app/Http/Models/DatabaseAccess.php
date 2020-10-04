@@ -1,6 +1,9 @@
 <?php
+namespace App\Http\Models;
+use Mysqli;
 
 require_once(__DIR__ . '/../../../config/config.php');
+
 
 class DatabaseAccess
 {
@@ -13,6 +16,11 @@ class DatabaseAccess
 
     private $stmt;
 
+    /**
+     * Instance for executing db operations
+     * @var null
+     */
+    private static $instance = null;
 
     public function __construct()
     {
@@ -77,6 +85,17 @@ class DatabaseAccess
             $this->stmt->close();
         }
         return $this->db_connection->close();
+    }
+
+    /**
+     * Returns the instance of DatabaseAccess
+     * @return DatabaseAccess|null
+     */
+    public static function get_instance() {
+        if (self::$instance == null)
+            self::$instance = new DatabaseAccess();
+
+        return self::$instance;
     }
 }
 ?>

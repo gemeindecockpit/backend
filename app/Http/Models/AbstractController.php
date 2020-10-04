@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Models\DatabaseAccess;
+
 require_once('DatabaseOps.php');
-require_once('DatabaseAccess.php');
+#require_once('DatabaseAccess.php');
 
 /*
 * To be renamed and refactored as a model
@@ -9,23 +11,25 @@ require_once('DatabaseAccess.php');
 abstract class AbstractController
 {
     protected $db_ops;
+    protected $db_access;
 
     public function __construct()
     {
         $this->db_ops = new DatabaseOps();
+        $this->db_access = DatabaseAccess::get_instance();
     }
 
     protected function execute_stmt($stmt_string, $param_string, ...$args)
     {
-        $db_access = new DatabaseAccess();
-        $no_error = $db_access->prepare($stmt_string);
+        $no_error = $this->db_access->prepare($stmt_string);
+
         if ($no_error && sizeof($args) > 0) {
-            $no_error = $db_access->bind_param($param_string, ...$args);
+            $no_error = $this->db_access->bind_param($param_string, ...$args);
         }
 
-        $query_result;
+        $query_result = null;
         if ($no_error) {
-            $query_result = $db_access->execute();
+            $query_result = $this->db_access->execute();
         } else {
             return [];
         }
@@ -36,8 +40,6 @@ abstract class AbstractController
         while ($row = $query_result->fetch_assoc()) {
             $result[] = $row;
         }
-
-        $db_access->close();
 
         return $result;
     }
@@ -76,7 +78,6 @@ abstract class AbstractController
                 if ($value_is_int)
                     $value = intval($value);
                 array_push($result, $value);
-
             }
         }
         return $result;
