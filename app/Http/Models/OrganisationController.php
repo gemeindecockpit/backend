@@ -253,7 +253,6 @@ class OrganisationController extends AbstractController
         $db_access->prepare($stmt_string);
         $db_access->bind_param('i', $type_id);
         $type = $this->format_query_result($db_access->execute());
-        $db_access->close();
         if(sizeof($type) > 0) {
             return $type[0];
         } else {
@@ -276,7 +275,6 @@ class OrganisationController extends AbstractController
         $db_access->prepare($stmt_string);
         $db_access->bind_param('i', $type_id);
         $fields = $this->format_query_result($db_access->execute());
-        $db_access->close();
         return $fields;
     }
 
@@ -333,7 +331,6 @@ class OrganisationController extends AbstractController
             if($errno)
                 break;
         }
-        $db_access->close();
         return $errno;
     }
 

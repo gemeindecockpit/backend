@@ -21,7 +21,7 @@ class SVGController extends AbstractController {
         );
         $db_access->bind_param('i', $org_id);
         $query_result = $db_access->execute();
-        $db_access->close();
+
         return $this->format_query_result($query_result)[0];
       }
 
@@ -34,7 +34,6 @@ class SVGController extends AbstractController {
         );
         $db_access->bind_param('si', $svg_path, $org_id);
         $query_result = $db_access->execute();
-        $db_access->close();
       }
 
 

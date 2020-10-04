@@ -62,7 +62,6 @@ class FieldController extends AbstractController {
         $db_access->prepare($stmt_string);
         $db_access->bind_param('i', $user_id);
         $query_result = $this->format_query_result($db_access->execute());
-        $db_access->close();
         return $query_result;
     }
     /**
