@@ -15,9 +15,13 @@ class UserRouteController extends RouteController {
 
        $user_controller = new UserController();
 
-       $visible_users = $user_controller->get_can_see_user_ids($_SESSION['user_id']);
-
-       $visible_users = $user_controller->get_all_by_id($visible_users);
+       $visible_user_ids = $user_controller->get_can_see_user_ids($_SESSION['user_id']);
+       $visible_users = [];
+       foreach ($visible_user_ids as $user_id) {
+           $visible_user = $user_controller->get_user_by_id($user_id);
+           $visible_user['permissions'] = $user_controller->get_permissions_by_id($user_id);
+           array_push($visible_users, $visible_user);
+       }
 
        $response->getBody()->write(json_encode($visible_users));
        return $this->return_response($response, ResponseCodes::OK);
@@ -74,7 +78,8 @@ class UserRouteController extends RouteController {
        if (!$user_controller->can_see_user($_SESSION['user_id'], $args['id']))
            $this->return_response($response, ResponseCodes::FORBIDDEN);
 
-       $user = $user_controller->get_user_with_permissions_by_id($args['id']);
+       $user = $user_controller->get_user_by_id($args['id']);
+       $user['permissions'] = $user_controller->get_permissions_by_id($args['id']);
 
        $response->getBody()->write(json_encode($user));
        return $this->return_response($response, ResponseCodes::OK);
@@ -142,7 +147,8 @@ class UserRouteController extends RouteController {
    public function get_users_me($request, $response) {
 
         $user_controller = new UserController();
-        $me = $user_controller->get_user_with_permissions_by_id($_SESSION['user_id']);
+        $me = $user_controller->get_user_by_id($_SESSION['user_id']);
+        $me['permissions'] = $user_controller->get_permissions_by_id($_SESSION['user_id']);
 
         $response->getBody()->write(json_encode($me));
         return $this->return_response($response, ResponseCodes::OK);

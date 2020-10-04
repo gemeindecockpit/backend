@@ -12,14 +12,6 @@ class UserController extends AbstractController {
         parent::__construct();
     }
 
-    public function get_all_by_id($user_ids) {
-        $users = [];
-        foreach ($user_ids as $user_id) {
-            array_push($users, $this->get_user_with_permissions_by_id($user_id));
-        }
-        return $users;
-    }
-
     /**
      * Inserts a new user if the operating user is allowed to do it.
      * @param $session_user_id
@@ -72,17 +64,13 @@ class UserController extends AbstractController {
         $permissions['can_create_field'] = ($this->can_create_field($user_id) ? 1 : 0);
         $permissions['can_create_organisation'] = ($this->can_create_organisation($user_id) ? 1 : 0);
         $permissions['can_create_user'] = ($this->can_create_user($user_id) ? 1 : 0);
+        $permissions['can_create_organisation_type'] = ($this->delete_from_can_create_organisation_type($user_id) ? 1 : 0);
+        $permissions['can_create_organisation_group'] = ($this->delete_from_can_create_organisation_group($user_id) ? 1 : 0);
         $permissions['can_insert_into_field'] = $this->get_can_insert_into_field($user_id);
         $permissions['can_see_field'] = $this->get_can_see_field($user_id);
         $permissions['can_see_user'] = $this->get_can_see_user($user_id);
         $permissions['can_see_organisation'] = $this->get_can_see_organisation($user_id);
         return $permissions;
-    }
-
-    public function get_user_with_permissions_by_id($user_id) {
-        $full_user = $this->get_user_by_id($user_id);
-        $full_user['permissions'] = $this->get_permissions_by_id($user_id);
-        return $full_user;
     }
 
     public function insert_into_user($username, $userpassword, $email, $realname, $salt) {
