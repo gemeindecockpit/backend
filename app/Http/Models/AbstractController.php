@@ -14,12 +14,12 @@ abstract class AbstractController
     public function __construct()
     {
         $this->db_ops = new DatabaseOps();
-        $this->db_access = new DatabaseAccess();
+        $this->db_access = DatabaseAccess::get_instance();
     }
 
     protected function execute_stmt($stmt_string, $param_string, ...$args)
     {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $no_error = $db_access->prepare($stmt_string);
         if ($no_error && sizeof($args) > 0) {
             $no_error = $db_access->bind_param($param_string, ...$args);

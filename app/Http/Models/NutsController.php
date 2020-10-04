@@ -13,7 +13,7 @@ class NUTSController extends AbstractController {
     }
 
     public function get_next_NUTS_codes($user_id, ...$args) {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $stmt_string =
             'SELECT DISTINCT (nuts' . sizeof($args) .
             ') FROM view_organisation_visible_for_user

@@ -25,7 +25,6 @@ class DatabaseAccess
         $this->params = [];
         $this->param_string = '';
         return;
-        $s = new DatabaseAccess();
     }
 
     public function prepare($stmt_string)
@@ -89,7 +88,7 @@ class DatabaseAccess
      * Returns the instance of DatabaseAccess
      * @return DatabaseAccess|null
      */
-    public static function getInstance() {
+    public static function get_instance() {
         if (self::$instance == null)
             self::$instance = new DatabaseAccess();
 

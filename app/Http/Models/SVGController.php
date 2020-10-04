@@ -13,7 +13,7 @@ class SVGController extends AbstractController {
       }
 
       public function get_SVG_for_org($org_id) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::get_instance();
         $db_access->prepare(
             'SELECT svg_path
             FROM organisation
@@ -26,7 +26,7 @@ class SVGController extends AbstractController {
       }
 
       public function set_SVG_for_org($org_id, $svg_path) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::get_instance();
         $db_access->prepare(
             'UPDATE organisation
             SET svg_path = ?

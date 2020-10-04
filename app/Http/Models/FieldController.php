@@ -25,7 +25,7 @@ class FieldController extends AbstractController {
     * Constructs an array that contains the config for all fields visible for $user_id
     */
     public function get_all() {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $db_access->prepare($this->select_field_skeleton);
         $query_result = $this->format_query_result($db_access->execute());
         return $query_result;
@@ -38,7 +38,7 @@ class FieldController extends AbstractController {
     }
 
     public function get_field_by_name($org_id, $field_name) {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $stmt_string = $this->select_field_skeleton;
         $stmt_string .=
             ' JOIN view_organisations_and_fields
@@ -57,7 +57,7 @@ class FieldController extends AbstractController {
     }
 
     public function get_fields_visible_for_user($user_id) {
-        $db_access = new DatabaseAccess();
+        $db_access = DatabaseAccess::get_instance();
         $stmt_string = 'SELECT * FROM view_fields_visible_for_user WHERE user_id = ?';
         $db_access->prepare($stmt_string);
         $db_access->bind_param('i', $user_id);
@@ -73,7 +73,7 @@ class FieldController extends AbstractController {
     *   Returns the formatted JSON array with the fields and links to further resources
     */
     public function get_config_for_field_by_full_link($user_id, ...$args) {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $stmt_string = $this->select_field_skeleton;
     }
 
@@ -107,7 +107,7 @@ class FieldController extends AbstractController {
     }
 
     public function insert_field($field) {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $stmt_string =
             'INSERT INTO
                 field (field_sid, name, reference_value, yellow_limit, red_limit, relational_flag)
@@ -132,7 +132,7 @@ class FieldController extends AbstractController {
 
 
     public function get_max_sid(){
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $db_access->prepare('SELECT max(field_sid) FROM field');
         $result = $db_access->execute();
         $max_sid=$result->fetch_array()[0];

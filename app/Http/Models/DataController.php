@@ -112,7 +112,7 @@ class DataController extends AbstractController {
     }
 
     public function get_data_by_field_ids($field_ids, $last='latest') {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $stmt_string = $this->select_data_skeleton;
         $param_string = 'i';
         if($last !== 'latest' && $last !== 'all') { // TODO: What happens if gibberish input?
@@ -139,7 +139,7 @@ class DataController extends AbstractController {
     }
 
     public function get_data_by_field_ids_and_day($field_ids, $org_id, $day) {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $stmt_string = $this->select_data_skeleton;
         $stmt_string .= ' AND date = ?';
         $db_access->prepare($stmt_string);
@@ -155,7 +155,7 @@ class DataController extends AbstractController {
     }
 
     public function get_data_by_field_ids_and_month($field_ids, $org_id, $month) {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $stmt_string = $this->select_data_skeleton;
         $stmt_string .=
             ' AND date >= ?
@@ -174,7 +174,7 @@ class DataController extends AbstractController {
     }
 
     public function get_data_by_field_ids_and_year($field_ids, $org_id, $year) {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $stmt_string = $this->select_data_skeleton;
         $stmt_string .=
             ' AND date >= ?
@@ -376,7 +376,7 @@ class DataController extends AbstractController {
     }
 
     public function insert_data($data) {
-        $db_access = DatabaseAccess::getInstance();
+        $db_access = DatabaseAccess::get_instance();
         $stmt_string =
             "INSERT INTO
                 field_values (field_id, user_id, field_value, date)
