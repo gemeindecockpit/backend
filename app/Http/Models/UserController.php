@@ -64,8 +64,8 @@ class UserController extends AbstractController {
         $permissions['can_create_field'] = ($this->can_create_field($user_id) ? 1 : 0);
         $permissions['can_create_organisation'] = ($this->can_create_organisation($user_id) ? 1 : 0);
         $permissions['can_create_user'] = ($this->can_create_user($user_id) ? 1 : 0);
-        $permissions['can_create_organisation_type'] = ($this->delete_from_can_create_organisation_type($user_id) ? 1 : 0);
-        $permissions['can_create_organisation_group'] = ($this->delete_from_can_create_organisation_group($user_id) ? 1 : 0);
+        $permissions['can_create_organisation_type'] = ($this->can_create_organisation_type($user_id) ? 1 : 0);
+        $permissions['can_create_organisation_group'] = ($this->can_create_organisation_group($user_id) ? 1 : 0);
         $permissions['can_insert_into_field'] = $this->get_can_insert_into_field($user_id);
         $permissions['can_see_field'] = $this->get_can_see_field($user_id);
         $permissions['can_see_user'] = $this->get_can_see_user($user_id);
