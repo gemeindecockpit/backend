@@ -41,7 +41,7 @@ class UserController extends AbstractController {
     public function get_user_by_id($user_id) {
         $this->db_access->prepare(
             'SELECT id_user, username, email, realname, active, req_pw_reset
-            FROM user 
+            FROM user
             WHERE id_user = ?'
         );
         $this->db_access->bind_param('i', $user_id);

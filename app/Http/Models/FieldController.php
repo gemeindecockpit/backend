@@ -31,22 +31,10 @@ class FieldController extends AbstractController {
         return $query_result;
     }
 
-    public function get_field_by_id($user_id, $field_id) {
+    public function get_field_by_id($field_id) {
         $stmt = $this->select_field_skeleton;
         $stmt .= ' WHERE field_id = ?';
         return AbstractController::execute_stmt($stmt, 'i', $field_id);
-    }
-
-    /**
-    * Getter function for all field_ids visible for $user_id in the current layer
-    */
-    public function get_field_ids($user_id, ...$args) {
-        $query_result = $this->db_ops->get_field_ids($user_id, ...$args);
-        $field_ids = [];
-        while($row = $query_result->fetch_assoc()) {
-            $field_ids[] = $row['field_id'];
-        }
-        return $field_ids;
     }
 
     public function get_field_by_name($org_id, $field_name) {
@@ -68,6 +56,15 @@ class FieldController extends AbstractController {
         }
     }
 
+    public function get_fields_visible_for_user($user_id) {
+        $db_access = new DatabaseAccess();
+        $stmt_string = 'SELECT * FROM view_fields_visible_for_user WHERE user_id = ?';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('i', $user_id);
+        $query_result = $this->format_query_result($db_access->execute());
+        $db_access->close();
+        return $query_result;
+    }
     /**
     * Gets the config for all fields associated with an organisation (specified by the full link)
     * @param $user_id

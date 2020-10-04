@@ -12,6 +12,7 @@ class DataController extends AbstractController {
     private $select_data_skeleton =
         'SELECT
             field_id,
+            field_name,
             field_value,
             realname,
             date

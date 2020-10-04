@@ -92,7 +92,7 @@ class OrganisationController extends AbstractController
     public function get_org_by_type($org_type, $org_name) {
         $db_access = DatabaseAccess::getInstance();
         $stmt_string = $this->select_org_skeleton;
-        $stmt_string .= ' WHERE organisation_type = ? AND organistaion_name = ?';
+        $stmt_string .= ' WHERE organisation_type = ? AND organisation_name = ?';
         $db_access->prepare($stmt_string);
         $db_access->bind_param('ss', $org_type, $org_name);
         $query_result = $this->format_query_result($db_access->execute());
@@ -200,18 +200,20 @@ class OrganisationController extends AbstractController
     * @return
     *   An array with all org_ids
     */
-    public function get_org_ids($user_id)
+    public function get_orgs_visble_for_user($user_id)
     {
         $db_access = DatabaseAccess::getInstance();
-        $stmt_string = 'SELECT DISTINCT(organisation_id)
-            FROM can_see_organisation
+        $stmt_string =
+            'SELECT DISTINCT(organisation_id),
+                organisation_name
+            FROM view_organisation_visible_for_user
             WHERE user_id = ?';
         $db_access->prepare($stmt_string);
         $db_access->bind_param('i', $user_id);
         $query_result = $db_access->execute();
         $org_ids = [];
         while ($row = $query_result->fetch_assoc()) {
-            $org_ids[] = $row['organisation_id'];
+            $org_ids[] = $row;
         }
         return $org_ids;
     }
@@ -237,15 +239,102 @@ class OrganisationController extends AbstractController
         }
     }
 
+    public function get_type_by_id($type_id) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'SELECT
+                id_organisation_type as organisation_type_id,
+                organisation_type_name
+            FROM
+                organisation_type
+            WHERE
+                id_organisation_type = ?
+        ';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('i', $type_id);
+        $type = $this->format_query_result($db_access->execute());
+        $db_access->close();
+        if(sizeof($type) > 0) {
+            return $type[0];
+        } else {
+            return false;
+        }
+    }
 
-    public function create_new_type($type_name) {
+
+    public function get_required_fields($type_id) {
+        $db_access = DatabaseAccess::getInstance();
+        $stmt_string =
+            'SELECT
+                field_name,
+                relational_flag
+            FROM
+                organisation_type_requires_field
+            WHERE
+                organisation_type_id = ?
+        ';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('i', $type_id);
+        $fields = $this->format_query_result($db_access->execute());
+        $db_access->close();
+        return $fields;
+    }
+
+
+    public function create_new_type($type_name, $required_fields = []) {
         $db_access = DatabaseAccess::getInstance();
         $stmt_string = 'INSERT INTO organisation_type (organisation_type_name) VALUES (?)';
         $db_access->prepare($stmt_string);
         $db_access->bind_param('s', $type_name);
         $db_access->execute();
         $type_id = $db_access->get_insert_id();
+        $this->update_required_fields($type_id, $required_fields);
+
         return $type_id;
+    }
+
+    public function put_org_type($type_id, $type_name) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'UPDATE
+                organisation_type
+            SET organisation_type_name = ?
+            WHERE id_organisation_type = ?
+        ';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('si', $type_name, $type_id);
+        $errno = $db_access->execute();
+        return $errno;
+    }
+
+    public function update_required_fields($type_id, $required_fields) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'DELETE FROM
+                organisation_type_requires_field
+            WHERE
+                organisation_type_id = ?
+        ';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('i', $type_id);
+        $errno = $db_access->execute();
+
+        if($errno)
+            return $errno;
+
+        $stmt_string =
+            'INSERT INTO
+                organisation_type_requires_field (organisation_type_id,field_name,relational_flag)
+            VALUES (?,?,?)';
+        $db_access->prepare($stmt_string);
+        foreach($required_fields as $field) {
+            $db_access->bind_param('isi', $type_id, $field['field_name'], $field['relational_flag']);
+            $errno = $db_access->execute();
+            if($errno)
+                break;
+        }
+        $db_access->close();
+        return $errno;
     }
 
     public function get_group_by_name($group_name) {
@@ -282,7 +371,8 @@ class OrganisationController extends AbstractController
     public function get_org_groups($user_id)
     {
         $db_access = DatabaseAccess::getInstance();
-        $stmt_string = 'SELECT DISTINCT(organisation_group)
+        $stmt_string = 'SELECT DISTINCT(organisation_group_id),
+                organisation_group as organisation_group_name
             FROM view_organisation_visible_for_user
             WHERE user_id = ?';
         $db_access->prepare($stmt_string);
@@ -291,7 +381,7 @@ class OrganisationController extends AbstractController
 
         $org_groups = [];
         while ($row = $query_result->fetch_assoc()) {
-            $org_groups[] = $row['organisation_group'];
+            $org_groups[] = $row;
         }
 
         return $org_groups;
@@ -300,14 +390,15 @@ class OrganisationController extends AbstractController
 
     public function get_organisation_types($user_id) {
         $stmt_string =
-            'SELECT DISTINCT(organisation_type)
+            'SELECT DISTINCT(organisation_type_id),
+                organisation_type AS organisation_type_name
             FROM view_organisation_visible_for_user
             WHERE user_id = ?
             ';
         $query_result = AbstractController::execute_stmt($stmt_string, 'i', $user_id);
         $types = [];
         foreach($query_result as $row) {
-            $types[] = $row['organisation_type'];
+            $types[] = $row;
         }
         return $types;
     }
@@ -332,26 +423,6 @@ class OrganisationController extends AbstractController
             $fields[] = $row;
         }
         return $fields;
-    }
-
-    public function get_field_ids($user_id, $org_id) {
-        $stmt_string =
-            'SELECT view_organisations_and_fields.field_id
-            FROM view_organisations_and_fields
-            JOIN can_see_organisation
-                ON view_organisations_and_fields.organisation_id = can_see_organisation.organisation_id
-            JOIN can_see_field
-                ON view_organisations_and_fields.field_id = can_see_field.field_id
-                AND can_see_organisation.user_id = can_see_field.user_id
-            WHERE can_see_organisation.user_id = ?
-            AND view_organisations_and_fields.organisation_id = ?
-            ';
-        $query_result = AbstractController::execute_stmt($stmt_string, 'ii', $user_id, $org_id);
-        $field_ids = [];
-        foreach($query_result as $row) {
-            $field_ids[] = $row['field_id'];
-        }
-        return $field_ids;
     }
 
     /**

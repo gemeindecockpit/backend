@@ -59,12 +59,16 @@ return function (App $app) {
 
 
     $app->post('/config/organisation',
-        \ConfigRouteController::class . ':post_org'); // TODO
+        \ConfigRouteController::class . ':post_org');
+    $app->post('/config/organisation-type',
+        \ConfigRouteController::class . ':post_org_type');
     $app->post('/config/organisation/{org_id:[0-9]+}',
         \ConfigRouteController::class . ':post_field_by_org_id'); // TODO, link is not optimal!
 
     $app->put('/config/organisation',
         \ConfigRouteController::class . ':put_org');
+    $app->put('/config/organisation-type',
+        \ConfigRouteController::class . ':put_org_type');
     $app->put('/config/field',
         \ConfigRouteController::class . ':put_field');
 
@@ -95,6 +99,11 @@ return function (App $app) {
     $app->get('/data/field/{field_id:[0-9]+}/{year:[1|2|3][0-9][0-9][0-9]}[/{month:[0-1][0-9]}[/{day:[0-3][0-9]}]]',
         \DataRouteController::class . ':get_data_by_field_and_date');
 
+    //SVGs
+    $app->get('/svg/organisation/{org_id:[0-9]+}',
+        \SVGRouteController::class . ':get_org_svg');
+    $app->post('/svg/organisation/{org_id:[0-9]+}',
+        \SVGRouteController::class . ':set_org_svg');
 
     $app->post('/data/organisation/{org_id:[0-9]+}',
         \DataRouteController::class . ':post_org_data');
