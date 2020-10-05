@@ -123,7 +123,7 @@ class UserController extends AbstractController {
         return $this->db_access->execute();
     }
 
-    public function modify_user($session_user_id, $user_id, $username, $email, $realname, $active, $req_pw_reset, $permissions) {
+    public function modify_user($user_id, $username, $email, $realname, $active, $req_pw_reset, $permissions) {
 
         $this->update_user($user_id, $username, $email, $realname, $active, $req_pw_reset);
         $this->delete_permissions($user_id);
