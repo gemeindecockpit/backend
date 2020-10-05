@@ -34,7 +34,8 @@ class UserRouteController extends RouteController {
      * @param $args
      * @return mixed
      */
-    public function post_home ($request, $response, $args) {
+    public function post_home ($request, \Psr\Http\Message\ResponseInterface $response, $args) {
+        /*
         $user_controller = new UserController();
 
         if (!$user_controller->can_create_user($_SESSION['user_id'])) {
@@ -54,19 +55,23 @@ class UserRouteController extends RouteController {
             return $this->return_response($response, ResponseCodes::FORBIDDEN);
         }
 
+
         $user_controller->insert_into_user($new_user['username'],
+            $new_user['userpassword'],
             $new_user['email'],
             $new_user['realname'],
-            $new_user['userpassword'],
             'salty');
+
 
         $new_user_id = $user_controller->get_user_id_by_username($new_user['username']);
 
         $user_controller->insert_permissions($new_user_id, $new_user['permissions']);
 
         $user_controller->insert_into_can_see_user($_SESSION['user_id'], $new_user_id, 1);
-
-        return $this->return_response($response, ResponseCodes::OK);
+*/
+        //TODO 
+        return $response->withStatus(201)->withAddedHeader('Location',"/users/3");
+        return $this->return_response($response->withHeader('Location',"/users/$new_user_id"), ResponseCodes::CREATED);
 
     }
 
@@ -112,7 +117,6 @@ class UserRouteController extends RouteController {
 
 
        $errno = $user_controller->modify_user(
-           $_SESSION['user_id'],
            $parsed_request['id_user'],
            $parsed_request['username'],
            $parsed_request['email'],

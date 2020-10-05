@@ -20,6 +20,7 @@ function assoc_array_to_indexed($assoc_array) {
  */
 class ResponseCodes {
     const OK = 200;
+    const CREATED = 201;
     const NO_MATCH = 901; # no real response code
     const BAD_REQUEST = 400;
     const FORBIDDEN = 403;
@@ -60,8 +61,10 @@ class RouteController {
                 return $response->withStatus(ResponseCodes::FORBIDDEN);
             case ($errno === ResponseCodes::SERVER_ERROR):
                 return $response->withStatus(ResponseCodes::SERVER_ERROR);
-            case ($errno == false || $errno === ResponseCodes::OK):
-                return $response->withHeader(
+            case ($errno === ResponseCodes::CREATED):
+                 return $response->withStatus(ResponseCodes::CREATED);
+            case ($errno === ResponseCodes::OK):
+                return $response->withAddedHeader(
                     'Content-Type',
                     'application/json'
                 )->withStatus(ResponseCodes::OK);
