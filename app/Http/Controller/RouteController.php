@@ -14,19 +14,6 @@ function assoc_array_to_indexed($assoc_array) {
     return $indexed_array;
 }
 
-/**
- * Class ResponseCodes provides constants for the return
- * to the route controller class.
- */
-class ResponseCodes {
-    const OK = 200;
-    const NO_MATCH = 901; # no real response code
-    const BAD_REQUEST = 400;
-    const FORBIDDEN = 403;
-    const NOT_FOUND = 404;
-    const SERVER_ERROR = 500;
-}
-
 class RouteController {
     protected $container;
 
