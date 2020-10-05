@@ -54,11 +54,14 @@ class UserRouteController extends RouteController {
             return $this->return_response($response, ResponseCodes::FORBIDDEN);
         }
 
-        $user_controller->insert_into_user($new_user['username'],
+        $password_hash = hash('sha256', $new_user['userpassword'] . SALT . 'salty');
+        $user_controller->insert_into_user(
+            $new_user['username'],
+            $password_hash,
             $new_user['email'],
             $new_user['realname'],
-            $new_user['userpassword'],
-            'salty');
+            'salty'
+        );
 
         $new_user_id = $user_controller->get_user_id_by_username($new_user['username']);
 
@@ -110,9 +113,7 @@ class UserRouteController extends RouteController {
        if (!$this->can_grant_this_rights($_SESSION['user_id'], $parsed_request['permissions']))
        return $this->return_response($response, ResponseCodes::FORBIDDEN);
 
-
        $errno = $user_controller->modify_user(
-           $_SESSION['user_id'],
            $parsed_request['id_user'],
            $parsed_request['username'],
            $parsed_request['email'],
@@ -171,9 +172,10 @@ class UserRouteController extends RouteController {
        }
 
        $user_controller = new UserController();
-       $errno = $user_controller->update_password($parsed_request['id_user'], $parsed_request['userpassword'], 'salty');
+       $password_hash = hash('sha256', $parsed_request['userpassword'] . SALT . 'salty');
+       $errno = $user_controller->update_user_password($parsed_request['id_user'], $password_hash);
 
-       return $this->return_response($response, $errno);
+       return $this->return_response($response, ResponseCodes::OK);
 
    }
 

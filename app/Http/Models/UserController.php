@@ -123,18 +123,13 @@ class UserController extends AbstractController {
         return $this->db_access->execute();
     }
 
-    public function modify_user($session_user_id, $user_id, $username, $email, $realname, $active, $req_pw_reset, $permissions) {
+    public function modify_user($user_id, $username, $email, $realname, $active, $req_pw_reset, $permissions) {
 
         $this->update_user($user_id, $username, $email, $realname, $active, $req_pw_reset);
         $this->delete_permissions($user_id);
         $this->insert_permissions($user_id, $permissions);
 
         return false;
-    }
-
-    public function update_password($user_id, $new_password, $salt) {
-        $password_hash = hash('sha256', $new_password . SALT . $salt);
-        return $this->update_user_password($user_id, $password_hash);
     }
 
     /**
