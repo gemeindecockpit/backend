@@ -603,7 +603,7 @@ class ConfigRouteController extends RouteController
 
       $body = json_decode($request->getBody(), true);
 
-      id($err_msg = $this->is_valid_post_org_group_body) {
+      if($err_msg = $this->is_valid_post_org_group_body) {
         $response->getBody()->write($err_msg);
         return $response->withStatus(500);
       }
