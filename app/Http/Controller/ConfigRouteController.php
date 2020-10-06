@@ -603,7 +603,7 @@ class ConfigRouteController extends RouteController
 
       $body = json_decode($request->getBody(), true);
 
-      if($err_msg = $this->is_valid_post_org_group_body) {
+      if($err_msg = $this->is_valid_post_org_group_body($body)) {
         $response->getBody()->write($err_msg);
         return $response->withStatus(500);
       }
@@ -614,7 +614,7 @@ class ConfigRouteController extends RouteController
       }
 
 
-      $org_type_id = (int)$org_controller->create_new_group($body['organisation_group_name']);
+      $org_group_id = (int)$org_controller->create_new_group($body['organisation_group_name']);
       $response->getBody()->write(json_encode(array('organisation_group_id' => $org_group_id, 'organisation_group_name' => $body['organisation_group_name'])));
       return $response->withStatus(200);
     }
@@ -766,11 +766,8 @@ class ConfigRouteController extends RouteController
       }
       $errno = null;
       if($org_group = $org_controller->get_group_by_id($body['organisation_group_id'])) {
-          if(is_null($org_controller->get_group_by_name($body['organisation_group_name']))) {
-              $errno = $org_controller->put_org_group(
-                  $body['organisation_group_id'],
-                  $body['organisation_group_name']
-              );
+          if(!$org_controller->get_group_by_name($body['organisation_group_name'])) {
+              $errno = $org_controller->put_org_group($body);
           } else {
               $response->getBody()->write('new name is already taken');
               return $response->withStatus(500);

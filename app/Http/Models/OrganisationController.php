@@ -402,7 +402,7 @@ class OrganisationController extends AbstractController
       $stmt_string =
           'UPDATE
               organisation_group
-          SET organisation_group_name = ?
+          SET name = ?
           WHERE id_organisation_group = ?
       ';
       $db_access->prepare($stmt_string);
