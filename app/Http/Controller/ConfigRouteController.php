@@ -434,6 +434,11 @@ class ConfigRouteController extends RouteController
         $org_controller = new OrganisationController();
         $user_controller = new UserController();
 
+        if (!isset($request->getQueryParams()['date']))
+            $date = date('Y-m-d');
+        else
+            $date = $request->getQueryParams()['date'];
+
         $query_result = $org_controller->get_org_by_id(...$args_indexed);
         $orgs = [];
         foreach($query_result as $org) {
@@ -460,6 +465,7 @@ class ConfigRouteController extends RouteController
             $links['data'] = RouteController::get_link('data', 'organisation', ...$args_indexed);
             foreach($json_array['fields'] as $field) {
                 $field_link = $links['self'] . '/' . rawurlencode($field['field_name']);
+                $field_link .= (isset($request->getQueryParams()['date']) ? "?date=$date" : "");
                 $links['fields'][] = array(
                     'field_id' => $field['field_id'],
                     'field_name' => $field['field_name'],
@@ -468,6 +474,7 @@ class ConfigRouteController extends RouteController
             }
         }
 
+        $links['self'] .= (isset($request->getQueryParams()['date']) ? "?date=$date" : "");
         $json_array['links'] = $links;
 
         $response->getBody()->write(json_encode($json_array));
@@ -480,8 +487,14 @@ class ConfigRouteController extends RouteController
         $field_controller = new FieldController();
         $user_controller = new UserController();
 
+        if (!isset($request->getQueryParams()['date']))
+            $date = date('Y-m-d');
+        else
+            $date = $request->getQueryParams()['date'];
 
-        if(!$field = $field_controller->get_field_by_name($args['org_id'], $args['field_name'])) {
+        $field = $field_controller->get_field_by_name($args['org_id'], $args['field_name'], $date);
+
+        if(!$field) {
             $response->getBody()->write('Not found');
             return $response->withStatus(500);
         }
@@ -493,8 +506,15 @@ class ConfigRouteController extends RouteController
             return $response->withStatus(403);
         }
 
-        $links['self'] = RouteController::get_link('config', 'organisation', $args['org_id'], $args['field_name']);
-        $links['data'] = RouteController::get_link('data', 'field', $field['field_id']);
+        if (isset($request->getQueryParams()['date'])) {
+            $split_date = preg_split('/-/', $date);
+            $links['self'] = RouteController::get_link('config', 'organisation', $args['org_id'], $args['field_name']);
+            $links['data'] = RouteController::get_link('data', 'field', $field['field_id'], $split_date[0], $split_date[1], $split_date[2]);
+            $links['self'] .= "?date=$date";
+        } else {
+            $links['self'] = RouteController::get_link('config', 'organisation', $args['org_id'], $args['field_name']);
+            $links['data'] = RouteController::get_link('data', 'field', $field['field_id']);
+        }
         $field['links'] = $links;
 
         $response->getBody()->write(json_encode($field));
@@ -537,15 +557,15 @@ class ConfigRouteController extends RouteController
         return $response->withHeader('Content-type', 'application/json');
     }
 
-    public function get_field_by_id($request, $response, $args)
-    {
+    public function get_field_by_id($request, $response, $args) {
+
         $field_controller = new FieldController();
         $user_controller = new UserController();
 
         if(!$user_controller->can_see_field($_SESSION['user_id'], $args['field_id']))
             return $response->withStatus(403);
 
-        $field = $field_controller->get_field_by_id($args['field_id']);
+        $field = $field_controller->get_field_by_id_and_date($args['field_id']);
 
         $json_array = [];
         if(sizeof($field) > 0) {

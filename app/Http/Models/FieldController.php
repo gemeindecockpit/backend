@@ -37,16 +37,33 @@ class FieldController extends AbstractController {
         return AbstractController::execute_stmt($stmt, 'i', $field_id);
     }
 
-    public function get_field_by_name($org_id, $field_name) {
-        $stmt_string = $this->select_field_skeleton;
-        $stmt_string .=
-            ' JOIN view_organisations_and_fields
-                ON view_latest_field.field_id = view_organisations_and_fields.field_id
-            WHERE organisation_id = ?
-            AND view_latest_field.field_name = ?
-            ';
-        $this->db_access->prepare($stmt_string);
-        $this->db_access->bind_param('is', $org_id, $field_name);
+    public function get_field_by_id_and_date($field_id, $date = null) {
+        if ($date == null)
+            $date = date('Y-m-d');
+        $this->db_access->prepare(
+            'SELECT * 
+                FROM view_field 
+                WHERE valid_from <= ? 
+                AND (valid_to >= ? 
+                    OR ISNULL(valid_to))
+                AND field_id=?'
+        );
+        $this->db_access->bind_param('ssi', $date, $date, $field_id);
+        $query_result = $this->db_access->execute();
+        return $this->format_query_result($query_result);
+    }
+
+    public function get_field_by_name($org_id, $field_name, $date) {
+        $this->db_access->prepare(
+            'SELECT * 
+            FROM view_field_for_date
+            WHERE valid_from <= ? 
+                AND (valid_to >= ? 
+                    OR ISNULL(valid_to))
+                AND field_name=?
+                AND organisation_id=?'
+        );
+        $this->db_access->bind_param('sssi', $date, $date, $field_name, $org_id);
         $query_result = $this->format_query_result($this->db_access->execute());
         if(sizeof($query_result) == 1) {
             return $query_result[0];
