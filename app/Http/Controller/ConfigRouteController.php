@@ -764,18 +764,22 @@ class ConfigRouteController extends RouteController
           $response->getBody()->write($err_msg);
           return $response->withStatus(500);
       }
+      $errno = null;
       if($org_group = $org_controller->get_group_by_id($body['organisation_group_id'])) {
-          if($body['organisation_group_name'] != $org_group['organisation_group_name']) {
-              if(is_null($org_controller->get_group_by_name($body['organisation_group_name']))) {
-                  $errno = $org_controller->put_org_group(
-                      $body['organisation_group_id'],
-                      $body['organisation_group_name']
-                  );
-              } else {
-                  $response->getBody()->write('new name is already taken');
-                  return $response->withStatus(500);
-              }
+          if(is_null($org_controller->get_group_by_name($body['organisation_group_name']))) {
+              $errno = $org_controller->put_org_group(
+                  $body['organisation_group_id'],
+                  $body['organisation_group_name']
+              );
+          } else {
+              $response->getBody()->write('new name is already taken');
+              return $response->withStatus(500);
           }
+      }
+
+      if($errno) {
+          $response->getBody()->write(json_encode($errno));
+          return $response->withStatus(500);
       }
       return $response->withStatus(200);
     }
