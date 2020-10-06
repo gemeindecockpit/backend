@@ -537,15 +537,20 @@ class ConfigRouteController extends RouteController
         return $response->withHeader('Content-type', 'application/json');
     }
 
-    public function get_field_by_id($request, $response, $args)
-    {
+    public function get_field_by_id($request, $response, $args) {
+
         $field_controller = new FieldController();
         $user_controller = new UserController();
 
         if(!$user_controller->can_see_field($_SESSION['user_id'], $args['field_id']))
             return $response->withStatus(403);
 
-        $field = $field_controller->get_field_by_id($args['field_id']);
+        if (isset($request->getQueryParams()['date']))
+            $field = $field_controller->get_field_by_id_and_date($args['field_id'], $request->getQueryParams()['date']);
+        else
+            $field = $field_controller->get_field_by_id_and_date($args['field_id']);
+
+        error_log((sizeof($field) > 0 ? 'true' : 'false'));
 
         $json_array = [];
         if(sizeof($field) > 0) {

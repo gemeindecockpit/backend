@@ -37,6 +37,23 @@ class FieldController extends AbstractController {
         return AbstractController::execute_stmt($stmt, 'i', $field_id);
     }
 
+    public function get_field_by_id_and_date($field_id, $date = null) {
+        if ($date == null)
+            $date = date('Y-m-d');
+        error_log($date);
+        $this->db_access->prepare(
+            'SELECT * 
+                FROM view_field 
+                WHERE valid_from <= ? 
+                AND (valid_to >= ? 
+                    OR ISNULL(valid_to))
+                AND field_id=?'
+        );
+        $this->db_access->bind_param('ssi', $date, $date, $field_id);
+        $query_result = $this->db_access->execute();
+        return $this->format_query_result($query_result);
+    }
+
     public function get_field_by_name($org_id, $field_name) {
         $stmt_string = $this->select_field_skeleton;
         $stmt_string .=
