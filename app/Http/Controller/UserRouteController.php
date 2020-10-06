@@ -34,7 +34,8 @@ class UserRouteController extends RouteController {
      * @param $args
      * @return mixed
      */
-    public function post_home ($request, $response, $args) {
+    public function post_home ($request, \Psr\Http\Message\ResponseInterface $response, $args) {
+
         $user_controller = new UserController();
 
         if (!$user_controller->can_create_user($_SESSION['user_id'])) {
@@ -60,8 +61,9 @@ class UserRouteController extends RouteController {
             $password_hash,
             $new_user['email'],
             $new_user['realname'],
-            'salty'
+            'salty' // TODO random generated
         );
+
 
         $new_user_id = $user_controller->get_user_id_by_username($new_user['username']);
 
@@ -69,7 +71,7 @@ class UserRouteController extends RouteController {
 
         $user_controller->insert_into_can_see_user($_SESSION['user_id'], $new_user_id, 1);
 
-        return $this->return_response($response, ResponseCodes::OK);
+        return $this->return_response($response->withHeader('Location',"/users/$new_user_id"), ResponseCodes::CREATED);
 
     }
 
@@ -123,7 +125,7 @@ class UserRouteController extends RouteController {
            $parsed_request['permissions']
        );
 
-       return $this->return_response($response, $errno);
+       return $this->return_response($response, ResponseCodes::CREATED);
    }
 
    public function delete_user_id ($request, $response, $args) {
@@ -142,7 +144,7 @@ class UserRouteController extends RouteController {
 
         $errno = $user_controller->update_user_active($parsed_request['id_user'], 0);
 
-        return $this->return_response($response, $errno);
+        return $this->return_response($response, ResponseCodes::OK);
    }
 
    public function get_users_me($request, $response) {
@@ -174,7 +176,7 @@ class UserRouteController extends RouteController {
        $password_hash = hash('sha256', $parsed_request['userpassword'] . SALT . 'salty');
        $errno = $user_controller->update_user_password($parsed_request['id_user'], $password_hash);
 
-       return $this->return_response($response, ResponseCodes::OK);
+       return $this->return_response($response, ResponseCodes::CREATED);
 
    }
 
