@@ -14,7 +14,8 @@ class FieldController extends AbstractController {
             view_latest_field.reference_value as reference_value,
             view_latest_field.yellow_limit as yellow_limit,
             view_latest_field.red_limit as red_limit,
-            view_latest_field.relational_flag as relational_flag
+            view_latest_field.relational_flag as relational_flag,
+            view_latest_field.valid_from as valid_from
         FROM view_latest_field';
 
     public function __construct() {

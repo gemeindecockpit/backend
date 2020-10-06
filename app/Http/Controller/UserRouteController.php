@@ -19,7 +19,7 @@ class UserRouteController extends RouteController {
        $visible_users = [];
        foreach ($visible_user_ids as $user_id) {
            $visible_user = $user_controller->get_user_by_id($user_id);
-           $visible_user['permissions'] = $user_controller->get_permissions_by_id($user_id);
+           $visible_user['permissions'] = $this->create_permissions($user_id);
            array_push($visible_users, $visible_user);
        }
 
@@ -55,12 +55,14 @@ class UserRouteController extends RouteController {
             return $this->return_response($response, ResponseCodes::FORBIDDEN);
         }
 
-
-        $user_controller->insert_into_user($new_user['username'],
-            $new_user['userpassword'],
+        $password_hash = hash('sha256', $new_user['userpassword'] . SALT . 'salty');
+        $user_controller->insert_into_user(
+            $new_user['username'],
+            $password_hash,
             $new_user['email'],
             $new_user['realname'],
-            'salty');
+            'salty' // TODO random generated
+        );
 
 
         $new_user_id = $user_controller->get_user_id_by_username($new_user['username']);
@@ -82,7 +84,7 @@ class UserRouteController extends RouteController {
             return $this->return_response($response, ResponseCodes::FORBIDDEN);
 
        $user = $user_controller->get_user_by_id($args['id']);
-       $user['permissions'] = $user_controller->get_permissions_by_id($args['id']);
+       $user['permissions'] = $this->create_permissions($args['id']);
 
        $response->getBody()->write(json_encode($user, JSON_NUMERIC_CHECK));
        return $this->return_response($response, ResponseCodes::OK);
@@ -112,7 +114,6 @@ class UserRouteController extends RouteController {
 
        if (!$this->can_grant_this_rights($_SESSION['user_id'], $parsed_request['permissions']))
        return $this->return_response($response, ResponseCodes::FORBIDDEN);
-
 
        $errno = $user_controller->modify_user(
            $parsed_request['id_user'],
@@ -150,7 +151,6 @@ class UserRouteController extends RouteController {
 
         $user_controller = new UserController();
         $me = $user_controller->get_user_by_id($_SESSION['user_id']);
-        $old_perms = $user_controller->get_permissions_by_id($_SESSION['user_id']);
         $me['permissions'] = $this->create_permissions($_SESSION['user_id']);
 
         $response->getBody()->write(json_encode($me, JSON_NUMERIC_CHECK));
@@ -173,7 +173,8 @@ class UserRouteController extends RouteController {
        }
 
        $user_controller = new UserController();
-       $errno = $user_controller->update_password($parsed_request['id_user'], $parsed_request['userpassword'], 'salty');
+       $password_hash = hash('sha256', $parsed_request['userpassword'] . SALT . 'salty');
+       $errno = $user_controller->update_user_password($parsed_request['id_user'], $password_hash);
 
        return $this->return_response($response, ResponseCodes::CREATED);
 

@@ -132,11 +132,6 @@ class UserController extends AbstractController {
         return false;
     }
 
-    public function update_password($user_id, $new_password, $salt) {
-        $password_hash = hash('sha256', $new_password . SALT . $salt);
-        return $this->update_user_password($user_id, $password_hash);
-    }
-
     /**
      * Revokes all rights of user with $user_id.
      * @param $user_id
