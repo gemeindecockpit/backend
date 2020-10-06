@@ -35,7 +35,7 @@ class UserRouteController extends RouteController {
      * @return mixed
      */
     public function post_home ($request, \Psr\Http\Message\ResponseInterface $response, $args) {
-        /*
+
         $user_controller = new UserController();
 
         if (!$user_controller->can_create_user($_SESSION['user_id'])) {
@@ -68,9 +68,7 @@ class UserRouteController extends RouteController {
         $user_controller->insert_permissions($new_user_id, $new_user['permissions']);
 
         $user_controller->insert_into_can_see_user($_SESSION['user_id'], $new_user_id, 1);
-*/
-        //TODO 
-        return $response->withStatus(201)->withAddedHeader('Location',"/users/3");
+
         return $this->return_response($response->withHeader('Location',"/users/$new_user_id"), ResponseCodes::CREATED);
 
     }
@@ -126,7 +124,7 @@ class UserRouteController extends RouteController {
            $parsed_request['permissions']
        );
 
-       return $this->return_response($response, $errno);
+       return $this->return_response($response, ResponseCodes::CREATED);
    }
 
    public function delete_user_id ($request, $response, $args) {
@@ -145,7 +143,7 @@ class UserRouteController extends RouteController {
 
         $errno = $user_controller->update_user_active($parsed_request['id_user'], 0);
 
-        return $this->return_response($response, $errno);
+        return $this->return_response($response, ResponseCodes::OK);
    }
 
    public function get_users_me($request, $response) {
@@ -177,7 +175,7 @@ class UserRouteController extends RouteController {
        $user_controller = new UserController();
        $errno = $user_controller->update_password($parsed_request['id_user'], $parsed_request['userpassword'], 'salty');
 
-       return $this->return_response($response, $errno);
+       return $this->return_response($response, ResponseCodes::CREATED);
 
    }
 
