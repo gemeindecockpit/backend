@@ -47,8 +47,12 @@ class RouteController {
                 return $response->withStatus(ResponseCodes::FORBIDDEN);
             case ($errno === ResponseCodes::SERVER_ERROR):
                 return $response->withStatus(ResponseCodes::SERVER_ERROR);
-            case ($errno == false || $errno === ResponseCodes::OK):
-                return $response->withHeader(
+            case ($errno === ResponseCodes::CREATED):
+                 return $response->withStatus(ResponseCodes::CREATED);
+            case ($errno === ResponseCodes::CONFLICT):
+                return $response->withStatus(ResponseCodes::CONFLICT);
+            case ($errno === ResponseCodes::OK):
+                return $response->withAddedHeader(
                     'Content-Type',
                     'application/json'
                 )->withStatus(ResponseCodes::OK);

@@ -34,7 +34,8 @@ class UserRouteController extends RouteController {
      * @param $args
      * @return mixed
      */
-    public function post_home ($request, $response, $args) {
+    public function post_home ($request, \Psr\Http\Message\ResponseInterface $response, $args) {
+
         $user_controller = new UserController();
 
         if (!$user_controller->can_create_user($_SESSION['user_id'])) {
@@ -60,8 +61,9 @@ class UserRouteController extends RouteController {
             $password_hash,
             $new_user['email'],
             $new_user['realname'],
-            'salty'
+            'salty' // TODO random generated
         );
+
 
         $new_user_id = $user_controller->get_user_id_by_username($new_user['username']);
 
@@ -69,7 +71,7 @@ class UserRouteController extends RouteController {
 
         $user_controller->insert_into_can_see_user($_SESSION['user_id'], $new_user_id, 1);
 
-        return $this->return_response($response, ResponseCodes::OK);
+        return $this->return_response($response->withHeader('Location',"/users/$new_user_id"), ResponseCodes::CREATED);
 
     }
 
@@ -107,13 +109,16 @@ class UserRouteController extends RouteController {
        if (!$user_controller->can_alter_user($_SESSION['user_id'], $args['id']))
             return $this->return_response($response, ResponseCodes::FORBIDDEN);
 
-       if ($user_controller->exists_user_for_username($parsed_request['username']))
-           return $this->return_response($response, ResponseCodes::SERVER_ERROR);
-
        if (!$this->can_grant_this_rights($_SESSION['user_id'], $parsed_request['permissions']))
-       return $this->return_response($response, ResponseCodes::FORBIDDEN);
+            return $this->return_response($response, ResponseCodes::FORBIDDEN);
 
-       $errno = $user_controller->modify_user(
+       $old_username = $user_controller->get_username_by_id($args['id']);
+       if ($old_username !== $parsed_request['username'] && $user_controller->exists_user_for_username($parsed_request['username'])) {
+           $response->getBody()->write('Username already exists');
+           return $this->return_response($response, ResponseCodes::CONFLICT);
+       }
+
+       $user_controller->modify_user(
            $parsed_request['id_user'],
            $parsed_request['username'],
            $parsed_request['email'],
@@ -123,7 +128,8 @@ class UserRouteController extends RouteController {
            $parsed_request['permissions']
        );
 
-       return $this->return_response($response, $errno);
+
+       return $this->return_response($response->withHeader('Location','/users/' . strval($args['id'])), ResponseCodes::CREATED);
    }
 
    public function delete_user_id ($request, $response, $args) {
@@ -142,7 +148,7 @@ class UserRouteController extends RouteController {
 
         $errno = $user_controller->update_user_active($parsed_request['id_user'], 0);
 
-        return $this->return_response($response, $errno);
+        return $this->return_response($response, ResponseCodes::OK);
    }
 
    public function get_users_me($request, $response) {
@@ -174,7 +180,7 @@ class UserRouteController extends RouteController {
        $password_hash = hash('sha256', $parsed_request['userpassword'] . SALT . 'salty');
        $errno = $user_controller->update_user_password($parsed_request['id_user'], $password_hash);
 
-       return $this->return_response($response, ResponseCodes::OK);
+       return $this->return_response($response->withHeader('Location','/users/me'), ResponseCodes::CREATED);
 
    }
 

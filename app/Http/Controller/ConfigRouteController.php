@@ -692,6 +692,29 @@ class ConfigRouteController extends RouteController
         return $response->withStatus(200);
     }
 
+
+    public function post_org_group($request, $response, $args) {
+      $org_controller = new OrganisationController();
+
+      $body = json_decode($request->getBody(), true);
+
+      if($err_msg = $this->is_valid_post_org_group_body($body)) {
+        $response->getBody()->write($err_msg);
+        return $response->withStatus(500);
+      }
+
+      if($org_type = $org_controller->get_group_by_name($body['organisation_group_name'])) {
+          $response->getBody()->write('Group already exists');
+          return $response->withStatus(500);
+      }
+
+
+      $org_group_id = (int)$org_controller->create_new_group($body['organisation_group_name']);
+      $response->getBody()->write(json_encode(array('organisation_group_id' => $org_group_id, 'organisation_group_name' => $body['organisation_group_name'])));
+      return $response->withStatus(200);
+    }
+
+
     public function post_field_by_org_id($request, $response, $args)
     {
         $user_controller = new UserController();
@@ -824,6 +847,33 @@ class ConfigRouteController extends RouteController
             return $response->withStatus(500);
         }
         return $response->withStatus(200);
+    }
+
+
+    public function put_org_group($request, $response, $args) {
+      $org_controller = new OrganisationController();
+
+      $body = json_decode($request->getBody(), true);
+
+      if ($err_msg = $this->is_valid_put_org_group_body($body)) {
+          $response->getBody()->write($err_msg);
+          return $response->withStatus(500);
+      }
+      $errno = null;
+      if($org_group = $org_controller->get_group_by_id($body['organisation_group_id'])) {
+          if(!$org_controller->get_group_by_name($body['organisation_group_name'])) {
+              $errno = $org_controller->put_org_group($body);
+          } else {
+              $response->getBody()->write('new name is already taken');
+              return $response->withStatus(500);
+          }
+      }
+
+      if($errno) {
+          $response->getBody()->write(json_encode($errno));
+          return $response->withStatus(500);
+      }
+      return $response->withStatus(200);
     }
 
 
@@ -971,6 +1021,14 @@ class ConfigRouteController extends RouteController
         return;
     }
 
+    private function is_valid_post_org_group_body($body) {
+      if(is_null($body))
+        return 'not a valid JSON';
+      if(!isset($body['organisation_group_name']))
+        return 'organisation_group_name must be set';
+      return;
+    }
+
     private function is_valid_post_field_body($body) {
         if(is_null($body))
             return 'not a valid JSON';
@@ -1023,6 +1081,15 @@ class ConfigRouteController extends RouteController
             return $err_msg;
         if(!isset($body['organisation_type_id']))
             return 'organisation_type_id not set';
+        return;
+    }
+
+
+    private function is_valid_put_org_group_body($body) {
+        if($err_msg = $this->is_valid_post_org_group_body($body))
+            return $err_msg;
+        if(!isset($body['organisation_group_id']))
+            return 'organisation_group_id not set';
         return;
     }
 

@@ -286,7 +286,8 @@ class DataRouteController extends RouteController {
        $data_controller = new DataController();
        $org_controller = new OrganisationController();
        $user_controller = new UserController();
-
+       error_log('#################################################hierererierheirheireirheirheherihereiriereirheireriehri');
+       error_log($request->getBody());
        $body = json_decode($request->getBody(),true);
 
        $data = [];
