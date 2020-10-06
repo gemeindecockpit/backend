@@ -364,6 +364,28 @@ class OrganisationController extends AbstractController
         }
     }
 
+    public function get_group_by_id($group_id) {
+        $db_access = new DatabaseAccess();
+        $stmt_string =
+            'SELECT
+                id_organisation_group as organisation_group_id,
+                name as organisation_group_name
+            FROM
+                organisation_group
+            WHERE
+                id_organisation_group = ?
+        ';
+        $db_access->prepare($stmt_string);
+        $db_access->bind_param('i', $group_id);
+        $group = $this->format_query_result($db_access->execute());
+        $db_access->close();
+        if(sizeof($group) > 0) {
+            return $group[0];
+        } else {
+            return false;
+        }
+    }
+
     public function create_new_group($group_name) {
         $db_access = new DatabaseAccess();
         $stmt_string = 'INSERT INTO organisation_group (name) VALUES (?)';
@@ -373,6 +395,20 @@ class OrganisationController extends AbstractController
         $group_id = $db_access->get_insert_id();
         $db_access->close();
         return $group_id;
+    }
+
+    public function put_org_group($group) {
+      $db_access = new DatabaseAccess();
+      $stmt_string =
+          'UPDATE
+              organisation_group
+          SET organisation_group_name = ?
+          WHERE id_organisation_group = ?
+      ';
+      $db_access->prepare($stmt_string);
+      $db_access->bind_param('si', $group['organisation_group_name'], $group['organisation_group_id']);
+      $errno = $db_access->execute();
+      return $errno;
     }
 
     public function get_org_groups($user_id)
