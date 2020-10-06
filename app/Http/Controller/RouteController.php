@@ -49,6 +49,8 @@ class RouteController {
                 return $response->withStatus(ResponseCodes::SERVER_ERROR);
             case ($errno === ResponseCodes::CREATED):
                  return $response->withStatus(ResponseCodes::CREATED);
+            case ($errno === ResponseCodes::CONFLICT):
+                return $response->withStatus(ResponseCodes::CONFLICT);
             case ($errno === ResponseCodes::OK):
                 return $response->withAddedHeader(
                     'Content-Type',
