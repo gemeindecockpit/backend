@@ -62,6 +62,8 @@ return function (App $app) {
         \ConfigRouteController::class . ':post_org');
     $app->post('/config/organisation-type',
         \ConfigRouteController::class . ':post_org_type');
+    $app->post('/config/organisation-group',
+        \ConfigRouteController::class . ':post_org_group');
     $app->post('/config/organisation/{org_id:[0-9]+}',
         \ConfigRouteController::class . ':post_field_by_org_id'); // TODO, link is not optimal!
 
@@ -69,6 +71,8 @@ return function (App $app) {
         \ConfigRouteController::class . ':put_org');
     $app->put('/config/organisation-type',
         \ConfigRouteController::class . ':put_org_type');
+    $app->put('/config/organisation-group',
+        \ConfigRouteController::class . ':put_org_group');
     $app->put('/config/field',
         \ConfigRouteController::class . ':put_field');
 
