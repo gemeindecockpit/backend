@@ -27,7 +27,7 @@ class NUTSController extends AbstractController {
         $query_result = $this->format_query_result($this->db_access->execute());
         $next_nuts = [];
         foreach($query_result as $row) {
-            $next_nuts[] = $row[0];
+            $next_nuts[] = $row['nuts' . sizeof($args)];
         }
         return $next_nuts;
     }
