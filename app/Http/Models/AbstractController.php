@@ -26,7 +26,7 @@ abstract class AbstractController
 
         $query_result = null;
         if ($no_error) {
-            $query_result = $this->db_access->execute();
+            $query_result = $this->format_query_result($this->db_access->execute());
         } else {
             return [];
         }
@@ -34,7 +34,7 @@ abstract class AbstractController
             return [];
         }
         $result = [];
-        while ($row = $query_result->fetch_assoc()) {
+        foreach ($query_result as $row) {
             $result[] = $row;
         }
 
