@@ -86,7 +86,7 @@ class UserController extends AbstractController {
 
     public function insert_into_user($username, $userpassword, $email, $realname, $salt) {
         $this->db_access->prepare(
-            'INSERT INTO user (username, userpassword, email, realname, salt) 
+            'INSERT INTO user (username, userpassword, email, realname, salt)
             VALUES (?, ?, ?, ?, ?)'
         );
         $this->db_access->bind_param('sssss', $username, $userpassword, $email, $realname, $salt);
@@ -270,7 +270,7 @@ class UserController extends AbstractController {
 
     private function insert_into_can_insert_into_field($user_id, $field_id) {
         $this->db_access->prepare(
-            'INSERT into can_insert_into_field(user_id, field_id) 
+            'INSERT into can_insert_into_field(user_id, field_id)
             VALUES(?,?)'
         );
         $this->db_access->bind_param('ii', $user_id, $field_id);
@@ -301,7 +301,7 @@ class UserController extends AbstractController {
 
     private function insert_into_can_see_field($user_id, $field_id, $can_alter) {
         $this->db_access->prepare(
-            'INSERT INTO can_see_field(user_id, field_id, can_alter) 
+            'INSERT INTO can_see_field(user_id, field_id, can_alter)
             VALUES (?, ?, ?)'
         );
         $this->db_access->bind_param('iii', $user_id, $field_id, $can_alter);
@@ -380,7 +380,7 @@ class UserController extends AbstractController {
     }
 
     public function can_alter_user($active_user_id, $passive_user_id) {
-        $stmt_string = 'SELECT * 
+        $stmt_string = 'SELECT *
                         FROM can_see_user
                         WHERE active_user_id=?
                         AND passive_user_id=?
@@ -466,8 +466,6 @@ class UserController extends AbstractController {
         $query_result = $this->db_access->execute();
         return $query_result;
     }
-
-    protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {}
 }
 
 ?>

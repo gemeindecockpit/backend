@@ -59,18 +59,14 @@ class DataController extends AbstractController {
             $stmt_string .= ' LIMIT 1';
         }
         $this->db_access->prepare($stmt_string);
-        $data = [];
         foreach($field_ids as $id) {
             if($last !== 'latest' && $last !== 'all')
                 $this->db_access->bind_param($param_string, $id, $last);
             else
                 $this->db_access->bind_param($param_string, $id);
-            $query_result = $this->db_access->execute();
-            while($row = $query_result->fetch_assoc()) {
-                $data[] = $row;
-            }
+            $query_result = $this->format_query_result($this->db_access->execute());
         }
-        return $data;
+        return $query_result;
     }
 
     public function get_data_by_field_ids_and_day($field_ids, $org_id, $day) {
@@ -80,8 +76,8 @@ class DataController extends AbstractController {
         $data = [];
         foreach($field_ids as $id) {
             $this->db_access->bind_param('is', $id, $day);
-            $query_result = $this->db_access->execute();
-            while($row = $query_result->fetch_assoc()) {
+            $query_result = $this->format_query_result($this->db_access->execute());
+            foreach($query_result as $row) {
                 $data[] = $row;
             }
         }
@@ -98,8 +94,8 @@ class DataController extends AbstractController {
         $data = [];
         foreach($field_ids as $id) {
             $this->db_access->bind_param('iss', $id, $month, $month);
-            $query_result = $this->db_access->execute();
-            while($row = $query_result->fetch_assoc()) {
+            $query_result = $this->format_query_result($this->db_access->execute());
+            foreach($query_result as $row) {
                 $data[] = $row;
             }
         }
@@ -116,8 +112,8 @@ class DataController extends AbstractController {
         $data = [];
         foreach($field_ids as $id) {
             $this->db_access->bind_param('iss', $id, $year, $year);
-            $query_result = $this->db_access->execute();
-            while($row = $query_result->fetch_assoc()) {
+            $query_result = $this->format_query_result($this->db_access->execute());
+            foreach($query_result as $row) {
                 $data[] = $row;
             }
         }

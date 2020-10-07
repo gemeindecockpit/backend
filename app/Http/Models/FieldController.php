@@ -49,8 +49,8 @@ class FieldController extends AbstractController {
                 AND field_id=?'
         );
         $this->db_access->bind_param('ssi', $date, $date, $field_id);
-        $query_result = $this->db_access->execute();
-        return $this->format_query_result($query_result);
+        $query_result = $this->format_query_result($this->db_access->execute());
+        return $query_result;
     }
 
     public function get_field_by_name($org_id, $field_name, $date) {
@@ -78,33 +78,6 @@ class FieldController extends AbstractController {
         $this->db_access->bind_param('i', $user_id);
         $query_result = $this->format_query_result($this->db_access->execute());
         return $query_result;
-    }
-    /**
-    * Gets the config for all fields associated with an organisation (specified by the full link)
-    * @param $user_id
-    * @param $args
-    *    Must include nuts0, nuts1, nuts2, nuts3, org_type, org_name and field_name
-    * @return
-    *   Returns the formatted JSON array with the fields and links to further resources
-    */
-    public function get_config_for_field_by_full_link($user_id, ...$args) {
-        $stmt_string = $this->select_field_skeleton;
-    }
-
-    /**
-    * Gets the config for all fields associated with an organisation (specified by org_id)
-    * @param $user_id
-    * @param $org_id
-    * @return
-    *   Returns the formatted JSON array with the fields and links to further resources
-    */
-    public function get_config_for_fields_by_organisation_id($user_id, $org_id) {
-        $query_result = $this->db_ops->get_config_for_fields_by_organisation_id($user_id, $org_id);
-        $query_result = $this->format_query_result($query_result);
-
-        $self_link = $this->get_link('data', 'field', $org_id);
-
-        return $this->format_json($self_link, $query_result);
     }
 
     /**
@@ -206,28 +179,6 @@ class FieldController extends AbstractController {
         return $errno;
     }
 
-    /*
-    * Inherited from AbstractController. $query_result contains either config for fields or data and builds the core of the JSON
-    * After that the links have to be put together. The general case is a resource of the next layer (e.g. nuts1 regions)
-    * that has to be added to the self link (/config/nuts0 -> /config/nuts0/nuts1)
-    * 'data' and 'config' links are a special case, as they are formatted prior in the respective method
-    * TODO: This is hardly readable. We need a better solution
-    */
-    protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {
-        $links['self'] = $self_link;
-
-        for($i = 0; $i < sizeof($next_entity_types); $i++) {
-            if($next_entity_types[$i] === 'data' || $next_entity_types[$i] === 'config') {
-                $links[$next_entity_types[$i]] = $next_entities[$i];
-            } else {
-                foreach($next_entities[$i] as $entity) {
-                    $links[$next_entity_types[$i]] = $self_link . '/' . $entity;
-                }
-            }
-        }
-        $json_array = array('fields'=>$query_result, 'links'=>$links);
-        return $json_array;
-    }
 }
 
 ?>
