@@ -5,15 +5,16 @@ require_once('AbstractController.php');
 /*
 * To be renamed and refactored as a model
 */
-class LoginController {
-    private $db_ops;
+class LoginController extends AbstractController {
 
     public function __construct() {
-        $this->db_ops = new DatabaseOps();
+        parent::__construct();
     }
 
     public function login($username, $password) {
-        $query_result = $this->db_ops->get_login_info($username);
+        $this->db_access->prepare('SELECT id_user, username, userpassword, salt FROM user WHERE username = ?');
+        $this->db_access->bind_param('s', $username);
+		$query_result = $this->db_access->execute();
         $user = $query_result->fetch_assoc();
 
         $password_hash = hash('sha256', $password . SALT . $user['salt']);
