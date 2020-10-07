@@ -1,8 +1,6 @@
 <?php
 
 use App\Http\Models\DatabaseAccess;
-
-require_once('DatabaseOps.php');
 #require_once('DatabaseAccess.php');
 
 /*
@@ -15,7 +13,6 @@ abstract class AbstractController
 
     public function __construct()
     {
-        $this->db_ops = new DatabaseOps();
         $this->db_access = DatabaseAccess::get_instance();
     }
 
