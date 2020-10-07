@@ -41,10 +41,10 @@ class FieldController extends AbstractController {
         if ($date == null)
             $date = date('Y-m-d');
         $this->db_access->prepare(
-            'SELECT * 
-                FROM view_field 
-                WHERE valid_from <= ? 
-                AND (valid_to >= ? 
+            'SELECT *
+                FROM view_field
+                WHERE valid_from <= ?
+                AND (valid_to >= ?
                     OR ISNULL(valid_to))
                 AND field_id=?'
         );
@@ -55,10 +55,10 @@ class FieldController extends AbstractController {
 
     public function get_field_by_name($org_id, $field_name, $date) {
         $this->db_access->prepare(
-            'SELECT * 
+            'SELECT *
             FROM view_field_for_date
-            WHERE valid_from <= ? 
-                AND (valid_to >= ? 
+            WHERE valid_from <= ?
+                AND (valid_to >= ?
                     OR ISNULL(valid_to))
                 AND field_name=?
                 AND organisation_id=?'
@@ -115,8 +115,39 @@ class FieldController extends AbstractController {
     * @return
     *   Returns an error code or null;
     */
-    public function put_field_config(...$args) {
-        $errno = $this->db_ops->insert_field_by_sid(...$args);
+    public function put_field_config($field) {
+        $stmt_string =
+            'UPDATE field
+			SET
+                valid_to = CURRENT_TIMESTAMP
+			WHERE field_sid = ?
+            AND valid_to IS NULL
+        ';
+        $this->db_access->prepare($stmt_string);
+        $this->db_access->bind_param('i', $field['field_id']);
+        $errno = $this->db_access->execute();
+
+        if ($errno) {
+            return $errno;
+        }
+
+        $stmt_string =
+            'INSERT INTO
+                field (field_sid,name,reference_value,yellow_limit,red_limit,relational_flag)
+			VALUES (?,?,?,?,?,?)
+        ';
+
+        $this->db_access->prepare($stmt_string);
+        $this->db_access->bind_param(
+            'isiiii',
+            $field['field_id'],
+            $field['field_name'],
+            $field['reference_value'],
+            $field['yellow_limit'],
+            $field['red_limit'],
+            $field['relational_flag']
+        );
+        $errno = $this->db_access->execute();
         return $errno;
     }
 
@@ -153,19 +184,25 @@ class FieldController extends AbstractController {
 
 
     public function delete_field($field_id){
-        $db_ops = new DatabaseOps();
-        $db_connection = $db_ops->get_db_connection();
-        $stmt = $db_connection->prepare('UPDATE field SET valid_to=CURDATE() WHERE sid=? AND valid_to IS NULL');
-        $stmt->bind_param("i",$field_id);
-        $errno = $db_ops->execute_stmt_without_result($stmt);
+        $stmt_string =
+            'UPDATE field
+            SET
+                valid_to=CURDATE()
+            WHERE field_sid=?
+            AND valid_to IS NULL
+        ';
+
+        $this->db_access->prepare($stmt_string);
+        $this->db_access->bind_param("i",$field_id);
+        $errno = $this->db_access->execute();
         if($errno) {
-            $db_connection->close();
             return $errno;
         }
-        $stmt = $db_connection->prepare('DELETE FROM organisation_has_field WHERE field_id = ?');
-        $stmt->bind_param("i",$field_id);
-        $errno = $db_ops->execute_stmt_without_result($stmt);
-        $db_connection->close();
+
+        $stmt_string = 'DELETE FROM organisation_has_field WHERE field_id = ?';
+        $this->db_access->prepare($stmt_string);
+        $this->db_access->bind_param("i",$field_id);
+        $errno = $this->db_access->execute();
         return $errno;
     }
 

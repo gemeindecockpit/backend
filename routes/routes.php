@@ -76,6 +76,13 @@ return function (App $app) {
     $app->put('/config/field',
         \ConfigRouteController::class . ':put_field');
 
+    $app->delete('/config/organisation/{org_id}',
+        \ConfigRouteController::class . ':delete_field');
+    $app->delete('/config/field/{field_id}',
+        \ConfigRouteController::class . ':delete_field');
+
+
+
 
 
     $app->get('/data',
