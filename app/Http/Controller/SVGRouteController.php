@@ -16,23 +16,18 @@ class SVGRouteController extends RouteController {
 
     public function get_org_svg($request, $response, $args) {
       $user_con = new UserController();
-      $svg = ''; //encoded in base64
+      $svg = '';
 
       //can the user see the org? $args['org_id'].
       if($user_con->can_see_organisation($_SESSION['user_id'], $args['org_id'])) {
         $SVG_con = new SVGController();
-        $SVG_path = $SVG_con->get_SVG_for_org($args['org_id']);
-        //does the org have a svg ? if not than send the default svg back
-        if ($SVG_path['svg_path'] == '0') {
-          $response->getBody()->write(DEFAULT_SVG);
-          return $response->withStatus(200,'no svg set');
-        } else if (file_exists(SVG_PATH . '/' . $SVG_path['svg_path'])){
-          $svg = file_get_contents(SVG_PATH .'/'. $SVG_path['svg_path']);
-          $svg = base64_encode($svg);
+        $svg = $SVG_con->get_SVG_for_org_as_file($args['org_id']);
+        //does the org have a svg? if not than send the default svg back
+        if ($svg == false) {
+          return $response->withStatus(403,'no such file');
+        } else {
           $response->getBody()->write($svg);
           return $response->withStatus(200);
-        } else {
-          return $response->withStatus(403,'no such file');
         }
       } else {
         return $response->withStatus(403,'no access to org or organisation does not exists');

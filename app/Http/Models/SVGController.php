@@ -34,6 +34,17 @@ class SVGController extends AbstractController {
         $query_result = $this->db_access->execute();
       }
 
-
+      public function get_SVG_for_org_as_file($org_id) {
+        $SVG_path = $this->get_SVG_for_org($org_id);
+        //does the org have a svg ? if not than send the default svg back
+        if ($SVG_path['svg_path'] == '0') {
+          return base64_decode(DEFAULT_SVG);
+        } else if (file_exists(SVG_PATH . '/' . $SVG_path['svg_path'])){
+          $svg = file_get_contents(SVG_PATH .'/'. $SVG_path['svg_path']);
+          return($svg);
+        } else {
+          return false;
+        }
+      }
 
 }
