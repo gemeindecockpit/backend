@@ -43,7 +43,7 @@ class SVGController extends AbstractController {
           $svg = file_get_contents(SVG_PATH .'/'. $SVG_path['svg_path']);
           return($svg);
         } else {
-          return false;
+          return base64_decode(DEFAULT_SVG);
         }
       }
 

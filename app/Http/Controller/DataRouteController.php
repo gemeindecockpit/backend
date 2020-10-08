@@ -63,7 +63,7 @@ class DataRouteController extends RouteController {
 
    public function get_org_id_links($request, $response, $args) {
        $org_controller = new OrganisationController();
-
+       $svg_con = new SVGController();
        $orgs = $org_controller->get_orgs_visble_for_user($_SESSION['user_id']);
 
        $links['self'] = RouteController::get_link('data', 'organisation');
@@ -73,7 +73,8 @@ class DataRouteController extends RouteController {
            $links['organisations'][] = array(
                'organisation_id' => $org['organisation_id'],
                'organisation_name' => $org['organisation_name'],
-               'href' => $org_link
+               'href' => $org_link,
+               'svg' => $svg_con->get_SVG_for_org_as_file($org['organisation_id'])
            );
        }
 
