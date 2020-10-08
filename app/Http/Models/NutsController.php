@@ -24,15 +24,13 @@ class NUTSController extends AbstractController {
         }
         $this->db_access->prepare($stmt_string);
         $this->db_access->bind_param($param_string, $user_id, ...$args);
-        $query_result = $this->db_access->execute();
+        $query_result = $this->format_query_result($this->db_access->execute());
         $next_nuts = [];
-        while($row = $query_result->fetch_array()) {
-            $next_nuts[] = $row[0];
+        foreach($query_result as $row) {
+            $next_nuts[] = $row['nuts' . sizeof($args)];
         }
         return $next_nuts;
     }
-
-    protected function format_json($self_link, $query_result, $next_entity_types = [], $next_entities = []) {}
 
 }
 

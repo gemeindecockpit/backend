@@ -893,7 +893,7 @@ class ConfigRouteController extends RouteController
         $field = json_decode($request->getBody(), true);
 
         if ($err_msg = $this->is_valid_put_field_body($field)) {
-            $response->getBody()->write("key in field json is missing");
+            $response->getBody()->write($err_msg);
             return $response->withStatus(500);
         }
 
@@ -903,14 +903,7 @@ class ConfigRouteController extends RouteController
             return $response->withStatus(403);
         }
 
-        $errno = $field_controller->put_field_config(
-            $field['field_id'],
-            $field['field_name'],
-            $field['reference_value'],
-            $field['yellow_limit'],
-            $field['red_limit'],
-            $field['relational_flag']
-        );
+        $errno = $field_controller->put_field_config($field);
 
         if ($errno) {
             $response->getBody()->write($errno);

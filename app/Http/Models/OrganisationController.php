@@ -99,20 +99,6 @@ class OrganisationController extends AbstractController
         }
     }
 
-    public function get_org_ids_by_group_id_for_user($group_id, $user_id) {
-        $this->db_access->prepare(
-            'SELECT id_organisation
-            FROM organisation
-            JOIN view_organisation_visible_for_user
-                ON id_organisation=organisation_id
-            WHERE organisation.organisation_group_id=?
-            AND user_id=?'
-        );
-        $this->db_access->bind_param('ii', $group_id, $user_id);
-        $query_result = $this->db_access->execute();
-        return $this->format_query_result_to_indexed_array($query_result, true);
-    }
-
     public function get_org_by_id(...$args)
     {
         $stmt_string = $this->select_org_skeleton;
@@ -215,9 +201,9 @@ class OrganisationController extends AbstractController
             WHERE user_id = ?';
         $this->db_access->prepare($stmt_string);
         $this->db_access->bind_param('i', $user_id);
-        $query_result = $this->db_access->execute();
+        $query_result = $this->format_query_result($this->db_access->execute());
         $org_ids = [];
-        while ($row = $query_result->fetch_assoc()) {
+        foreach ($query_result as $row) {
             $org_ids[] = $row;
         }
         return $org_ids;
@@ -453,26 +439,6 @@ class OrganisationController extends AbstractController
             $fields[] = $row;
         }
         return $fields;
-    }
-
-    /**
-    * Constructs links to organisations
-    * @param $endpoint_type
-    *   Either 'config' or 'data'
-    * @param $orgs
-    *   Array that contains org-arrays. These arrays must contain the keys 'nuts0', 'nuts1', 'nuts2', 'nuts3', 'type', 'name'
-    * @return
-    *   An array with the links
-    */
-    private function get_org_links($endpoint_type, $orgs)
-    {
-        $organisation_links = [];
-        foreach ($orgs as $org) {
-            array_walk_recursive($org, [$this, 'encode_items_url']);
-            $organisation_links[] = $_SERVER['SERVER_NAME'].'/'.$endpoint_type.'/'.$org['nuts0'].'/'.$org['nuts1'].'/'.$org['nuts2'].'/'.$org['nuts3'].'/'.$org['organisation_type'].'/'.$org['organisation_name'];
-        }
-
-        return $organisation_links;
     }
 }
 ?>

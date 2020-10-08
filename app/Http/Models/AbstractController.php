@@ -1,8 +1,6 @@
 <?php
 
 use App\Http\Models\DatabaseAccess;
-
-require_once('DatabaseOps.php');
 #require_once('DatabaseAccess.php');
 
 /*
@@ -15,7 +13,6 @@ abstract class AbstractController
 
     public function __construct()
     {
-        $this->db_ops = new DatabaseOps();
         $this->db_access = DatabaseAccess::get_instance();
     }
 
@@ -29,7 +26,7 @@ abstract class AbstractController
 
         $query_result = null;
         if ($no_error) {
-            $query_result = $this->db_access->execute();
+            $query_result = $this->format_query_result($this->db_access->execute());
         } else {
             return [];
         }
@@ -37,7 +34,7 @@ abstract class AbstractController
             return [];
         }
         $result = [];
-        while ($row = $query_result->fetch_assoc()) {
+        foreach ($query_result as $row) {
             $result[] = $row;
         }
 
