@@ -50,7 +50,7 @@ class ConfigRouteController extends RouteController
 
         $args_indexed = RouteController::assoc_array_to_indexed($args);
 
-        $query_result = $org_controller->get_org_by_location(...$args_indexed);
+        $query_result = $org_controller->get_org_by_location($args);
         $orgs = [];
         foreach($query_result as $org) {
             if($user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {

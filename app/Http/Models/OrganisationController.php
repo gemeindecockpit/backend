@@ -24,6 +24,8 @@ class OrganisationController extends AbstractController
         FROM view_organisation_and_nuts
     ';
 
+    private $select_org_ids_skeleton = 'SELECT organisation_id from view_organisation_visible_for_user WHERE user_id = ?'
+
     public function __construct()
     {
         parent::__construct();
@@ -35,27 +37,70 @@ class OrganisationController extends AbstractController
         return $query_result;
     }
 
-    public function get_org_by_location(...$args) {
+    public function get_org_ids($endpoint, $user_id, $args) {
+        switch ($endpoint) {
+            case 'organisation':
+                $stmt_array = $this->get_id_stmt($args);
+                break;
+            case 'organisation-group':
+                $stmt_array = $this->get_group_stmt($args);
+                break;
+            case 'organisation-type':
+                $stmt_array = $this->get_type_stmt($args);
+                break;
+            case 'location':
+                $stmt_array = $this->get_location_stmt($args);
+                break;
+            default:
+                $stmt_array['stmt_string'] = $this->select_org_ids_skeleton;
+                $stmt_array['param_string'] = 'i';
+        }
+        $stmt_string = $stmt_array['stmt_string'];
+        $param_string = $stmt_array['param_string'];
+
+        $args_indexed = assoc_array_to_indexed($args);
+
+        $this->db_access->prepare($stmt_string);
+        $this->db_access->bind_param($param_string, $user_id, ...$args);
+        return $this->format_query_result($this->db_access->execute());
+    }
+
+    public function get_orgs_by_id($org_ids) {
+        $stmt_string = $this->select_org_skeleton . ' WHERE organisation_id = ?';
+        $this->db_access->prepare($stmt_string);
+
+        $orgs = [];
+        foreach($org_ids as $id) {
+            $this->db_access->bind_param('i', $id);
+            $query_result = $this->format_query_result($this->db_access->execute());
+            if(sizeof($query_result) > 0)
+                $orgs[] = $query_result[0];
+        }
+
+        return $orgs;
+    }
+
+    public function get_org_by_location($args) {
         $stmt_string = $this->select_org_skeleton;
         $param_string = '';
         $num_args = sizeof($args);
-        if($num_args > 0) {
+        if(isset($args['nuts0'])) {
             $stmt_string .= ' WHERE nuts0 = ?';
             $param_string .= 's';
         }
-        if($num_args > 1) {
+        if(isset($args['nuts1'])) {
             $stmt_string .= ' AND nuts1 = ?';
             $param_string .= 's';
         }
-        if($num_args > 2) {
+        if(isset($args['nuts2'])) {
             $stmt_string .= ' AND nuts2 = ?';
             $param_string .= 's';
         }
-        if($num_args > 3) {
+        if(isset($args['nuts3'])) {
             $stmt_string .= ' AND nuts3 = ?';
             $param_string .= 's';
         }
-        if($num_args > 4) {
+        if(isset($args['org_name'])) {
             $stmt_string .= ' AND organisation_name = ?';
             $param_string .= 's';
         }
