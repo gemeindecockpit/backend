@@ -59,14 +59,18 @@ class DataController extends AbstractController {
             $stmt_string .= ' LIMIT 1';
         }
         $this->db_access->prepare($stmt_string);
+        $data = [];
         foreach($field_ids as $id) {
             if($last !== 'latest' && $last !== 'all')
                 $this->db_access->bind_param($param_string, $id, $last);
             else
                 $this->db_access->bind_param($param_string, $id);
-            $query_result[] = $this->format_query_result($this->db_access->execute());
+            $query_result = $this->format_query_result($this->db_access->execute());
+            foreach ($query_result as $date) {
+                $data[] = $date;
+            }
         }
-        return $query_result;
+        return $data;
     }
 
     public function get_data_by_field_ids_and_day($field_ids, $org_id, $day) {
