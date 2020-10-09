@@ -64,7 +64,7 @@ class DataController extends AbstractController {
                 $this->db_access->bind_param($param_string, $id, $last);
             else
                 $this->db_access->bind_param($param_string, $id);
-            $query_result = $this->format_query_result($this->db_access->execute());
+            $query_result[] = $this->format_query_result($this->db_access->execute());
         }
         return $query_result;
     }
