@@ -24,7 +24,12 @@ class OrganisationController extends AbstractController
         FROM view_organisation_and_nuts
     ';
 
-    private $select_org_ids_skeleton = 'SELECT organisation_id from view_organisation_visible_for_user WHERE user_id = ?'
+    private $select_org_ids_skeleton =
+        'SELECT
+            organisation_id
+        FROM view_organisation_visible_for_user
+        WHERE user_id = ?
+    ';
 
     public function __construct()
     {
@@ -61,8 +66,81 @@ class OrganisationController extends AbstractController
         $args_indexed = assoc_array_to_indexed($args);
 
         $this->db_access->prepare($stmt_string);
-        $this->db_access->bind_param($param_string, $user_id, ...$args);
-        return $this->format_query_result($this->db_access->execute());
+        $this->db_access->bind_param($param_string, $user_id, ...$args_indexed);
+        $query_result = $this->db_access->execute();
+        $org_ids = [];
+        while($row = $query_result->fetch_assoc()) {
+            $org_ids[] = $row['organisation_id'];
+        }
+        return $org_ids;
+    }
+
+    private function get_id_stmt($args) {
+        $stmt_string = $this->select_org_ids_skeleton;
+        $param_string = 'i';
+
+        if(isset($args['org_id'])) {
+            $stmt_string .= ' AND organisation_id = ?';
+            $param_string .= 'i';
+        }
+        return array('stmt_string' => $stmt_string, 'param_string' => $param_string);
+    }
+
+    private function get_group_stmt($args) {
+        $stmt_string = $this->select_org_ids_skeleton;
+        $param_string = 'i';
+
+        if(isset($args['org_group'])) {
+            $stmt_string .= ' AND organisation_group = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['org_name'])) {
+            $stmt_string .= ' AND organisation_name = ?';
+            $param_string .= 's';
+        }
+        return array('stmt_string' => $stmt_string, 'param_string' => $param_string);
+    }
+
+    private function get_type_stmt($args) {
+        $stmt_string = $this->select_org_ids_skeleton;
+        $param_string = 'i';
+
+        if(isset($args['org_type'])) {
+            $stmt_string .= ' AND organisation_group = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['org_name'])) {
+            $stmt_string .= ' AND organisation_name = ?';
+            $param_string .= 's';
+        }
+        return array('stmt_string' => $stmt_string, 'param_string' => $param_string);
+    }
+
+    private function get_location_stmt($args) {
+        $stmt_string = $this->select_org_ids_skeleton;
+        $param_string = 'i';
+
+        if(isset($args['nuts0'])) {
+            $stmt_string .= ' AND nuts0 = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['nuts1'])) {
+            $stmt_string .= ' AND nuts1 = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['nuts2'])) {
+            $stmt_string .= ' AND nuts2 = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['nuts3'])) {
+            $stmt_string .= ' AND nuts3 = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['org_name'])) {
+            $stmt_string .= ' AND organisation_name = ?';
+            $param_string .= 's';
+        }
+        return array('stmt_string' => $stmt_string, 'param_string' => $param_string);
     }
 
     public function get_orgs_by_id($org_ids) {

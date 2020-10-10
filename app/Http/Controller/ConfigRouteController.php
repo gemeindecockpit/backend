@@ -29,6 +29,68 @@ class ConfigRouteController extends RouteController
         return $response->withHeader('Content-type', 'application/json');
     }
 
+    private function get_org_config($endpoint, $args) {
+        $org_controller = new OrganisationController();
+        $org_ids = $org_controller->get_org_ids($endpoint, $_SESSION['user_id'], $args);
+        $orgs = $org_controller->get_orgs_by_id($org_ids);
+        $orgs = $this->add_fields_to_org_array($orgs);
+        return $orgs;
+    }
+
+    private function add_field_links($org, $links) {
+        foreach($org['fields'] as $field) {
+            $field_link = $links['self'] . '/' . rawurlencode($field['field_name']);
+            $links['fields'][] = array(
+                'field_id' => $field['field_id'],
+                'field_name' => $field['field_name'],
+                'href' => $field_link
+            );
+        }
+        return $links;
+    }
+
+    private function add_org_links($orgs, $links, $referenced_by = 'name') {
+        switch ($referenced_by) {
+            case 'name':
+                foreach($orgs as $org) {
+                    $org_link = $links['self'] . '/' . rawurlencode($org['organisation_name']);
+                    $links['organisations'][] = array(
+                        'organisation_id' => $org['organisation_id'],
+                        'organisation_name' => $org['organisation_name'],
+                        'href' => $org_link
+                    );
+                }
+                break;
+            case 'id':
+                foreach($orgs as $org) {
+                    $org_link = $links['self'] . '/' . rawurlencode($org['organisation_name']);
+                    $links['organisations'][] = array(
+                        'organisation_id' => $org['organisation_id'],
+                        'organisation_name' => $org['organisation_name'],
+                        'href' => $org_link
+                    );
+                }
+                break;
+        }
+        return $links;
+    }
+
+    private function add_nuts_links($args, $links) {
+        $nuts_controller = new NutsController();
+
+        $next_nuts_layer = 'nuts' . sizeof($args);
+        $links[$next_nuts_layer] = [];
+        $next_nuts_codes = $nuts_controller->get_next_NUTS_codes($_SESSION['user_id'], $args);
+        foreach ($next_nuts_codes as $nuts_code) {
+            $nuts_link = $links['self'] . '/' . rawurlencode($nuts_code);
+            $links[$next_nuts_layer][] = array(
+                'nuts_region' => $nuts_code,
+                'href' => $nuts_link
+            );
+        }
+        return $links;
+    }
+
 //////////////////////////////////////////////////////////////
 ////////////////ORGANISTAION-LOCATION/////////////////////////////////////
 
@@ -46,55 +108,26 @@ class ConfigRouteController extends RouteController
     {
         $org_controller = new OrganisationController();
         $user_controller = new UserController();
-        $nuts_controller = new NutsController();
+
 
         $args_indexed = RouteController::assoc_array_to_indexed($args);
 
-        $query_result = $org_controller->get_org_by_location($args);
-        $orgs = [];
-        foreach($query_result as $org) {
-            if($user_controller->can_see_organisation($_SESSION['user_id'], $org['organisation_id'])) {
-                $orgs[] = $org;
-            }
-        }
-        $orgs = $this->add_fields_to_org_array($orgs);
+        $orgs = $this->get_org_config('location', $args);
+
         $json_array = [];
         $links['self'] = RouteController::get_link('config', 'location', ...$args_indexed);
+
         if(isset($args['org_name']) && sizeof($orgs) > 0) {
             $json_array = $orgs[0];
             $links['data'] = RouteController::get_link('data', 'organisation', $json_array['organisation_id']);
-            foreach($json_array['fields'] as $field) {
-                $field_link = $links['self'] . '/' . rawurlencode($field['field_name']);
-                $links['fields'][] = array(
-                    'field_id' => $field['field_id'],
-                    'field_name' => $field['field_name'],
-                    'href' => $field_link
-                );
-            }
+            $links = $this->add_field_links($json_array, $links);
         } else {
             $json_array = array('organisations' => $orgs);
-            foreach($orgs as $org) {
-                $org_link = ConfigRouteController::get_org_location_link($org);
-                $links['organisations'][] = array(
-                    'organisation_id' => $org['organisation_id'],
-                    'organisation_name' => $org['organisation_name'],
-                    'href' => $org_link
-                );
-            }
+            $links = $this->add_org_links($orgs, $links);
         }
 
-        $num_args = sizeof($args);
-        if($num_args < 4) {
-            $next_nuts_layer = 'nuts' . $num_args;
-            $links[$next_nuts_layer] = [];
-            $next_nuts_codes = $nuts_controller->get_next_NUTS_codes($_SESSION['user_id'], ...$args_indexed);
-            foreach ($next_nuts_codes as $nuts_code) {
-                $nuts_link = $links['self'] . '/' . rawurlencode($nuts_code);
-                $links[$next_nuts_layer][] = array(
-                    'nuts_region' => $nuts_code,
-                    'href' => $nuts_link
-                );
-            }
+        if(sizeof($args) < 4) {
+            $links = $this->add_nuts_links($args, $links);
         }
 
         $json_array['links'] = $links;
