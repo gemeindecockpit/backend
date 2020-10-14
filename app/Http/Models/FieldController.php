@@ -9,14 +9,18 @@ class FieldController extends AbstractController {
 
     private $select_field_skeleton =
         'SELECT
-            view_latest_field.field_id as field_id,
-            view_latest_field.field_name as field_name,
-            view_latest_field.reference_value as reference_value,
-            view_latest_field.yellow_limit as yellow_limit,
-            view_latest_field.red_limit as red_limit,
-            view_latest_field.relational_flag as relational_flag,
-            view_latest_field.valid_from as valid_from
-        FROM view_latest_field';
+            DISTINCT view_fields_visible_for_user.field_id as field_id,
+            view_fields_visible_for_user.field_name as field_name,
+            view_fields_visible_for_user.reference_value as reference_value,
+            view_fields_visible_for_user.yellow_limit as yellow_limit,
+            view_fields_visible_for_user.red_limit as red_limit,
+            view_fields_visible_for_user.relational_flag as relational_flag,
+            view_fields_visible_for_user.valid_from as valid_from,
+            view_fields_visible_for_user.valid_to as valid_to
+        FROM view_fields_visible_for_user
+        JOIN view_organisations_and_fields
+            ON view_fields_visible_for_user.field_id = view_organisations_and_fields.field_id
+        WHERE user_id = ?';
 
     public function __construct() {
         parent::__construct();
@@ -29,6 +33,186 @@ class FieldController extends AbstractController {
         $this->db_access->prepare($this->select_field_skeleton);
         $query_result = $this->format_query_result($this->db_access->execute());
         return $query_result;
+    }
+
+    public function get_field_config($endpoint, $user_id, $args, $date = null) {
+        switch ($endpoint) {
+            case 'field':
+                $stmt_array = $this->get_field_stmt($args, $date);
+                break;
+            case 'organisation':
+                $stmt_array = $this->get_organisation_stmt($args, $date);
+                break;
+            case 'organisation_type':
+                $stmt_array = $this->get_type_stmt($args, $date);
+                break;
+            case 'organisation_group':
+                $stmt_array = $this->get_group_stmt($args, $date);
+                break;
+            case 'location':
+                $stmt_array = $this->get_location_stmt($args, $date);
+                break;
+            default:
+                if($date == null) {
+                    $stmt_array['stmt_string'] = $this->select_field_skeleton . ' AND ISNULL(valid_to)';
+                    $stmt_array['param_string'] = 'i';
+                } else {
+                    $stmt_array['stmt_string'] = $this->select_field_skeleton . ' AND valid_from <= ? and (valid_to > ? OR ISNULL(valid_to))';
+                    $stmt_array['param_string'] = 'iss';
+                }
+                break;
+        }
+
+        $stmt_string = $stmt_array['stmt_string'];
+        $param_string = $stmt_array['param_string'];
+
+        $args_indexed = assoc_array_to_indexed($args);
+
+        if($date != null) {
+            $args_indexed[] = $date;
+            $args_indexed[] = $date;
+        }
+
+        $this->db_access->prepare($stmt_string);
+        $this->db_access->bind_param($param_string, $user_id, ...$args_indexed);
+
+        return $this->format_query_result($this->db_access->execute());
+    }
+
+    private function get_field_stmt($args, $date) {
+        $stmt_string = $this->select_field_skeleton;
+        $param_string = 'i';
+
+        if(isset($args['field_id'])) {
+            $stmt_string .= ' AND view_fields_visible_for_user.field_id = ?';
+            $param_string .= 'i';
+        }
+
+        if($date == null) {
+            $stmt_string .= ' AND ISNULL(valid_to)';
+        } else {
+            $stmt_string .= ' AND valid_from <= ? and (valid_to > ? OR ISNULL(valid_to))';
+            $param_string .= 'ss';
+        }
+
+        return array('stmt_string' => $stmt_string, 'param_string' => $param_string);
+    }
+
+    private function get_organisation_stmt($args, $date) {
+        $stmt_string = $this->select_field_skeleton;
+        $param_string = 'i';
+
+        if(isset($args['org_id'])) {
+            $stmt_string .= ' AND organisation_id = ?';
+            $param_string .= 'i';
+        }
+        if(isset($args['field_name'])) {
+            $stmt_string .= ' AND view_fields_visible_for_user.field_name = ?';
+            $param_string .= 's';
+        }
+
+        if($date == null) {
+            $stmt_string .= ' AND ISNULL(valid_to)';
+        } else {
+            $stmt_string .= ' AND valid_from <= ? and (valid_to > ? OR ISNULL(valid_to))';
+            $param_string .= 'ss';
+        }
+
+        return array('stmt_string' => $stmt_string, 'param_string' => $param_string);
+    }
+
+    private function get_group_stmt($args, $date) {
+        $stmt_string = $this->select_field_skeleton;
+        $param_string = 'i';
+
+
+        if(isset($args['org_group'])) {
+            $stmt_string .= ' AND organisation_group = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['org_name'])) {
+            $stmt_string .= ' AND organisation_name = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['field_name'])) {
+            $stmt_string .= ' AND view_fields_visible_for_user.field_name = ?';
+            $param_string .= 's';
+        }
+
+        if($date == null) {
+            $stmt_string .= ' AND ISNULL(valid_to)';
+        } else {
+            $stmt_string .= ' AND valid_from <= ? and (valid_to > ? OR ISNULL(valid_to))';
+            $param_string .= 'ss';
+        }
+
+        return array('stmt_string' => $stmt_string, 'param_string' => $param_string);
+    }
+
+    private function get_type_stmt($args, $date) {
+        $stmt_string = $this->select_field_skeleton;
+        $param_string = 'i';
+
+        if(isset($args['org_type'])) {
+            $stmt_string .= ' AND organisation_type = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['org_name'])) {
+            $stmt_string .= ' AND organisation_name = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['field_name'])) {
+            $stmt_string .= ' AND view_fields_visible_for_user.field_name = ?';
+            $param_string .= 's';
+        }
+
+        if($date == null) {
+            $stmt_string .= ' AND ISNULL(valid_to)';
+        } else {
+            $stmt_string .= ' AND valid_from <= ? and (valid_to > ? OR ISNULL(valid_to))';
+            $param_string .= 'ss';
+        }
+
+        return array('stmt_string' => $stmt_string, 'param_string' => $param_string);
+    }
+
+    private function get_location_stmt($args, $date) {
+        $stmt_string = $this->select_field_skeleton;
+        $param_string = 'i';
+
+        if(isset($args['nuts0'])) {
+            $stmt_string .= ' AND nuts0 = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['nuts1'])) {
+            $stmt_string .= ' AND nuts1 = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['nuts2'])) {
+            $stmt_string .= ' AND nuts2 = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['nuts3'])) {
+            $stmt_string .= ' AND nuts3 = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['org_name'])) {
+            $stmt_string .= ' AND organisation_name = ?';
+            $param_string .= 's';
+        }
+        if(isset($args['field_name'])) {
+            $stmt_string .= ' AND view_fields_visible_for_user.field_name = ?';
+            $param_string .= 's';
+        }
+
+        if($date == null) {
+            $stmt_string .= ' AND ISNULL(valid_to)';
+        } else {
+            $stmt_string .= ' AND valid_from <= ? and (valid_to > ? OR ISNULL(valid_to))';
+            $param_string .= 'ss';
+        }
+
+        return array('stmt_string' => $stmt_string, 'param_string' => $param_string);
     }
 
     public function get_field_by_id($field_id) {
@@ -73,11 +257,18 @@ class FieldController extends AbstractController {
     }
 
     public function get_fields_visible_for_user($user_id) {
-        $stmt_string = 'SELECT * FROM view_fields_visible_for_user WHERE user_id = ?';
+        $stmt_string = $this->select_field_skeleton;
+        $stmt_string .=
+            ' JOIN can_see_field
+            ON
+                view_latest_field.field_id = can_see_field.field_id
+            WHERE user_id = ?
+        ';
+
         $this->db_access->prepare($stmt_string);
         $this->db_access->bind_param('i', $user_id);
-        $query_result = $this->format_query_result($this->db_access->execute());
-        return $query_result;
+
+        return $this->format_query_result($this->db_access->execute());
     }
 
     /**

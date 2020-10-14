@@ -208,7 +208,7 @@ class UserRouteController extends RouteController {
 
         $organisation_controller = new OrganisationController();
         foreach ($permissions['can_see_organisation'] as &$visible_org) {
-            $org = $organisation_controller->get_org_by_id($visible_org['organisation_id']);
+            $org = $organisation_controller->get_org_config('organisation', $visible_org);
             $visible_org['organisation_name'] = $org[0]['organisation_name'];
         }
 

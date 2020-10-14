@@ -21,12 +21,6 @@ class OrganisationController extends AbstractController
             nuts1,
             nuts2,
             nuts3
-        FROM view_organisation_and_nuts
-    ';
-
-    private $select_org_ids_skeleton =
-        'SELECT
-            organisation_id
         FROM view_organisation_visible_for_user
         WHERE user_id = ?
     ';
@@ -42,23 +36,24 @@ class OrganisationController extends AbstractController
         return $query_result;
     }
 
-    public function get_org_ids($endpoint, $user_id, $args) {
+    public function get_org_config($endpoint, $user_id, $args) {
         switch ($endpoint) {
             case 'organisation':
                 $stmt_array = $this->get_id_stmt($args);
                 break;
-            case 'organisation-group':
+            case 'organisation_group':
                 $stmt_array = $this->get_group_stmt($args);
                 break;
-            case 'organisation-type':
+            case 'organisation_type':
                 $stmt_array = $this->get_type_stmt($args);
                 break;
             case 'location':
                 $stmt_array = $this->get_location_stmt($args);
                 break;
             default:
-                $stmt_array['stmt_string'] = $this->select_org_ids_skeleton;
+                $stmt_array['stmt_string'] = $this->select_org_skeleton;
                 $stmt_array['param_string'] = 'i';
+                break;
         }
         $stmt_string = $stmt_array['stmt_string'];
         $param_string = $stmt_array['param_string'];
@@ -67,16 +62,11 @@ class OrganisationController extends AbstractController
 
         $this->db_access->prepare($stmt_string);
         $this->db_access->bind_param($param_string, $user_id, ...$args_indexed);
-        $query_result = $this->db_access->execute();
-        $org_ids = [];
-        while($row = $query_result->fetch_assoc()) {
-            $org_ids[] = $row['organisation_id'];
-        }
-        return $org_ids;
+        return $this->format_query_result($this->db_access->execute());
     }
 
     private function get_id_stmt($args) {
-        $stmt_string = $this->select_org_ids_skeleton;
+        $stmt_string = $this->select_org_skeleton;
         $param_string = 'i';
 
         if(isset($args['org_id'])) {
@@ -87,7 +77,7 @@ class OrganisationController extends AbstractController
     }
 
     private function get_group_stmt($args) {
-        $stmt_string = $this->select_org_ids_skeleton;
+        $stmt_string = $this->select_org_skeleton;
         $param_string = 'i';
 
         if(isset($args['org_group'])) {
@@ -102,11 +92,11 @@ class OrganisationController extends AbstractController
     }
 
     private function get_type_stmt($args) {
-        $stmt_string = $this->select_org_ids_skeleton;
+        $stmt_string = $this->select_org_skeleton;
         $param_string = 'i';
 
         if(isset($args['org_type'])) {
-            $stmt_string .= ' AND organisation_group = ?';
+            $stmt_string .= ' AND organisation_type = ?';
             $param_string .= 's';
         }
         if(isset($args['org_name'])) {
@@ -117,7 +107,7 @@ class OrganisationController extends AbstractController
     }
 
     private function get_location_stmt($args) {
-        $stmt_string = $this->select_org_ids_skeleton;
+        $stmt_string = $this->select_org_skeleton;
         $param_string = 'i';
 
         if(isset($args['nuts0'])) {
@@ -141,96 +131,6 @@ class OrganisationController extends AbstractController
             $param_string .= 's';
         }
         return array('stmt_string' => $stmt_string, 'param_string' => $param_string);
-    }
-
-    public function get_orgs_by_id($org_ids) {
-        $stmt_string = $this->select_org_skeleton . ' WHERE organisation_id = ?';
-        $this->db_access->prepare($stmt_string);
-
-        $orgs = [];
-        foreach($org_ids as $id) {
-            $this->db_access->bind_param('i', $id);
-            $query_result = $this->format_query_result($this->db_access->execute());
-            if(sizeof($query_result) > 0)
-                $orgs[] = $query_result[0];
-        }
-
-        return $orgs;
-    }
-
-    public function get_org_by_location($args) {
-        $stmt_string = $this->select_org_skeleton;
-        $param_string = '';
-        $num_args = sizeof($args);
-        if(isset($args['nuts0'])) {
-            $stmt_string .= ' WHERE nuts0 = ?';
-            $param_string .= 's';
-        }
-        if(isset($args['nuts1'])) {
-            $stmt_string .= ' AND nuts1 = ?';
-            $param_string .= 's';
-        }
-        if(isset($args['nuts2'])) {
-            $stmt_string .= ' AND nuts2 = ?';
-            $param_string .= 's';
-        }
-        if(isset($args['nuts3'])) {
-            $stmt_string .= ' AND nuts3 = ?';
-            $param_string .= 's';
-        }
-        if(isset($args['org_name'])) {
-            $stmt_string .= ' AND organisation_name = ?';
-            $param_string .= 's';
-        }
-        return AbstractController::execute_stmt($stmt_string, $param_string, ...$args);
-    }
-
-    public function get_org_by_group(...$args)
-    {
-        $stmt_string = $this->select_org_skeleton;
-        $param_string = '';
-        if (sizeof($args) > 0) {
-            $stmt_string .= ' WHERE organisation_group = ?';
-            $param_string .= 's';
-        }
-        if (sizeof($args) > 1) {
-            $stmt_string .= ' AND organisation_name = ?';
-            $param_string .= 's';
-        }
-        return AbstractController::execute_stmt($stmt_string, $param_string, ...$args);
-    }
-
-    public function get_all_orgs_by_type($org_type) {
-        $stmt_string = $this->select_org_skeleton;
-        $stmt_string .= ' WHERE organisation_type = ?';
-        $this->db_access->prepare($stmt_string);
-        $this->db_access->bind_param('s', $org_type);
-        $query_result = $this->format_query_result($this->db_access->execute());
-        return $query_result;
-    }
-
-    public function get_org_by_type($org_type, $org_name) {
-        $stmt_string = $this->select_org_skeleton;
-        $stmt_string .= ' WHERE organisation_type = ? AND organisation_name = ?';
-        $this->db_access->prepare($stmt_string);
-        $this->db_access->bind_param('ss', $org_type, $org_name);
-        $query_result = $this->format_query_result($this->db_access->execute());
-        if(sizeof($query_result) == 1) {
-            return $query_result[0];
-        } else {
-            return false;
-        }
-    }
-
-    public function get_org_by_id(...$args)
-    {
-        $stmt_string = $this->select_org_skeleton;
-        $param_string = '';
-        if (sizeof($args) > 0) {
-            $stmt_string .= ' WHERE organisation_id = ?';
-            $param_string .= 'i';
-        }
-        return AbstractController::execute_stmt($stmt_string, $param_string, ...$args);
     }
 
     public function insert_organisation($org_name, $org_type, $org_group, $description, $contact, $zipcode)
@@ -344,9 +244,11 @@ class OrganisationController extends AbstractController
         ';
         $this->db_access->prepare($stmt_string);
         $this->db_access->bind_param('s', $type_name);
-        $type = $this->format_query_result($this->db_access->execute());
-        if(sizeof($type) > 0) {
-            return $type[0];
+        $query_result = $this->format_query_result($this->db_access->execute());
+        if(sizeof($query_result) > 0) {
+            $type = $query_result[0];
+            $type['required_fields'] = $this->get_required_fields($type['organisation_type_id']);
+            return $type;
         } else {
             return false;
         }
@@ -366,6 +268,7 @@ class OrganisationController extends AbstractController
         $this->db_access->bind_param('i', $type_id);
         $type = $this->format_query_result($this->db_access->execute());
         if(sizeof($type) > 0) {
+            $type['required_fields'] = $this->get_required_fields[$type['organisation_type_id']];
             return $type[0];
         } else {
             return false;
@@ -443,7 +346,6 @@ class OrganisationController extends AbstractController
     }
 
     public function get_group_by_name($group_name) {
-        $this->db_access = DatabaseAccess::get_instance();
         $stmt_string =
             'SELECT
                 id_organisation_group as organisation_group_id,
@@ -464,7 +366,6 @@ class OrganisationController extends AbstractController
     }
 
     public function get_group_by_id($group_id) {
-        $db_access = new DatabaseAccess();
         $stmt_string =
             'SELECT
                 id_organisation_group as organisation_group_id,
@@ -474,10 +375,9 @@ class OrganisationController extends AbstractController
             WHERE
                 id_organisation_group = ?
         ';
-        $db_access->prepare($stmt_string);
-        $db_access->bind_param('i', $group_id);
+        $this->db_access->prepare($stmt_string);
+        $this->db_access->bind_param('i', $group_id);
         $group = $this->format_query_result($db_access->execute());
-        $db_access->close();
         if(sizeof($group) > 0) {
             return $group[0];
         } else {

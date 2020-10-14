@@ -39,7 +39,7 @@ return function (App $app) {
         \ConfigRouteController::class . ':get_field_by_org_type');
 
     $app->get('/config/organisation-group',
-        \ConfigRouteController::class . ':get_org_by_group');
+        \ConfigRouteController::class . ':get_all_groups');
     $app->get('/config/organisation-group/{org_group}',
         \ConfigRouteController::class . ':get_org_group');
     $app->get('/config/organisation-group/{org_group}/{org_name}',
